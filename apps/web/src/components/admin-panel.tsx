@@ -19,6 +19,11 @@ export function AdminPanel() {
       listings: Row[];
       reports: Row[];
       payouts: Row[];
+      refund_requests: {
+        id: string;
+        entity_id: string;
+        metadata: { reason: string };
+      }[];
       health: { worker_online: boolean; real_gpu_validated: boolean };
     } | null>(null),
     [error, setError] = useState(""),
@@ -145,6 +150,41 @@ export function AdminPanel() {
           </Button>
         </section>
       </div>
+      <section className="settings-card">
+        <h2>테스트 결제 환불 검토</h2>
+        <p>
+          완료된 생성 작업은 자동 환불하지 않습니다. 실제 운영 결제와 송금은
+          비활성 상태입니다.
+        </p>
+        {data?.refund_requests?.length ? (
+          data.refund_requests.map((r) => (
+            <div className="admin-row" key={r.id}>
+              <p>
+                {r.entity_id.slice(0, 8)} · {r.metadata.reason}
+              </p>
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    confirm(
+                      "이 테스트 결제를 전액 취소하고 구매 다운로드 권한을 해제할까요?",
+                    )
+                  )
+                    void action("refund", {
+                      order_id: r.entity_id,
+                      reason: r.metadata.reason,
+                    });
+                }}
+              >
+                테스트 전액 환불
+              </Button>
+            </div>
+          ))
+        ) : (
+          <p>환불 요청이 없습니다.</p>
+        )}
+      </section>
       <section className="settings-card">
         <h2>에셋 검토</h2>
         {data?.listings.length ? (

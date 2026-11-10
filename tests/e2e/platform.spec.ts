@@ -14,16 +14,17 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
   await expect(
     page.getByRole("link", { name: /Object Mesh 객체만/ }),
   ).toBeVisible();
+  await expect(page.locator('canvas[data-model-loaded="true"]')).toBeVisible();
   await page.screenshot({
     path: "artifacts/landing-desktop.png",
     fullPage: true,
   });
   await page.goto("/demo");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator('canvas[data-model-loaded="true"]')).toBeVisible();
   await page.getByRole("button", { name: /와이어프레임/ }).click();
   await page.goto("/pricing");
   await expect(page.getByText("181–200장", { exact: false })).toBeVisible();
-  await page.setViewportSize({ width: 375, height: 812 });
+  await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/");
   expect(
     await page.evaluate(
@@ -34,6 +35,7 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.locator('canvas[data-model-loaded="true"]')).toBeVisible();
   await page.screenshot({
     path: "artifacts/landing-mobile.png",
     fullPage: true,
@@ -62,6 +64,65 @@ test("verified login, private project, real signed upload, object/scene separati
     await page.getByLabel("비밀번호", { exact: true }).fill(password);
     await page.getByRole("button", { name: "로그인", exact: true }).click();
     await expect(page).toHaveURL(/dashboard/);
+    // A disposable order fixture tests review/authorization only. No provider payment is made.
+    const orderId = randomUUID();
+    const fixtureProject = randomUUID();
+    const { error: fixtureError } = await admin.from("projects").insert({
+      id: fixtureProject,
+      owner_id: data.user!.id,
+      name: "Refund review fixture",
+      mode: "object",
+    });
+    if (fixtureError) throw fixtureError;
+    const { error: orderError } = await admin.from("orders").insert({
+      id: orderId,
+      buyer_id: data.user!.id,
+      kind: "generation",
+      project_id: fixtureProject,
+      project_revision: 0,
+      image_count: 1,
+      mode: "object",
+      amount: 1000,
+      status: "paid",
+      idempotency_key: randomUUID(),
+    });
+    if (orderError) throw orderError;
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto("/billing");
+    await page.getByLabel("환불 검토할 주문").selectOption(orderId);
+    await page
+      .getByLabel("환불 요청 사유")
+      .fill("브라우저 테스트 환불 검토 사유");
+    await page
+      .getByRole("button", { name: "환불 검토 요청", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText(
+      "환불 검토 요청을 접수했습니다",
+    );
+    expect(
+      (
+        await page.request.post(`/api/orders/${randomUUID()}/refund-request`, {
+          headers: { origin: "http://127.0.0.1:3000" },
+          data: { reason: "다른 주문 접근 시도" },
+        })
+      ).status(),
+    ).toBe(404);
+    expect(
+      (
+        await page.request.post("/api/admin/refund", {
+          headers: { origin: "http://127.0.0.1:3000" },
+          data: { order_id: orderId, reason: "비관리자 환불 시도" },
+        })
+      ).status(),
+    ).toBe(404);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await admin.from("orders").delete().eq("id", orderId);
+    await admin.from("projects").delete().eq("id", fixtureProject);
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/reconstruct/new?mode=object");
     const image = await sharp({
       create: { width: 80, height: 60, channels: 3, background: "#bdac92" },
@@ -103,6 +164,7 @@ test("verified login, private project, real signed upload, object/scene separati
   } finally {
     // Disposable test data only. Orders and GPU outputs are never created by this test.
     const uid = data.user!.id;
+    await admin.from("orders").delete().eq("buyer_id", uid);
     const { data: projects } = await admin
       .from("projects")
       .select("id")

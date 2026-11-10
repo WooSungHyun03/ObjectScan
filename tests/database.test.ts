@@ -58,6 +58,7 @@ afterAll(async () => {
     ids,
   ]);
   await db.query("delete from payments where buyer_id=any($1::uuid[])", [ids]);
+  await db.query("delete from refunds where buyer_id=any($1::uuid[])", [ids]);
   await db.query("delete from orders where buyer_id=any($1::uuid[])", [ids]);
   await db.query("delete from project_images where owner_id=any($1::uuid[])", [
     ids,
@@ -281,7 +282,8 @@ integration(
     const job = randomUUID(),
       asset = randomUUID(),
       listing = randomUUID(),
-      order = randomUUID();
+      order = randomUUID(),
+      repurchase = randomUUID();
     await db.query(
       "insert into jobs(id,project_id,owner_id,kind,model,state,project_revision,idempotency_key) values($1,$2,$3,'generation','pixal3d','completed',0,$4)",
       [job, projects[0], ids[0], randomUUID()],
@@ -357,13 +359,89 @@ integration(
       } finally {
         await db.query("rollback");
       }
+      await expect(
+        db.query("select settle_test_refund($1,$2,999,$3)", [
+          order,
+          "test-market-" + order,
+          randomUUID(),
+        ]),
+      ).rejects.toThrow("AMOUNT_MISMATCH");
+      await expect(
+        db.query("select settle_test_refund($1,$2,1000,$3)", [
+          order,
+          "wrong-key",
+          randomUUID(),
+        ]),
+      ).rejects.toThrow("TEST_PAYMENT_REQUIRED");
+      const refundKey = randomUUID();
+      for (let i = 0; i < 2; i++)
+        await db.query("select settle_test_refund($1,$2,1000,$3)", [
+          order,
+          "test-market-" + order,
+          refundKey,
+        ]);
+      expect(
+        (
+          await db.query(
+            "select count(*)::int n from refunds where order_id=$1",
+            [order],
+          )
+        ).rows[0].n,
+      ).toBe(1);
+      expect(
+        (
+          await db.query(
+            "select sum(amount)::int net from credit_ledger where user_id=$1 and order_id=$2",
+            [ids[0], order],
+          )
+        ).rows[0].net,
+      ).toBe(0);
+      expect(
+        (
+          await db.query(
+            "select revoked_at from asset_purchases where order_id=$1",
+            [order],
+          )
+        ).rows[0].revoked_at,
+      ).not.toBeNull();
+      await db.query(
+        "insert into orders(id,buyer_id,kind,listing_id,amount,fee,idempotency_key) values($1,$2,'marketplace',$3,1000,100,$4)",
+        [repurchase, ids[1], listing, randomUUID()],
+      );
+      await db.query("select settle_payment($1,$2,1000,true)", [
+        repurchase,
+        "test-market-" + repurchase,
+      ]);
+      await db.query("select settle_test_refund($1,$2,1000,$3)", [
+        order,
+        "test-market-" + order,
+        refundKey,
+      ]);
+      expect(
+        (
+          await db.query(
+            "select order_id,revoked_at from asset_purchases where artifact_id=$1",
+            [asset],
+          )
+        ).rows[0],
+      ).toEqual({ order_id: repurchase, revoked_at: null });
     } finally {
       await db.query("delete from asset_purchases where artifact_id=$1", [
         asset,
       ]);
-      await db.query("delete from credit_ledger where order_id=$1", [order]);
-      await db.query("delete from payments where order_id=$1", [order]);
-      await db.query("delete from orders where id=$1", [order]);
+      await db.query(
+        "delete from credit_ledger where order_id=any($1::uuid[])",
+        [[order, repurchase]],
+      );
+      await db.query("delete from refunds where order_id=any($1::uuid[])", [
+        [order, repurchase],
+      ]);
+      await db.query("delete from payments where order_id=any($1::uuid[])", [
+        [order, repurchase],
+      ]);
+      await db.query("delete from orders where id=any($1::uuid[])", [
+        [order, repurchase],
+      ]);
       await db.query("delete from marketplace_listings where id=$1", [listing]);
       await db.query("delete from artifacts where id=$1", [asset]);
       await db.query("delete from jobs where id=$1", [job]);

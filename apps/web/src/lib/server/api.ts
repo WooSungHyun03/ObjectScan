@@ -34,7 +34,7 @@ import {
   validateGLB,
 } from "./files";
 import { health } from "./health";
-import { paymentMode, verifyPayment } from "./payments";
+import { paymentMode, verifyPayment, refundTestPayment } from "./payments";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
 async function mutable(pid: string) {
@@ -144,7 +144,6 @@ export function handle(req: Request) {
         .eq("id", v.data.orderId)
         .maybeSingle();
       if (!o) fail(404, "ORDER_NOT_FOUND");
-      if (o.status === "paid") return json({ received: true });
       await verifyPayment(
         v.data.paymentKey,
         v.data.orderId,
@@ -727,6 +726,31 @@ export function handle(req: Request) {
       }
     }
     if (path[0] === "orders") {
+      if (path[2] === "refund-request" && method === "POST") {
+        const id = uuid.parse(path[1]),
+          v = await input(
+            req,
+            z.object({ reason: z.string().trim().min(5).max(200) }).strict(),
+          );
+        const { data: o, error: orderError } = await db
+          .from("orders")
+          .select("id,status")
+          .eq("id", id)
+          .eq("buyer_id", user.id)
+          .maybeSingle();
+        dbError(orderError);
+        if (!o) fail(404, "ORDER_NOT_FOUND");
+        if (o.status !== "paid") fail(409, "ORDER_STATE_INVALID");
+        const { error } = await db.from("audit_logs").insert({
+          actor_id: user.id,
+          action: "refund_requested",
+          entity_id: id,
+          metadata: v,
+        });
+        dbError(error);
+        return json({ status: "requested" });
+      }
+
       if (path[1] && method === "GET") {
         const { data, error } = await db
           .from("orders")
@@ -877,26 +901,38 @@ export function handle(req: Request) {
       );
     }
     if (path[0] === "billing" && method === "GET") {
-      const [{ data: ledger, error }, { data: balance }, { data: payouts }] =
-        await Promise.all([
-          db
-            .from("credit_ledger")
-            .select("id,kind,amount,created_at")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(100),
-          db
-            .from("seller_balances")
-            .select("available,reserved")
-            .eq("seller_id", user.id)
-            .maybeSingle(),
-          db
-            .from("payout_requests")
-            .select("id,amount,status,created_at")
-            .eq("seller_id", user.id),
-        ]);
+      const [
+        { data: ledger, error },
+        { data: balance },
+        { data: payouts },
+        orders,
+      ] = await Promise.all([
+        db
+          .from("credit_ledger")
+          .select("id,kind,amount,created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        db
+          .from("seller_balances")
+          .select("available,reserved")
+          .eq("seller_id", user.id)
+          .maybeSingle(),
+        db
+          .from("payout_requests")
+          .select("id,amount,status,created_at")
+          .eq("seller_id", user.id),
+        db
+          .from("orders")
+          .select("id,kind,amount,status,created_at")
+          .eq("buyer_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
       dbError(error);
+      dbError(orders.error);
       return json({
+        orders: orders.data,
         ledger,
         balance: balance ?? { available: 0, reserved: 0 },
         payouts,
@@ -941,32 +977,42 @@ export function handle(req: Request) {
     if (path[0] === "admin") {
       await operator();
       if (method === "GET") {
-        const [jobs, listings, tiers, reports, payouts] = await Promise.all([
-          db
-            .from("jobs")
-            .select(
-              "id,kind,model,state,progress,error_code,attempts,lease_expires_at,created_at",
-            )
-            .order("created_at", { ascending: false })
-            .limit(100),
-          db
-            .from("marketplace_listings")
-            .select("*")
-            .order("created_at", { ascending: false })
-            .limit(100),
-          db.from("pricing_tiers").select("*").order("min_images"),
-          db
-            .from("audit_logs")
-            .select("*")
-            .eq("action", "listing_report")
-            .limit(100),
-          db
-            .from("payout_requests")
-            .select("id,seller_id,amount,status,created_at")
-            .order("created_at", { ascending: false })
-            .limit(100),
-        ]);
+        const [jobs, listings, tiers, reports, payouts, refunds] =
+          await Promise.all([
+            db
+              .from("jobs")
+              .select(
+                "id,kind,model,state,progress,error_code,attempts,lease_expires_at,created_at",
+              )
+              .order("created_at", { ascending: false })
+              .limit(100),
+            db
+              .from("marketplace_listings")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(100),
+            db.from("pricing_tiers").select("*").order("min_images"),
+            db
+              .from("audit_logs")
+              .select("*")
+              .eq("action", "listing_report")
+              .limit(100),
+            db
+              .from("payout_requests")
+              .select("id,seller_id,amount,status,created_at")
+              .order("created_at", { ascending: false })
+              .limit(100),
+            db
+              .from("audit_logs")
+              .select("id,entity_id,metadata,created_at")
+              .eq("action", "refund_requested")
+              .order("created_at", { ascending: false })
+              .limit(100),
+          ]);
+        for (const result of [jobs, listings, tiers, reports, payouts, refunds])
+          dbError(result.error);
         return json({
+          refund_requests: refunds.data,
           payouts: payouts.data,
           jobs: jobs.data,
           listings: listings.data,
@@ -999,6 +1045,18 @@ export function handle(req: Request) {
         });
         dbError(error);
         return json(data);
+      }
+      if (path[1] === "refund" && method === "POST") {
+        const v = await input(
+          req,
+          z
+            .object({
+              order_id: z.uuid(),
+              reason: z.string().trim().min(5).max(200),
+            })
+            .strict(),
+        );
+        return json(await refundTestPayment(v.order_id, v.reason));
       }
       if (path[1] === "pricing" && method === "POST") {
         const v = await input(

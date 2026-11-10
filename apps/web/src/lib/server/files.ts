@@ -167,6 +167,13 @@ export async function validateGLB(bytes: Uint8Array) {
       v.buffer !== 0 ||
       !Number.isInteger(v.byteLength) ||
       v.byteLength <= 0 ||
+      !Number.isInteger(v.byteOffset ?? 0) ||
+      (v.byteOffset ?? 0) < 0 ||
+      !Number.isInteger(a.byteOffset ?? 0) ||
+      (a.byteOffset ?? 0) < 0 ||
+      !Number.isInteger(v.byteStride ?? componentBytes * components) ||
+      (v.byteStride ?? componentBytes * components) <
+        componentBytes * components ||
       (v.byteOffset ?? 0) + v.byteLength > binLength ||
       (a.byteOffset ?? 0) +
         (a.count - 1) * (v.byteStride ?? componentBytes * components) +
@@ -188,11 +195,36 @@ export async function validateGLB(bytes: Uint8Array) {
         indices = valid(p.indices, "SCALAR");
       if (
         position.componentType !== 5126 ||
+        uv.componentType !== 5126 ||
         uv.count !== position.count ||
         indices.count % 3 ||
         ![5121, 5123, 5125].includes(indices.componentType)
       )
         bad();
+      const floatAt = (
+        a: typeof position,
+        i: number,
+        axis: number,
+        size: number,
+      ) => {
+        const view = views[a.bufferView];
+        return d.getFloat32(
+          binAt +
+            8 +
+            (view.byteOffset ?? 0) +
+            (a.byteOffset ?? 0) +
+            i * (view.byteStride ?? size * 4) +
+            axis * 4,
+          true,
+        );
+      };
+      for (const [a, size] of [
+        [position, 3],
+        [uv, 2],
+      ] as const)
+        for (let i = 0; i < a.count; i++)
+          for (let axis = 0; axis < size; axis++)
+            if (!Number.isFinite(floatAt(a, i, axis, size))) bad();
       const v = views[indices.bufferView],
         start = binAt + 8 + (v.byteOffset ?? 0) + (indices.byteOffset ?? 0),
         stride =
@@ -200,7 +232,7 @@ export async function validateGLB(bytes: Uint8Array) {
           ({ 5121: 1, 5123: 2, 5125: 4 } as Record<number, number>)[
             indices.componentType
           ];
-      for (let i = 0; i < indices.count; i++) {
+      const indexAt = (i: number) => {
         const at = start + i * stride,
           value =
             indices.componentType === 5121
@@ -209,13 +241,44 @@ export async function validateGLB(bytes: Uint8Array) {
                 ? d.getUint16(at, true)
                 : d.getUint32(at, true);
         if (value >= position.count) bad();
+        return value;
+      };
+      let nonemptyGeometry = false,
+        nonemptyUV = false;
+      for (let i = 0; i < indices.count; i += 3) {
+        const a = indexAt(i),
+          b = indexAt(i + 1),
+          c = indexAt(i + 2);
+        const ab = [0, 1, 2].map(
+          (axis) =>
+            floatAt(position, b, axis, 3) - floatAt(position, a, axis, 3),
+        );
+        const ac = [0, 1, 2].map(
+          (axis) =>
+            floatAt(position, c, axis, 3) - floatAt(position, a, axis, 3),
+        );
+        if (
+          ab[1] * ac[2] !== ab[2] * ac[1] ||
+          ab[2] * ac[0] !== ab[0] * ac[2] ||
+          ab[0] * ac[1] !== ab[1] * ac[0]
+        )
+          nonemptyGeometry = true;
+        const u1 = floatAt(uv, b, 0, 2) - floatAt(uv, a, 0, 2),
+          v1 = floatAt(uv, b, 1, 2) - floatAt(uv, a, 1, 2),
+          u2 = floatAt(uv, c, 0, 2) - floatAt(uv, a, 0, 2),
+          v2 = floatAt(uv, c, 1, 2) - floatAt(uv, a, 1, 2);
+        if (u1 * v2 !== u2 * v1) nonemptyUV = true;
       }
+      if (!nonemptyGeometry || !nonemptyUV) bad();
       const material = gltf.materials?.[p.material],
         texture =
           gltf.textures?.[
             material?.pbrMetallicRoughness?.baseColorTexture?.index
           ],
-        image = gltf.images?.[texture?.source ?? texture?.extensions?.EXT_texture_webp?.source],
+        image =
+          gltf.images?.[
+            texture?.source ?? texture?.extensions?.EXT_texture_webp?.source
+          ],
         view = views[image?.bufferView];
       if (
         !image ||

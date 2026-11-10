@@ -63,6 +63,20 @@ function Mesh({
   split: boolean;
 }) {
   const gltf = useGLTF(url);
+  const { gl } = useThree();
+  useEffect(() => {
+    // Expose readiness only after the decoded model has committed and rendered.
+    let frame = 0;
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        gl.domElement.dataset.modelLoaded = "true";
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      delete gl.domElement.dataset.modelLoaded;
+    };
+  }, [gltf, gl]);
   const model = useMemo(() => {
     const root = gltf.scene.clone(true);
     root.traverse((o) => {

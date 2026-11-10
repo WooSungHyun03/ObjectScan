@@ -63,3 +63,49 @@ test("actual textured GLB decodes; untextured or malformed buffer is rejected", 
   copy.writeUInt32LE(1, 4);
   await expect(validateGLB(copy)).rejects.toThrow();
 });
+test("GLB rejects nonfinite coordinates, collapsed geometry/UV and negative offsets", async () => {
+  const file = await readFile("apps/web/public/demo/shoe.glb");
+  const jsonSize = file.readUInt32LE(12),
+    gltf = JSON.parse(file.subarray(20, 20 + jsonSize).toString()),
+    binAt = 28 + jsonSize;
+  const mutate = (attribute: string, value: number) => {
+    const copy = Buffer.from(file);
+    for (const mesh of gltf.meshes)
+      for (const p of mesh.primitives) {
+        const a = gltf.accessors[p.attributes[attribute]],
+          v = gltf.bufferViews[a.bufferView],
+          size = attribute === "POSITION" ? 3 : 2;
+        for (let i = 0; i < a.count; i++)
+          for (let axis = 0; axis < size; axis++)
+            copy.writeFloatLE(
+              value,
+              binAt +
+                (v.byteOffset ?? 0) +
+                (a.byteOffset ?? 0) +
+                i * (v.byteStride ?? size * 4) +
+                axis * 4,
+            );
+      }
+    return copy;
+  };
+  await expect(validateGLB(mutate("POSITION", NaN))).rejects.toMatchObject({
+    code: "TEXTURE_BAKE_FAILED",
+  });
+  await expect(validateGLB(mutate("POSITION", 0))).rejects.toMatchObject({
+    code: "TEXTURE_BAKE_FAILED",
+  });
+  await expect(validateGLB(mutate("TEXCOORD_0", 0))).rejects.toMatchObject({
+    code: "TEXTURE_BAKE_FAILED",
+  });
+  gltf.bufferViews[
+    gltf.accessors[gltf.meshes[0].primitives[0].attributes.POSITION].bufferView
+  ].byteOffset = -4;
+  const malformed = Buffer.from(file),
+    json = Buffer.from(JSON.stringify(gltf));
+  expect(json.length).toBeLessThanOrEqual(jsonSize);
+  malformed.fill(32, 20, 20 + jsonSize);
+  json.copy(malformed, 20);
+  await expect(validateGLB(malformed)).rejects.toMatchObject({
+    code: "TEXTURE_BAKE_FAILED",
+  });
+});

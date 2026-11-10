@@ -1,0 +1,33 @@
+[Unit]
+Description=ObjectScan outbound GPU worker (one host slot)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=objectscan
+Group=objectscan
+WorkingDirectory=/srv/objectscan/app
+EnvironmentFile=/etc/objectscan/worker.env
+Environment=PYTHONUNBUFFERED=1
+Environment=HF_HOME=/var/cache/objectscan/huggingface
+Environment=TORCH_HOME=/var/cache/objectscan/torch
+Environment=XDG_CACHE_HOME=/var/cache/objectscan
+Environment=OBJECTSCAN_WORK_ROOT=/var/lib/objectscan/jobs
+ExecStart=/srv/objectscan/app/gpu-worker/.venv/bin/objectscan-worker
+Restart=on-failure
+RestartSec=10
+KillMode=control-group
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/objectscan /var/lib/objectscan /var/cache/objectscan
+# GPU devices must remain available; do not enable PrivateDevices here.
+
+[Install]
+WantedBy=multi-user.target

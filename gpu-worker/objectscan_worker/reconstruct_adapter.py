@@ -235,6 +235,7 @@ def main():
         PATH=str(prefix / "bin") + os.pathsep + env.get("PATH", ""),
         ATTN_BACKEND="sdpa",
         MAX_JOBS="4",
+        PYTHONUNBUFFERED="1",
     )
     # GPU memory samples include this adapter's descendant CUDA processes, never unrelated desktop jobs.
     import psutil

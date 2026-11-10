@@ -15,11 +15,15 @@ export function BillingPanel() {
       ledger: Entry[];
       balance: { available: number; reserved: number };
       payouts: Entry[];
+      orders: Entry[];
       payments_mode: string;
     } | null>(null),
     [error, setError] = useState(""),
     [amount, setAmount] = useState(""),
     [busy, setBusy] = useState(false);
+  const [refundOrder, setRefundOrder] = useState(""),
+    [reason, setReason] = useState(""),
+    [message, setMessage] = useState("");
   const load = useCallback(
     () => api<NonNullable<typeof data>>("billing").then(setData),
     [],
@@ -40,6 +44,23 @@ export function BillingPanel() {
       setBusy(false);
     }
   }
+  async function requestRefund(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      await post(`orders/${refundOrder}/refund-request`, { reason });
+      setMessage(
+        "환불 검토 요청을 접수했습니다. 승인 후 결제 제공사에서 취소를 확인합니다.",
+      );
+      setReason("");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <>
       <PageTitle
@@ -53,6 +74,11 @@ export function BillingPanel() {
       {error && (
         <p role="alert" className="notice error">
           {error}
+        </p>
+      )}
+      {message && (
+        <p className="notice" role="status">
+          {message}
         </p>
       )}
       <div className="mode-grid">
@@ -95,6 +121,52 @@ export function BillingPanel() {
           )}
         </article>
       </div>
+      <section className="settings-card">
+        <h2>주문과 환불 검토</h2>
+        {data?.orders.length ? (
+          data.orders.map((o) => (
+            <p key={o.id}>
+              {date(o.created_at)} · {o.id.slice(0, 8)} ·{" "}
+              {o.kind === "generation" ? "3D 생성" : "에셋 구매"} · ₩
+              {Number(o.amount).toLocaleString()} · {o.status}
+            </p>
+          ))
+        ) : (
+          <p>주문이 없습니다.</p>
+        )}
+        {data?.orders.some((o) => o.status === "paid") && (
+          <form onSubmit={requestRefund}>
+            <label>
+              환불 검토할 주문
+              <select
+                required
+                value={refundOrder}
+                onChange={(e) => setRefundOrder(e.target.value)}
+              >
+                <option value="">주문 선택</option>
+                {data.orders
+                  .filter((o) => o.status === "paid")
+                  .map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.id.slice(0, 8)} · ₩{Number(o.amount).toLocaleString()}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              환불 요청 사유
+              <textarea
+                required
+                minLength={5}
+                maxLength={200}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </label>
+            <Button disabled={busy || !refundOrder}>환불 검토 요청</Button>
+          </form>
+        )}
+      </section>
       <section className="settings-card">
         <h2>거래 원장</h2>
         {!data ? (
