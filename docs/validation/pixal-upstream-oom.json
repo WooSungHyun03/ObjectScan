@@ -1,0 +1,17 @@
+{
+  "model": "pixal3d",
+  "status": "failed",
+  "profile": "upstream --low_vram --resolution 1024",
+  "input": "one licensed shoe photo with actual SAM2 alpha mask",
+  "failure_stage": "NAF texture conditioning",
+  "supervisor_code": "GPU_OOM",
+  "torch_diagnostic": {
+    "requested_allocation_gib": 4.0,
+    "free_gib": 3.42,
+    "process_memory_gib": 10.59
+  },
+  "performance_claim": false,
+  "runtime_note": "Cold run included dependency downloads; elapsed time was not used as a reconstruction benchmark.",
+  "production_enabled": false,
+  "source_commit": "f7cf38429b0bd264f1995f0f8743a88b1c728b94"
+}

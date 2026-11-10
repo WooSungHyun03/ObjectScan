@@ -1,0 +1,10 @@
+{
+  "registered": 21,
+  "candidate_count": 21,
+  "reprojection_error": 0.2864187899198633,
+  "provenance": "colmap",
+  "canonical_front_verified": false,
+  "scope": "object-only SfM after actual SAM2 masks; no source poses supplied",
+  "input_count": 21,
+  "object_reconstruction_validated": false
+}

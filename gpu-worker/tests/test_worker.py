@@ -14,6 +14,102 @@ from objectscan_worker.contracts import checked_storage_url
 from objectscan_worker.process import JobStopped, ProcessFailure, run_stage
 
 
+def test_lazy_cuda_build_uses_family_host_compiler(monkeypatch, tmp_path):
+    from objectscan_worker.reconstruct_adapter import model_environment
+
+    monkeypatch.setattr("shutil.which", lambda path: path)
+    for model, version in (("object_aware_loss", "11"), ("gaussian_wrapping", "12"), ("pixal3d", "12")):
+        env = model_environment(model, tmp_path, {"PATH": "/bin", "CXX": "g++-13"})
+        assert env["CC"] == f"/usr/bin/gcc-{version}"
+        assert env["CXX"] == env["CUDAHOSTCXX"] == f"/usr/bin/g++-{version}"
+        assert env["CUDACXX"] == str(tmp_path / "bin/nvcc")
+    monkeypatch.setattr("shutil.which", lambda path: None)
+    with pytest.raises(ValueError, match="MODEL_HOST_COMPILER_MISSING"):
+        model_environment("gaussian_wrapping", tmp_path, {})
+
+
+def test_smoke_waits_boundedly_without_touching_another_job_result(tmp_path):
+    import fcntl
+    import json
+    import subprocess
+
+    work = tmp_path / "work"
+    work.mkdir()
+    (work / "manifest.json").write_text("{}")
+    saved = work / "result.json"
+    saved.write_text(json.dumps({"owned_by_another_process": True}))
+    with (tmp_path / "worker.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve().parents[2] / "scripts/smoke-model.py"),
+                "--work",
+                str(work),
+                "--worker-root",
+                str(tmp_path),
+                "--repo",
+                str(tmp_path),
+                "--python",
+                sys.executable,
+                "--wait-seconds",
+                "1",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    assert completed.returncode != 0
+    assert "GPU_SLOT_BUSY" in completed.stderr
+    assert json.loads(saved.read_text())["owned_by_another_process"] is True
+
+
+def test_failure_classification_ignores_oom_from_prior_stage(tmp_path):
+    log = tmp_path / "stage.log"
+    log.write_text("previous job: CUDA out of memory\n")
+    with pytest.raises(ProcessFailure) as failure:
+        run_stage(
+            [sys.executable, "-c", "raise RuntimeError('missing configuration')"],
+            tmp_path,
+            log,
+            lambda: True,
+            timeout=5,
+        )
+    assert failure.value.code == "WORKER_ERROR"
+
+
+def test_public_preview_is_small_distinct_and_preserves_measured_color(tmp_path):
+    import trimesh
+    from objectscan_worker.bake import bake_vertex_colors, make_preview
+
+    mesh = trimesh.creation.icosphere(subdivisions=3)
+    xyz = np.asarray(mesh.vertices)
+    mesh.visual.vertex_colors = np.column_stack(
+        [
+            (xyz[:, 0] + 1) * 127,
+            (xyz[:, 2] + 1) * 127,
+            np.full(len(xyz), 90),
+            np.full(len(xyz), 255),
+        ]
+    ).astype(np.uint8)
+    mesh.faces = np.vstack([mesh.faces, [0, 0, 0]])
+    source = tmp_path / "colored.ply"
+    mesh.export(source)
+    full = tmp_path / "full.glb"
+    preview = tmp_path / "preview.glb"
+    bake_vertex_colors(source, full, resolution=256)
+    report = make_preview(full, preview, max_faces=100)
+    result = trimesh.load(preview, force="mesh", process=False)
+    assert 0 < len(result.faces) <= 100
+    assert len(result.faces) <= len(mesh.faces) * 0.25
+    assert result.visual.kind == "texture"
+    assert np.isfinite(result.visual.uv).all()
+    assert report["surface_distance_error_ratio"] <= 0.02
+    assert full.read_bytes() != preview.read_bytes()
+    pixels = np.asarray(result.visual.material.baseColorTexture)
+    assert len(np.unique(pixels.reshape(-1, 3), axis=0)) > 10
+
+
 def test_pose_conversion_preserves_camera_center_and_handedness():
     m = colmap_to_opengl_z_up([1, 0, 0, 0], [1, 2, 3])
     assert np.allclose(m[:3, 3], [-1, 3, -2])

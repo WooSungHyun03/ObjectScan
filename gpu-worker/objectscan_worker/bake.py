@@ -10,11 +10,17 @@ from PIL import Image
 
 def bake_vertex_colors(source: Path, output: Path, resolution=2048):
     import trimesh
-    import xatlas
 
     mesh = trimesh.load(source, force="mesh", process=False)
     if not len(mesh.faces) or mesh.visual.kind != "vertex":
         raise ValueError("REFINED_VERTEX_COLORS_REQUIRED")
+    return bake_mesh_colors(mesh, output, resolution)
+
+
+def bake_mesh_colors(mesh, output: Path, resolution=2048):
+    import trimesh
+    import xatlas
+
     if not 64 <= resolution <= 4096:
         raise ValueError("ATLAS_SIZE_INVALID")
     mapping, indices, uv = xatlas.parametrize(
@@ -77,3 +83,63 @@ def bake_vertex_colors(source: Path, output: Path, resolution=2048):
         "uv_count": len(uv),
         "watertight": bool(result.is_watertight),
     }
+
+
+def make_preview(source: Path, output: Path, max_faces=15000):
+    """Public derivative: simplify geometry and re-bake measured source colors.
+
+    Does not retain the full source texture or full-resolution geometry. This is
+    an approximate preview; the private original keeps its complete PBR maps.
+    """
+    import trimesh
+
+    mesh = trimesh.load(source, force="mesh", process=False)
+    original_faces = len(mesh.faces)
+    # TSDF output can contain zero-area faces. Exclude these from the closest
+    # surface query before barycentric interpolation can divide by zero.
+    mesh.update_faces(mesh.nondegenerate_faces())
+    target = min(max_faces, original_faces // 4)
+    if target < 1 or mesh.visual.kind not in ("texture", "vertex"):
+        raise ValueError("PREVIEW_SOURCE_INVALID")
+    colors = (
+        mesh.visual.to_color().vertex_colors
+        if mesh.visual.kind == "texture"
+        else mesh.visual.vertex_colors
+    )
+    geometry = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, process=True)
+    simplified = geometry.simplify_quadric_decimation(face_count=target, aggression=7)
+    if not 0 < len(simplified.faces) <= target:
+        raise ValueError("PREVIEW_TOO_DETAILED")
+    closest, distances, triangle_ids = trimesh.proximity.closest_point(
+        mesh, simplified.vertices
+    )
+    extent = float(np.linalg.norm(mesh.extents))
+    error_ratio = float(distances.max() / max(extent, 1e-12))
+    if not np.isfinite(distances).all() or error_ratio > 0.02:
+        raise ValueError("PREVIEW_GEOMETRY_ERROR")
+    weights = trimesh.triangles.points_to_barycentric(
+        mesh.triangles[triangle_ids], closest
+    )
+    if not np.isfinite(weights).all():
+        raise ValueError("PREVIEW_COLOR_TRANSFER_INVALID")
+    transferred = np.clip(
+        (weights[:, :, None] * np.asarray(colors)[mesh.faces[triangle_ids]]).sum(
+            axis=1
+        ),
+        0,
+        255,
+    ).astype(np.uint8)
+    simplified.visual = trimesh.visual.ColorVisuals(
+        mesh=simplified, vertex_colors=transferred
+    )
+    report = bake_mesh_colors(simplified, output, resolution=512)
+    report.update(
+        source_triangles=original_faces,
+        surface_distance_error_ratio=error_ratio,
+        texture_resolution=512,
+        approximate_public_derivative=True,
+    )
+    if output.stat().st_size > 16 * 1024 * 1024:
+        output.unlink()
+        raise ValueError("PREVIEW_TOO_LARGE")
+    return report

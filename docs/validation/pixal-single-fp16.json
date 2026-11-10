@@ -1,0 +1,53 @@
+{
+  "quality": {
+    "triangles": 996087,
+    "vertices": 762579,
+    "uv_count": 762579,
+    "texture_bytes": 3048016,
+    "sha256": "3c3b5a03e6277be49e71b9ebe48f8228fd3d45ca9231ab5a8151ed51602a317d",
+    "size_bytes": 40363404,
+    "watertight": false,
+    "elapsed_seconds": 413.8147867349908,
+    "gpu_peak_mib": 12996.0,
+    "real_gpu": true
+  },
+  "execution_profile": "naf_fp16",
+  "scope": "one actual licensed shoe photo and actual SAM2 alpha; offline adapter plus private viewer test, not paid web generation E2E",
+  "source": {
+    "commit": "f7cf38429b0bd264f1995f0f8743a88b1c728b94",
+    "remote": "https://github.com/TencentARC/Pixal3D.git",
+    "weights": {
+      "repo": "TencentARC/Pixal3D",
+      "revision": "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f"
+    }
+  },
+  "naf_source": {
+    "remote": "https://github.com/valeoai/NAF.git",
+    "commit": "37f2dfc180f2de53d98bd601109c0da0dd6b0f43",
+    "source_sha256": "ba2e63a96d2ee22c8f3a187ebe4ba4e2d7ed0dd237e85e839a3c3dc72d7a6eea",
+    "checkpoint_sha256": "c096c1ab2217a5c3ac136365f721685e2201379cb69d509cfb0261183847c98f"
+  },
+  "semantic_validation": {
+    "triangles": 996087,
+    "vertices": 762579,
+    "uv_count": 762579,
+    "texture_bytes": 3048016,
+    "size_bytes": 40363404,
+    "sha256": "3c3b5a03e6277be49e71b9ebe48f8228fd3d45ca9231ab5a8151ed51602a317d"
+  },
+  "preview": {
+    "vertices": 17529,
+    "triangles": 15000,
+    "uv_count": 17529,
+    "watertight": false,
+    "source_triangles": 996087,
+    "surface_distance_error_ratio": 0.004980453766726366,
+    "texture_resolution": 512,
+    "approximate_public_derivative": true
+  },
+  "memory_measurement": "nvidia-smi process-tree samples every 0.5 seconds; not an exact allocator peak",
+  "production_enabled": false,
+  "multi_view_validated": false,
+  "viewer_private_storage_download_test": true,
+  "commercial_rights_review_complete": false
+}

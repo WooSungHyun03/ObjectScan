@@ -164,6 +164,7 @@ test("verified login, private project, real signed upload, object/scene separati
   } finally {
     // Disposable test data only. Orders and GPU outputs are never created by this test.
     const uid = data.user!.id;
+    await admin.from("audit_logs").delete().eq("actor_id", uid);
     await admin.from("orders").delete().eq("buyer_id", uid);
     const { data: projects } = await admin
       .from("projects")
@@ -182,6 +183,7 @@ test("verified login, private project, real signed upload, object/scene separati
       await admin.from("project_images").delete().eq("project_id", p.id);
       await admin.from("projects").delete().eq("id", p.id);
     }
-    await admin.auth.admin.deleteUser(uid);
+    const { error: deleteError } = await admin.auth.admin.deleteUser(uid);
+    if (deleteError) throw deleteError;
   }
 });

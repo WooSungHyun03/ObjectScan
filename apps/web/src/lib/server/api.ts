@@ -35,6 +35,7 @@ import {
 } from "./files";
 import { health } from "./health";
 import { paymentMode, verifyPayment, refundTestPayment } from "./payments";
+import { cleanupUploads } from "./maintenance";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
 async function mutable(pid: string) {
@@ -386,6 +387,7 @@ export function handle(req: Request) {
           .single();
         dbError(error);
         if (!im) fail(404, "IMAGE_NOT_FOUND");
+        if (im.cleanup_started_at) fail(410, "IMAGE_EXPIRED");
         if (im.status === "verified") return json({ ok: true });
         try {
           const bytes = await downloadBounded(
@@ -674,6 +676,12 @@ export function handle(req: Request) {
             })
             .strict(),
         );
+        if (v.status === "pending" && !a.preview_path)
+          fail(
+            409,
+            "PREVIEW_REQUIRED",
+            "공개용 경량 미리보기 검증이 필요합니다. 초안을 저장하고 관리자에게 재생성을 요청하세요.",
+          );
         const { data, error } = await db
           .from("marketplace_listings")
           .upsert(
@@ -976,6 +984,16 @@ export function handle(req: Request) {
     }
     if (path[0] === "admin") {
       await operator();
+      if (path[1] === "cleanup-uploads" && method === "POST") {
+        const result = await cleanupUploads();
+        const { error } = await db.from("audit_logs").insert({
+          actor_id: user.id,
+          action: "upload_cleanup",
+          metadata: result,
+        });
+        dbError(error);
+        return json(result);
+      }
       if (method === "GET") {
         const [jobs, listings, tiers, reports, payouts, refunds] =
           await Promise.all([

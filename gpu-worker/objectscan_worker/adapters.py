@@ -11,7 +11,7 @@ from typing import Protocol
 
 from PIL import Image
 
-from .bake import bake_vertex_colors
+from .bake import bake_vertex_colors, make_preview
 from .reconstruct_adapter import pixal_views, plan, quality
 
 
@@ -35,6 +35,7 @@ class Context:
     iterations: int = 30000
     max_gaussians: int = 500000
     weights: Path | None = None
+    pixal_naf_fp16: bool = False
 
     def progress(self, state: str, progress: int, message: str):
         # Append each transition so a fast stage cannot overwrite an unobserved transition.
@@ -94,6 +95,17 @@ class BaseAdapter:
             raise ValueError("ARTIFACT_TOO_LARGE")
         return quality(self.c.work / "mesh.glb", peak, elapsed)
 
+    def create_preview(self):
+        self.c.progress("texturing", 92, "공개용 경량 3D 미리보기 생성 중")
+        output = self.c.work / "preview.glb"
+        try:
+            report = make_preview(self.c.work / "mesh.glb", output)
+        except ValueError:
+            # Preview rejection never replaces or exposes the private original.
+            output.unlink(missing_ok=True)
+            report = {"available": False, "code": "PREVIEW_QUALITY_REJECTED"}
+        (self.c.work / "preview-report.json").write_text(json.dumps(report))
+
     def cleanup(self):
         # Source inputs/checkpoints follow retention policy; delete only derived temporary input copies here.
         for name in ("views", "frames"):
@@ -112,9 +124,20 @@ class Pixal3DAdapter(BaseAdapter):
         c = self.c
         c.progress("reconstruction", 10, "Pixal3D에서 실제 3D 복원 중")
         single = self.views.is_file()
+        if c.pixal_naf_fp16 and not single:
+            raise ValueError("PRECISION_PROFILE_MV_NOT_VALIDATED")
+        entry = (
+            [
+                str(Path(__file__).with_name("pixal_fp16_runner.py")),
+                "--repo",
+                str(c.repo),
+            ]
+            if c.pixal_naf_fp16
+            else [str(c.repo / ("inference.py" if single else "inference_mv.py"))]
+        )
         argv = [
             c.python,
-            str(c.repo / ("inference.py" if single else "inference_mv.py")),
+            *entry,
             "--image" if single else "--views_dir",
             str(self.views),
             "--output",
@@ -139,6 +162,7 @@ class Pixal3DAdapter(BaseAdapter):
 
     def texture_bake(self):
         self.c.progress("texturing", 90, "Pixal3D UV 및 PBR 텍스처 검증 준비")
+        self.create_preview()
 
 
 class GaussianAdapter(BaseAdapter):
@@ -194,6 +218,7 @@ class GaussianAdapter(BaseAdapter):
         if not source.is_file():
             raise ValueError("TEXTURE_BAKE_FAILED")
         bake_vertex_colors(source, c.work / "mesh.glb")
+        self.create_preview()
 
 
 class ObjectAwareLossAdapter(GaussianAdapter):

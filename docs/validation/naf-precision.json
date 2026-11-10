@@ -1,0 +1,8 @@
+{
+  "kind": "NAF-only precision feasibility, synthetic DINO feature tensor; not a reconstruction smoke",
+  "relative_mae_128": 0.0034549470238882524,
+  "mae_128": 0.0009917905554175377,
+  "output_dtype": "torch.float32",
+  "peak_torch_mib": 12333.77099609375,
+  "elapsed_seconds_1024": 0.5506618679501116
+}

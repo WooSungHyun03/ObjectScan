@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import os
+import shutil
 import struct
 import subprocess
 import threading
@@ -15,6 +16,27 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+
+def model_environment(model, prefix, parent):
+    """Keep lazy Torch CUDA builds on the same compiler as native installation."""
+    version = "11" if model == "object_aware_loss" else "12"
+    cc, cxx = f"/usr/bin/gcc-{version}", f"/usr/bin/g++-{version}"
+    if not shutil.which(cc) or not shutil.which(cxx):
+        raise ValueError("MODEL_HOST_COMPILER_MISSING")
+    env = parent.copy()
+    env.update(
+        CUDA_HOME=str(prefix),
+        CUDACXX=str(prefix / "bin/nvcc"),
+        CC=cc,
+        CXX=cxx,
+        CUDAHOSTCXX=cxx,
+        PATH=str(prefix / "bin") + os.pathsep + env.get("PATH", ""),
+        ATTN_BACKEND="sdpa",
+        MAX_JOBS="4",
+        PYTHONUNBUFFERED="1",
+    )
+    return env
 
 
 def plan(model, work, repo, python, iterations=30000, max_gaussians=500000):
@@ -211,12 +233,22 @@ def main():
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--python", required=True)
     parser.add_argument("--weights", type=Path)
+    parser.add_argument("--pixal-naf-fp16", action="store_true")
     parser.add_argument("--iterations", type=int, default=30000)
-    parser.add_argument("--max-gaussians", type=int, default=500000)
+    parser.add_argument(
+        "--normal-field-gaussian-cap",
+        "--max-gaussians",
+        dest="max_gaussians",
+        type=int,
+        default=500000,
+        help="Upstream normal-field densification cap only; regular Gaussian densification can exceed it",
+    )
     args = parser.parse_args()
     work = args.work.resolve()
     manifest = json.loads((work / "manifest.json").read_text())
     model = manifest["model"]
+    if args.pixal_naf_fp16 and model != "pixal3d":
+        raise ValueError("PRECISION_PROFILE_MODEL_MISMATCH")
     lock = json.loads((Path(__file__).parent.parent / "models.lock.json").read_text())[
         model
     ]
@@ -228,15 +260,7 @@ def main():
     if manifest["kind"] != "generation":
         raise ValueError("GENERATION_REQUIRED")
     prefix = Path(args.python).resolve().parent.parent
-    env = os.environ.copy()
-    env.update(
-        CUDA_HOME=str(prefix),
-        CUDACXX=str(prefix / "bin/nvcc"),
-        PATH=str(prefix / "bin") + os.pathsep + env.get("PATH", ""),
-        ATTN_BACKEND="sdpa",
-        MAX_JOBS="4",
-        PYTHONUNBUFFERED="1",
-    )
+    env = model_environment(model, prefix, os.environ)
     # GPU memory samples include this adapter's descendant CUDA processes, never unrelated desktop jobs.
     import psutil
 
@@ -289,6 +313,7 @@ def main():
             args.max_gaussians,
         )
         context.weights = args.weights
+        context.pixal_naf_fp16 = args.pixal_naf_fp16
         adapter = REGISTRY[model](context)
         adapter.validate()
         adapter.prepare()
@@ -297,7 +322,16 @@ def main():
         adapter.texture_bake()
         report = adapter.validate_artifact(peak[0], time.monotonic() - started)
         adapter.cleanup()
-        (work / "result.json").write_text(json.dumps({"quality": report}))
+        (work / "result.json").write_text(
+            json.dumps(
+                {
+                    "quality": report,
+                    "execution_profile": "naf_fp16"
+                    if args.pixal_naf_fp16
+                    else "upstream",
+                }
+            )
+        )
     finally:
         stop.set()
         thread.join(timeout=6)

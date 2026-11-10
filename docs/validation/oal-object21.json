@@ -1,0 +1,42 @@
+{
+  "quality": {
+    "triangles": 1123630,
+    "vertices": 948025,
+    "uv_count": 948025,
+    "texture_bytes": 4758012,
+    "sha256": "7ff5aa98cce28bdd53efb3c56ffd1773abe72f04eb5ffda6cdd96cca3557713c",
+    "size_bytes": 37203376,
+    "watertight": false,
+    "elapsed_seconds": 2631.653202553047,
+    "gpu_peak_mib": 1946.0,
+    "real_gpu": true
+  },
+  "execution_profile": "upstream",
+  "scope": "21 actual SouthBuilding images and SAM2 masks, fresh masked COLMAP, full 30000 iteration 2DGS, TSDF and UV bake; offline research benchmark, not paid generation E2E",
+  "source_commit": "3221821b165865dc77b7636598e55675043b87f4",
+  "semantic_validation": {
+    "triangles": 1123630,
+    "vertices": 948025,
+    "uv_count": 948025,
+    "texture_bytes": 4758012,
+    "size_bytes": 37203376,
+    "sha256": "7ff5aa98cce28bdd53efb3c56ffd1773abe72f04eb5ffda6cdd96cca3557713c"
+  },
+  "preview": {
+    "vertices": 19727,
+    "triangles": 14999,
+    "uv_count": 19727,
+    "watertight": false,
+    "source_triangles": 1123630,
+    "surface_distance_error_ratio": 0.005728061693602023,
+    "texture_resolution": 512,
+    "approximate_public_derivative": true
+  },
+  "visual_review_complete": true,
+  "memory_measurement": "nvidia-smi process-tree samples every 0.5 seconds; not exact allocator peak",
+  "production_enabled": false,
+  "commercial_rights_review_complete": false,
+  "visual_quality_accepted": false,
+  "visual_findings": "Actual viewer shows fragmented building surfaces and substantial holes. The first21 SouthBuilding views and unreviewed propagated masks do not establish production object quality. Do not enable paid OAL from valid geometry alone.",
+  "private_viewer_download_verified": true
+}

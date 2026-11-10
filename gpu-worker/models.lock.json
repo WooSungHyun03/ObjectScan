@@ -31,5 +31,23 @@
     "remote": "https://github.com/microsoft/MoGe.git",
     "commit": "07444410f1e33f402353b99d6ccd26bd31e469e8",
     "reason": "MoGe v2 imported by pinned Pixal3D; current v3 conflicts with pinned trimesh"
+  },
+  "naf": {
+    "remote": "https://github.com/valeoai/NAF.git",
+    "commit": "37f2dfc180f2de53d98bd601109c0da0dd6b0f43",
+    "source_sha256": "ba2e63a96d2ee22c8f3a187ebe4ba4e2d7ed0dd237e85e839a3c3dc72d7a6eea",
+    "checkpoint_sha256": "c096c1ab2217a5c3ac136365f721685e2201379cb69d509cfb0261183847c98f"
+  },
+  "rmbg2": {
+    "revision": "2fd7b4b0f2393ddb39a267fb62df6c010928a6c6",
+    "repo": "briaai/RMBG-2.0"
+  },
+  "dinov3": {
+    "revision": "3c276edd87d6f6e569ff0c4400e086807d0f3881",
+    "repo": "camenduru/dinov3-vitl16-pretrain-lvd1689m"
+  },
+  "moge2_weights": {
+    "revision": "39c4d5e957afe587e04eec59dc2bcc3be5ecd968",
+    "repo": "Ruicheng/moge-2-vitl"
   }
 }

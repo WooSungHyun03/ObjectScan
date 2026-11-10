@@ -1,0 +1,29 @@
+{
+  "deployment": "https://objectscan-pz9pnbynu-sunghyuns-projects-da008879.vercel.app",
+  "project_ref": "ctdzibelbwaujvngmxgg",
+  "scope": "disposable hosted fixtures; admin-confirmed identities; no SMTP delivery, GPU generation or provider payments",
+  "checks": [
+    "protected preview health HTTP200",
+    "hosted Supabase configured",
+    "production money and unqualified GPU gates closed",
+    "browser password login to hosted Auth",
+    "browser signed upload decoded and finalized in hosted database",
+    "owner private normalized image signed download",
+    "anonymous hosted DB access denies private project",
+    "second identity hosted RLS denies owner project",
+    "normalized image bucket remains private",
+    "hosted scene workflow skips object masks",
+    "hosted 360px no horizontal overflow"
+  ],
+  "health": {
+    "configured": true,
+    "worker_online": false,
+    "busy": false,
+    "models": [],
+    "real_gpu_validated": false,
+    "payments_mode": "disabled",
+    "payouts_enabled": false
+  },
+  "passed": true,
+  "fixture_cleanup": true
+}

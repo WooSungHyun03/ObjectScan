@@ -11,6 +11,7 @@ import fcntl
 import json
 import signal
 import sys
+import time
 from pathlib import Path
 
 from objectscan_worker.process import run_stage
@@ -23,8 +24,15 @@ def main():
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--python", required=True)
     parser.add_argument("--weights", type=Path)
+    parser.add_argument("--pixal-naf-fp16", action="store_true")
     parser.add_argument("--iterations", type=int, default=30000)
     parser.add_argument("--timeout", type=int, default=14400)
+    parser.add_argument(
+        "--wait-seconds",
+        type=int,
+        default=0,
+        help="Bounded wait for the host GPU lock; default refuses a busy slot",
+    )
     args = parser.parse_args()
     work = args.work.resolve(strict=True)
     if not (work / "manifest.json").is_file():
@@ -46,11 +54,21 @@ def main():
     ]
     if args.weights:
         argv += ["--weights", str(args.weights.resolve(strict=True))]
+    if args.pixal_naf_fp16:
+        argv += ["--pixal-naf-fp16"]
     running = [True]
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: running.__setitem__(0, False))
     with (args.worker_root / "worker.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        deadline = time.monotonic() + max(0, args.wait_seconds)
+        while True:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                break
+            except BlockingIOError:
+                if not running[0] or time.monotonic() >= deadline:
+                    raise TimeoutError("GPU_SLOT_BUSY_OR_SMOKE_CANCELLED") from None
+                time.sleep(0.25)
         # A prior result cannot prove that this run succeeded.
         (work / "result.json").unlink(missing_ok=True)
         run_stage(

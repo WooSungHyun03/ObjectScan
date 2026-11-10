@@ -1,0 +1,15 @@
+{
+  "registered": 32,
+  "candidate_count": 32,
+  "reprojection_error": 0.30431534151769096,
+  "provenance": "colmap",
+  "canonical_front_verified": false,
+  "dataset": "COLMAP South Building, Christopher Zach",
+  "source": "https://colmap.github.io/datasets.html",
+  "prepared_images": 32,
+  "max_dimension": 1600,
+  "mask_used": false,
+  "feature_and_matching_device": "CPU",
+  "source_poses_used": false,
+  "scene_reconstruction_validated": false
+}

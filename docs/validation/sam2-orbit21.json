@@ -1,0 +1,12 @@
+{
+  "real_gpu": true,
+  "checkpoint": "sam2.1_hiera_small.pt",
+  "elapsed_seconds": 2.124908193014562,
+  "gpu_peak_mib": 695.97265625,
+  "frames": 21,
+  "scope": "21 actual orbit photographs of COLMAP South Building; SAM2 propagation and dimensions, not OAL reconstruction",
+  "mask_foreground_min": 0.046763541666666665,
+  "mask_foreground_max": 0.46949114583333335,
+  "sampled_visual_review_frames": [0, 10, 20],
+  "all_frames_manually_approved": false
+}

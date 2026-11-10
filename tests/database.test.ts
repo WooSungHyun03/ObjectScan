@@ -1,4 +1,6 @@
-import { beforeAll, afterAll, expect, test } from "vitest";
+import { beforeAll, afterAll, expect, test, vi } from "vitest";
+import sharp from "sharp";
+import { cleanupUploads } from "../apps/web/src/lib/server/maintenance";
 import { Client } from "pg";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
@@ -64,10 +66,108 @@ afterAll(async () => {
     ids,
   ]);
   await db.query("delete from projects where owner_id=any($1::uuid[])", [ids]);
-  for (const id of ids) await admin.auth.admin.deleteUser(id);
+  await db.query("delete from audit_logs where actor_id=any($1::uuid[])", [
+    ids,
+  ]);
+  for (const id of ids) {
+    const { error } = await admin.auth.admin.deleteUser(id);
+    if (error) throw error;
+  }
   await db.end();
 });
 const integration = enabled ? test : test.skip;
+integration(
+  "upload cleanup removes only expired unverified objects; tombstones reject late finalization",
+  async () => {
+    const images = [randomUUID(), randomUUID(), randomUUID()];
+    const path = (id: string) => `${ids[0]}/${projects[0]}/${id}/original.jpg`;
+    const normalized = `${ids[0]}/${projects[0]}/${images[0]}/normalized.jpg`;
+    const bytes = await sharp({
+      create: { width: 20, height: 20, channels: 3, background: "#678" },
+    })
+      .jpeg()
+      .toBuffer();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", process.env.TEST_SUPABASE_URL!);
+    vi.stubEnv(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+      process.env.TEST_SUPABASE_KEY!,
+    );
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", process.env.TEST_SERVICE_KEY!);
+    try {
+      for (let i = 0; i < images.length; i++) {
+        await db.query(
+          "insert into project_images(id,project_id,owner_id,filename,mime,size_bytes,original_path,position,status,created_at) values($1,$2,$3,'cleanup fixture','image/jpeg',$4,$5,$6,$7,$8)",
+          [
+            images[i],
+            projects[0],
+            ids[0],
+            bytes.length,
+            path(images[i]),
+            i,
+            i === 2 ? "verified" : "pending",
+            new Date(Date.now() - (i === 1 ? 0 : 26 * 3600000)),
+          ],
+        );
+        const { error } = await admin.storage
+          .from("original-uploads")
+          .upload(path(images[i]), bytes, { contentType: "image/jpeg" });
+        if (error) throw error;
+      }
+      const { error } = await admin.storage
+        .from("project-files")
+        .upload(normalized, bytes, { contentType: "image/jpeg" });
+      if (error) throw error;
+      expect(await cleanupUploads(ids[0])).toEqual({ deleted: 1 });
+      expect(await cleanupUploads(ids[0])).toEqual({ deleted: 0 });
+      expect(
+        (await admin.storage.from("original-uploads").download(path(images[0])))
+          .error,
+      ).not.toBeNull();
+      expect(
+        (await admin.storage.from("project-files").download(normalized)).error,
+      ).not.toBeNull();
+      for (const id of images.slice(1))
+        expect(
+          (await admin.storage.from("original-uploads").download(path(id)))
+            .error,
+        ).toBeNull();
+      await expect(
+        db.query("select finalize_image($1,$2,20,20,'cleanup-test',$3)", [
+          images[0],
+          ids[0],
+          normalized,
+        ]),
+      ).rejects.toThrow("IMAGE_EXPIRED");
+      expect(
+        (
+          await db.query(
+            "select status,storage_deleted_at from project_images where id=$1",
+            [images[0]],
+          )
+        ).rows[0],
+      ).toMatchObject({
+        status: "rejected",
+        storage_deleted_at: expect.any(Date),
+      });
+      await db.query("begin");
+      try {
+        await db.query("set local role authenticated");
+        await expect(
+          db.query("select claim_upload_cleanup($1,25)", [ids[0]]),
+        ).rejects.toThrow(/permission denied/);
+      } finally {
+        await db.query("rollback");
+      }
+    } finally {
+      vi.unstubAllEnvs();
+      await admin.storage.from("original-uploads").remove(images.map(path));
+      await admin.storage.from("project-files").remove([normalized]);
+      await db.query("delete from project_images where id=any($1::uuid[])", [
+        images,
+      ]);
+    }
+  },
+);
 integration(
   "RLS: owner sees own project; cannot read another user or elevate role",
   async () => {

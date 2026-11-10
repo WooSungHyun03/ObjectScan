@@ -27,6 +27,7 @@ export function AdminPanel() {
       health: { worker_online: boolean; real_gpu_validated: boolean };
     } | null>(null),
     [error, setError] = useState(""),
+    [message, setMessage] = useState(""),
     [mode, setMode] = useState("object"),
     [tier, setTier] = useState("1"),
     [amount, setAmount] = useState(""),
@@ -42,9 +43,15 @@ export function AdminPanel() {
   async function action(path: string, body: object) {
     setBusy(true);
     setError("");
+    setMessage("");
     try {
-      await post(`admin/${path}`, body);
+      const result = await post<{ deleted?: number }>(`admin/${path}`, body);
       await load();
+      setMessage(
+        path === "cleanup-uploads"
+          ? `${result.deleted ?? 0}개 업로드 정리를 확인했습니다.`
+          : "처리 결과를 반영했습니다.",
+      );
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -69,6 +76,11 @@ export function AdminPanel() {
       {error && (
         <p className="notice error" role="alert">
           {error}
+        </p>
+      )}
+      {message && (
+        <p role="status" className="notice">
+          {message}
         </p>
       )}
       {data && (
@@ -147,6 +159,18 @@ export function AdminPanel() {
             }}
           >
             종료 확인 후 슬롯 복구
+          </Button>
+          <h3>만료된 업로드 정리</h3>
+          <p>
+            25시간 이상 지난 미완료·거절 업로드를 최대 25개 정리합니다. 검증된
+            입력은 보관합니다.
+          </p>
+          <Button
+            variant="outline"
+            disabled={busy}
+            onClick={() => void action("cleanup-uploads", {})}
+          >
+            만료된 업로드 정리
           </Button>
         </section>
       </div>

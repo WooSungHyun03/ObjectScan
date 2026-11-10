@@ -9,6 +9,7 @@ Implemented and tested evidence is recorded in TASKS.md. Unchecked items block p
 - [ ] Real COLMAP/canonical-camera integration on captured object and scene inputs.
 - [ ] Pixal3D1/4-view, Object-Aware Loss21+, Gaussian Wrapping20+ GPU smoke under16GB.
 - [ ] Real textured GLB screenshots, peak VRAM/time and OOM recovery reports for all models.
+- [ ] Commercial rights reviewed/resolved for Object-Aware Loss, Gaussian Wrapping, native dependencies and model checkpoints; current Gaussian-Splatting licenses restrict use to noncommercial research/evaluation.
 - [ ] Toss hosted sandbox confirm/webhook/refund/reconciliation end-to-end.
 - [ ] Marketplace purchased download + moderation + payout operator review complete.
 - [ ] Production data deletion/retention and abuse handling operationally reviewed.

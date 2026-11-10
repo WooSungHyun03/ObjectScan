@@ -49,6 +49,7 @@ def run_stage(
     if not argv or not all(isinstance(a, str) and a for a in argv):
         raise ValueError("argv must contain nonempty strings; shell is forbidden")
     with log.open("ab") as output:
+        stage_start = output.tell()
         proc = subprocess.Popen(
             argv,
             cwd=cwd,
@@ -66,7 +67,9 @@ def run_stage(
                     raise ProcessFailure("TIMEOUT")
                 time.sleep(0.2)
             if proc.returncode:
-                tail = log.read_bytes()[-8192:].lower()
+                with log.open("rb") as captured:
+                    captured.seek(max(stage_start, log.stat().st_size - 8192))
+                    tail = captured.read().lower()
                 raise ProcessFailure(
                     "GPU_OOM" if b"out of memory" in tail else "WORKER_ERROR"
                 )
