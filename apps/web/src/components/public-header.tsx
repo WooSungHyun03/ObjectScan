@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { educationMode } from "@/lib/project-purpose";
 import { ArrowUpRight, Menu } from "lucide-react";
 import { Brand } from "./brand";
 import { Button } from "./ui/button";
@@ -8,7 +9,7 @@ function Links() {
     <>
       <Link href="/#product">서비스 소개</Link>
       <Link href="/docs">촬영 가이드</Link>
-      <Link href="/pricing">요금</Link>
+      <Link href="/pricing">{educationMode() ? "이용 안내" : "요금"}</Link>
       <Link href="/marketplace">에셋 마켓</Link>
     </>
   );

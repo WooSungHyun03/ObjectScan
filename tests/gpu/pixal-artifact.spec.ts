@@ -29,7 +29,16 @@ test("actual offline GPU GLB: private viewer/download and isolated marketplace m
     await readFile(join(dirname(file), "semantic-validation.json"), "utf8"),
   );
   const bytes = await readFile(file),
-    previewBytes = await readFile(join(dirname(file), "preview.glb")),
+    previewBytes = await readFile(join(dirname(file), "preview.glb")).catch(
+      (error) => {
+        if (
+          process.env.OBJECTSCAN_GPU_VIEWER_ONLY === "1" &&
+          error.code === "ENOENT"
+        )
+          return null;
+        throw error;
+      },
+    ),
     sha = createHash("sha256").update(bytes).digest("hex");
   expect(result.quality.real_gpu).toBe(true);
   expect(sha).toBe(semantic.sha256);
@@ -149,11 +158,12 @@ test("actual offline GPU GLB: private viewer/download and isolated marketplace m
         .from("job-results")
         .upload(path, bytes, { contentType: "model/gltf-binary" }),
     );
-    check(
-      await db.storage.from("job-results").upload(previewPath, previewBytes, {
-        contentType: "model/gltf-binary",
-      }),
-    );
+    if (previewBytes)
+      check(
+        await db.storage.from("job-results").upload(previewPath, previewBytes, {
+          contentType: "model/gltf-binary",
+        }),
+      );
     check(
       await db.from("artifacts").insert({
         id: asset,
@@ -216,6 +226,8 @@ test("actual offline GPU GLB: private viewer/download and isolated marketplace m
       (await (await page.request.get("/api/health")).json()).real_gpu_validated,
     ).toBe(false);
     if (process.env.OBJECTSCAN_GPU_VIEWER_ONLY === "1") return;
+    if (!previewBytes)
+      throw Error("Validated public preview required for moderation test");
     // Nonbinding disposable local consent/price fixture: no Internet listing,
     // provider checkout, real charge or commercial-rights approval is asserted.
     await page

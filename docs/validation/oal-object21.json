@@ -38,5 +38,6 @@
   "commercial_rights_review_complete": false,
   "visual_quality_accepted": false,
   "visual_findings": "Actual viewer shows fragmented building surfaces and substantial holes. The first21 SouthBuilding views and unreviewed propagated masks do not establish production object quality. Do not enable paid OAL from valid geometry alone.",
-  "private_viewer_download_verified": true
+  "private_viewer_download_verified": true,
+  "bake_profile": "Unbounded vertex-color UV bake measured before the later dense-mesh cap update"
 }

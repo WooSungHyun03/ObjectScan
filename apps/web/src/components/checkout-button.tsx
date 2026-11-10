@@ -1,4 +1,5 @@
 "use client";
+import { educationMode } from "@/lib/project-purpose";
 import { useEffect, useState } from "react";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import { CreditCard, LockKeyhole, AlertCircle } from "lucide-react";
@@ -65,6 +66,12 @@ export function CheckoutButton({
       setBusy(false);
     }
   }
+  if (educationMode())
+    return (
+      <div className="notice">
+        비상업 교육·연구용 서비스로 결제와 구매를 지원하지 않습니다.
+      </div>
+    );
   return (
     <div className="checkout-control">
       <Button

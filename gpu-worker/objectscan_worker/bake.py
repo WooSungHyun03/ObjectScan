@@ -22,6 +22,10 @@ def bake_vertex_colors(source: Path, output: Path, resolution=2048, max_faces=10
     if len(mesh.faces) > max_faces:
         from scipy.spatial import cKDTree
 
+        print(
+            f"UV bake: simplifying {len(mesh.faces)} refined faces to budget {max_faces}",
+            flush=True,
+        )
         # Dense refined colors are measured at source vertices. Keep the source
         # intact; transfer these colors to a bounded derived mesh before xatlas.
         geometry = trimesh.Trimesh(
@@ -43,6 +47,10 @@ def bake_vertex_colors(source: Path, output: Path, resolution=2048, max_faces=10
         mesh = simplified
     if not 0 < len(mesh.faces) <= max_faces:
         raise ValueError("MESH_BUDGET_EXCEEDED")
+    print(
+        f"UV bake: {len(mesh.faces)} faces; nearest-source distance ratio {distance_ratio:.6f}",
+        flush=True,
+    )
     report = bake_mesh_colors(mesh, output, resolution)
     report.update(
         source_triangles=original_faces,
@@ -52,17 +60,34 @@ def bake_vertex_colors(source: Path, output: Path, resolution=2048, max_faces=10
     return report
 
 
-def bake_mesh_colors(mesh, output: Path, resolution=2048):
+def bake_mesh_colors(mesh, output: Path, resolution=2048, atlas_strategy="auto"):
     import trimesh
     import xatlas
 
     if not 64 <= resolution <= 4096:
         raise ValueError("ATLAS_SIZE_INVALID")
+    if atlas_strategy not in ("auto", "xatlas", "triangle_tiles"):
+        raise ValueError("ATLAS_STRATEGY_INVALID")
+    if atlas_strategy == "triangle_tiles" or (
+        atlas_strategy == "auto" and len(mesh.faces) > 50000
+    ):
+        if atlas_strategy == "auto":
+            import math
+
+            resolution = max(
+                resolution,
+                2 ** math.ceil(math.log2(4 * math.ceil(math.sqrt(len(mesh.faces))))),
+            )
+            if resolution > 4096:
+                raise ValueError("ATLAS_CAPACITY_EXCEEDED")
+        return bake_triangle_tiles(mesh, output, resolution)
+    print(f"UV bake: unwrap {len(mesh.faces)} faces at {resolution}px", flush=True)
     mapping, indices, uv = xatlas.parametrize(
         np.asarray(mesh.vertices, dtype=np.float32),
         np.asarray(mesh.faces, dtype=np.uint32),
     )
     colors = np.asarray(mesh.visual.vertex_colors)[mapping, :3].astype(float)
+    print(f"UV bake: rasterizing {len(indices)} textured faces", flush=True)
     canvas = np.zeros((resolution, resolution, 3), dtype=np.uint8)
     covered = np.zeros((resolution, resolution), dtype=bool)
     for face in indices:
@@ -117,6 +142,65 @@ def bake_mesh_colors(mesh, output: Path, resolution=2048):
         "triangles": len(result.faces),
         "uv_count": len(uv),
         "watertight": bool(result.is_watertight),
+        "atlas_strategy": "xatlas",
+    }
+
+
+def bake_triangle_tiles(mesh, output: Path, resolution=2048):
+    """Bounded per-triangle UV atlas for dense measured vertex-color meshes.
+
+    Each four-pixel cell has a private triangle and clamped color padding.
+    This trades UV sharing for deterministic packing; it cannot add photo detail.
+    """
+    import math
+    import trimesh
+
+    count = len(mesh.faces)
+    columns = math.ceil(math.sqrt(count))
+    if count < 1 or resolution < columns * 4:
+        raise ValueError("ATLAS_CAPACITY_EXCEEDED")
+    print(
+        f"UV bake: bounded triangle tiles for {count} faces at {resolution}px",
+        flush=True,
+    )
+    rows, cols = np.divmod(np.arange(count), columns)
+    origins = np.column_stack([cols * 4, rows * 4])
+    corners = np.array([[0.75, 0.75], [2.25, 0.75], [0.75, 2.25]])
+    pixels = origins[:, None, :] + corners[None, :, :]
+    uv = (pixels + 0.5) / resolution
+    uv[:, :, 1] = 1 - uv[:, :, 1]
+    face_colors = np.asarray(mesh.visual.vertex_colors)[mesh.faces, :3].astype(
+        np.float32
+    )
+    canvas = np.zeros((resolution, resolution, 3), dtype=np.uint8)
+    for y in range(4):
+        for x in range(4):
+            w1, w2 = (x - 0.75) / 1.5, (y - 0.75) / 1.5
+            weights = np.maximum([1 - w1 - w2, w1, w2], 0)
+            weights /= weights.sum()
+            colors = np.einsum("c,fcd->fd", weights, face_colors)
+            canvas[rows * 4 + y, cols * 4 + x] = np.rint(
+                np.clip(colors, 0, 255)
+            ).astype(np.uint8)
+    material = trimesh.visual.material.PBRMaterial(
+        baseColorTexture=Image.fromarray(canvas),
+        metallicFactor=0.0,
+        roughnessFactor=1.0,
+    )
+    result = trimesh.Trimesh(
+        vertices=mesh.vertices[mesh.faces.reshape(-1)],
+        faces=np.arange(count * 3).reshape(-1, 3),
+        process=False,
+        visual=trimesh.visual.TextureVisuals(uv=uv.reshape(-1, 2), material=material),
+    )
+    output.write_bytes(result.export(file_type="glb"))
+    return {
+        "vertices": len(result.vertices),
+        "triangles": count,
+        "uv_count": len(result.vertices),
+        "watertight": bool(result.is_watertight),
+        "atlas_strategy": "triangle_tiles",
+        "texture_resolution": resolution,
     }
 
 
@@ -142,7 +226,20 @@ def make_preview(source: Path, output: Path, max_faces=15000):
         else mesh.visual.vertex_colors
     )
     geometry = trimesh.Trimesh(vertices=mesh.vertices, faces=mesh.faces, process=True)
-    simplified = geometry.simplify_quadric_decimation(face_count=target, aggression=7)
+    geometry.update_faces(geometry.nondegenerate_faces())
+    geometry.update_faces(geometry.unique_faces())
+    geometry.remove_unreferenced_vertices()
+    # QEM can stop above its requested count on nonmanifold input. Leave
+    # headroom and still enforce the actual published face/geometry budgets.
+    simplified = geometry.simplify_quadric_decimation(
+        face_count=max(1, int(target * 0.9)), aggression=7
+    )
+    aggression = 7
+    if len(simplified.faces) > target:
+        aggression = 10
+        simplified = geometry.simplify_quadric_decimation(
+            face_count=max(1, int(target * 0.9)), aggression=aggression
+        )
     if not 0 < len(simplified.faces) <= target:
         raise ValueError("PREVIEW_TOO_DETAILED")
     closest, distances, triangle_ids = trimesh.proximity.closest_point(
@@ -173,6 +270,7 @@ def make_preview(source: Path, output: Path, max_faces=15000):
         surface_distance_error_ratio=error_ratio,
         texture_resolution=512,
         approximate_public_derivative=True,
+        simplification_aggression=aggression,
     )
     if output.stat().st_size > 16 * 1024 * 1024:
         output.unlink()

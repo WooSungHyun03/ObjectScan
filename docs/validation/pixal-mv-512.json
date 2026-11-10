@@ -1,0 +1,28 @@
+{
+  "quality": {
+    "triangles": 981851,
+    "vertices": 640385,
+    "uv_count": 640385,
+    "texture_bytes": 2689640,
+    "sha256": "1835b137ada6931dde8a19b1368871f8760645a962fb6dc82fea374a39f5549c",
+    "size_bytes": 35020136,
+    "watertight": false,
+    "elapsed_seconds": 274.7737343489989,
+    "gpu_peak_mib": 11636.0,
+    "real_gpu": true
+  },
+  "execution_profile": "mv_naf512_fp16",
+  "scope": "Official four-view RGBA images and exact supplied cameras; lower NAF texture feature resolution512/FP16. Offline diagnostic, not SAM2/captured-SfM or browser generation E2E.",
+  "production_enabled": false,
+  "semantic_test": {
+    "passed": 2,
+    "skipped": 0,
+    "skip_reason": null
+  },
+  "private_viewer_download_test": true,
+  "visual_review_complete": true,
+  "visual_quality_passed": true,
+  "visual_findings": "Recognizable textured bust corresponding to the provided four source views; general captured-photo quality not established.",
+  "memory_measurement": "nvidia-smi process samples; not exact allocator peak",
+  "source_commit": "f7cf38429b0bd264f1995f0f8743a88b1c728b94"
+}

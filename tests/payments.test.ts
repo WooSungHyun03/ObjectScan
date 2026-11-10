@@ -88,3 +88,16 @@ test.each([
     expect(mocks.rpc).not.toHaveBeenCalled();
   },
 );
+
+test("education deployment disables provider calls even with valid-looking test keys", async () => {
+  vi.stubEnv("NEXT_PUBLIC_PROJECT_PURPOSE", "education");
+  const { paymentMode, assertCommerceAllowed } =
+    await import("../apps/web/src/lib/server/payments");
+  expect(paymentMode()).toBe("disabled");
+  expect(() => assertCommerceAllowed()).toThrow();
+  await expect(
+    verifyPayment("fixture-key", order.id, 1000, false),
+  ).rejects.toThrow();
+  expect(fetch).not.toHaveBeenCalled();
+  expect(mocks.rpc).not.toHaveBeenCalled();
+});

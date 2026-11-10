@@ -25,16 +25,19 @@ test("actual hardware output contains finite geometry, nondegenerate UV and deco
   );
 });
 
-test("actual public preview is a bounded textured derivative of the private GPU original", async () => {
-  const path = process.env.OBJECTSCAN_VALIDATE_GLB;
-  if (!path) throw Error("Real GPU output required");
-  const original = await validateGLB(await readFile(path));
-  const preview = await validateGLB(
-    await readFile(join(dirname(path), "preview.glb")),
-  );
-  expect(preview.triangles).toBeLessThanOrEqual(
-    Math.min(20000, original.triangles * 0.25),
-  );
-  expect(preview.sha256).not.toBe(original.sha256);
-  expect(preview.size_bytes).toBeLessThanOrEqual(16 * 1024 * 1024);
-});
+test.skipIf(process.env.OBJECTSCAN_GPU_VIEWER_ONLY === "1")(
+  "actual public preview is a bounded textured derivative of the private GPU original",
+  async () => {
+    const path = process.env.OBJECTSCAN_VALIDATE_GLB;
+    if (!path) throw Error("Real GPU output required");
+    const original = await validateGLB(await readFile(path));
+    const preview = await validateGLB(
+      await readFile(join(dirname(path), "preview.glb")),
+    );
+    expect(preview.triangles).toBeLessThanOrEqual(
+      Math.min(20000, original.triangles * 0.25),
+    );
+    expect(preview.sha256).not.toBe(original.sha256);
+    expect(preview.size_bytes).toBeLessThanOrEqual(16 * 1024 * 1024);
+  },
+);

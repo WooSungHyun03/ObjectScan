@@ -1,0 +1,48 @@
+{
+  "quality": {
+    "triangles": 1000000,
+    "vertices": 3000000,
+    "uv_count": 3000000,
+    "texture_bytes": 30649220,
+    "sha256": "4e4ce53a5613869c9c1bdf01134a6e3f66d2551fee9bf72e58069f2920311830",
+    "size_bytes": 102650544,
+    "watertight": false,
+    "elapsed_seconds": 180.49728666999908,
+    "gpu_peak_mib": 3646.0,
+    "real_gpu": true
+  },
+  "execution_profile": "gw_cuda_rasterizer_triangle_tiles",
+  "reused_training_checkpoint": true,
+  "timing_scope": "sum of successful post-training GPU and CPU export stages; excludes training, aborted atlas attempts and queue wait; not continuous end-to-end runtime",
+  "gpu_phase": {
+    "sampled_peak_mib": 3646.0,
+    "elapsed_posttraining_gpu_seconds": 138.63855031399908,
+    "includes_training": false
+  },
+  "cpu_export_seconds": 41.85873635600001,
+  "upstream_training_seconds": 4472.612334728241,
+  "bake": {
+    "vertices": 3000000,
+    "triangles": 1000000,
+    "uv_count": 3000000,
+    "watertight": false,
+    "atlas_strategy": "triangle_tiles",
+    "texture_resolution": 4096,
+    "source_triangles": 8745864,
+    "simplified": true,
+    "nearest_source_vertex_distance_ratio": 0.006228322297234334
+  },
+  "production_enabled": false,
+  "scope": "32 actual full-scene photos, fresh COLMAP and 30000-iteration training; checkpoint reused for post-training CUDA extraction/refinement and bounded CPU texture export. No object masks.",
+  "semantic_test": {
+    "passed": 1,
+    "skipped": 1,
+    "skip_reason": "Public preview exceeds derivative budget; private viewer only"
+  },
+  "private_viewer_download_test": true,
+  "visual_review_complete": true,
+  "visual_quality_passed": false,
+  "visual_findings": "Fragmented, noisy surfaces and incomplete scene. This experiment fails usable scene quality; do not enable model.",
+  "memory_measurement": "nvidia-smi process samples; not exact allocator peak",
+  "source_commit": "11e3b6fb5ca6f0a54e2b5587a09693488f3655af"
+}

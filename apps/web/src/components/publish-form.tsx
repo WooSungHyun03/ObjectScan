@@ -1,4 +1,5 @@
 "use client";
+import { educationMode } from "@/lib/project-purpose";
 import { useState } from "react";
 import type { Artifact } from "@objectscan/shared";
 import { post } from "@/lib/client-api";
@@ -42,6 +43,13 @@ export function PublishForm({
       setBusy(false);
     }
   }
+  if (educationMode())
+    return (
+      <div className="notice">
+        교육·연구용 공개 서비스에서는 에셋 판매와 판매 게시 신청을 운영하지
+        않습니다. 결과물은 개인 프로젝트에서 확인하세요.
+      </div>
+    );
   return (
     <form
       className="publish-form"

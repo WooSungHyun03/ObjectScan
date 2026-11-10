@@ -1,0 +1,50 @@
+{
+  "scope": "Noncommercial school pre-release; actual hosted disposable admin-confirmed identities, no SMTP delivery, reconstruction jobs or provider charges",
+  "local_tests": {
+    "node_database": 44,
+    "python": 25,
+    "production_build_browser": 3,
+    "public_school_browser": true,
+    "typecheck": true,
+    "lint_errors": 0,
+    "lint_warnings": 8
+  },
+  "hosted_stage": {
+    "deployment": "https://objectscan-bfok3mf8i-sunghyuns-projects-da008879.vercel.app",
+    "project_ref": "ctdzibelbwaujvngmxgg",
+    "scope": "disposable hosted fixtures; actual SAM2 CUDA queue; admin-confirmed identities; no SMTP delivery, 3D generation or provider payments",
+    "checks": [
+      "persistent SAM2 systemd worker online",
+      "staged production health HTTP200",
+      "hosted Supabase configured",
+      "production money and unqualified GPU gates closed",
+      "browser password login to hosted Auth",
+      "school server denies orders",
+      "school server denies payouts",
+      "browser signed upload decoded and finalized in hosted database",
+      "owner private normalized image signed download",
+      "anonymous hosted DB access denies private project",
+      "second identity hosted RLS denies owner project",
+      "normalized image bucket remains private",
+      "browser to hosted queue to actual SAM2 CUDA to human review",
+      "hosted private mask is decoded and correctly aligned",
+      "hosted scene workflow skips object masks",
+      "hosted 360px no horizontal overflow"
+    ],
+    "health": {
+      "configured": true,
+      "worker_online": true,
+      "busy": false,
+      "models": [],
+      "real_gpu_validated": false,
+      "payments_mode": "disabled",
+      "payouts_enabled": false
+    },
+    "passed": true,
+    "fixture_cleanup": true
+  },
+  "generation_enabled": false,
+  "payments_enabled": false,
+  "public_alias_promotion": "pending",
+  "smtp": "User will configure directly; not configured at last check"
+}

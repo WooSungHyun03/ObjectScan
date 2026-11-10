@@ -34,7 +34,12 @@ import {
   validateGLB,
 } from "./files";
 import { health } from "./health";
-import { paymentMode, verifyPayment, refundTestPayment } from "./payments";
+import {
+  assertCommerceAllowed,
+  paymentMode,
+  verifyPayment,
+  refundTestPayment,
+} from "./payments";
 import { cleanupUploads } from "./maintenance";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
@@ -656,6 +661,7 @@ export function handle(req: Request) {
           expires_in: 120,
         });
       if (path[2] === "publish" && method === "POST") {
+        assertCommerceAllowed();
         if (a.owner_id !== user.id) fail(404, "ASSET_NOT_FOUND");
         const v = await input(
           req,
@@ -734,6 +740,7 @@ export function handle(req: Request) {
       }
     }
     if (path[0] === "orders") {
+      if (method === "POST" && !path[2]) assertCommerceAllowed();
       if (path[2] === "refund-request" && method === "POST") {
         const id = uuid.parse(path[1]),
           v = await input(
@@ -949,6 +956,7 @@ export function handle(req: Request) {
       });
     }
     if (path[0] === "payouts" && method === "POST") {
+      assertCommerceAllowed();
       const v = await input(
           req,
           z.object({ amount: z.number().int().positive() }).strict(),
@@ -1040,6 +1048,7 @@ export function handle(req: Request) {
         });
       }
       if (path[1] === "payout-review" && method === "POST") {
+        assertCommerceAllowed();
         const v = await input(
           req,
           z

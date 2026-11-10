@@ -1,4 +1,5 @@
 "use client";
+import { educationMode } from "@/lib/project-purpose";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -76,6 +77,12 @@ export function Marketplace() {
           <Globe2 size={100} strokeWidth={0.7} />
         </div>
       </div>
+      {educationMode() && (
+        <p className="notice">
+          학교 교육·연구용 서비스에서는 에셋 판매·구매를 운영하지 않습니다. 이
+          화면에는 승인된 미리보기만 표시됩니다.
+        </p>
+      )}
       <div className="market-controls">
         <label className="market-search">
           <Search size={18} />

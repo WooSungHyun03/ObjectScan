@@ -1,7 +1,17 @@
 import "server-only";
 import { adminClient } from "@/lib/supabase/server";
 import { dbError, fail } from "./guards";
+import { educationMode } from "@/lib/project-purpose";
+export function assertCommerceAllowed() {
+  if (educationMode())
+    fail(
+      403,
+      "NONCOMMERCIAL_ONLY",
+      "학교 교육·연구용 서비스에서는 결제·판매·정산을 지원하지 않습니다.",
+    );
+}
 export function paymentMode() {
+  if (educationMode()) return "disabled";
   const mode = process.env.PAYMENTS_MODE ?? "disabled",
     secret = process.env.TOSS_SECRET_KEY,
     client = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;

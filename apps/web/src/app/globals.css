@@ -5717,3 +5717,20 @@ td {
   background-size: 330% auto;
   background-position: left top;
 }
+
+.education-banner {
+  padding: 10px 20px;
+  background: var(--panel, #151c21);
+  border-bottom: 1px solid #304047;
+  color: #9babae;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.education-banner a {
+  display: inline-block;
+  margin-left: 12px;
+  color: #a9f5cd;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

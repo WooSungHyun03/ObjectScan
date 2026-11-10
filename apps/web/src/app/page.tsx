@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { educationMode } from "@/lib/project-purpose";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -220,7 +221,9 @@ export default function Landing() {
               <br className="mobile-break" /> 다음 창작의 재료로.
             </h2>
             <p>
-              권리를 보유한 에셋만 직접 게시하고,
+              {educationMode()
+                ? "교육·연구 목적으로 3D 에셋을 살펴보고,"
+                : "권리를 보유한 에셋만 직접 게시하고,"}
               <br />
               새로운 창작에 필요한 모델을 찾아보세요.
             </p>
@@ -247,31 +250,46 @@ export default function Landing() {
         </section>
         <section className="pricing-intro">
           <div className="section-intro">
-            <span className="section-kicker">명확한 제작 비용</span>
+            <span className="section-kicker">
+              {educationMode() ? "학교 프로젝트" : "명확한 제작 비용"}
+            </span>
             <h2>
-              사용한 만큼,
+              {educationMode() ? "사진으로 실험하고," : "사용한 만큼,"}
               <br />
-              확인한 금액으로.
+              {educationMode() ? "3D로 배웁니다." : "확인한 금액으로."}
             </h2>
           </div>
           <div className="pricing-explanation">
             <div>
               <Check size={18} />
               <p>
-                업로드한 사진 수를 기준으로 <strong>20장 단위</strong> 요금
-                구간이 적용됩니다.
+                {educationMode() ? (
+                  "비상업 교육·연구용으로 운영하며 결제와 에셋 판매를 제공하지 않습니다."
+                ) : (
+                  <>
+                    업로드한 사진 수를 기준으로 <strong>20장 단위</strong> 요금
+                    구간이 적용됩니다.
+                  </>
+                )}
               </p>
             </div>
             <div>
               <Check size={18} />
               <p>
-                객체와 장면 전체의 요금표를 분리하고,{" "}
-                <strong>서버 견적을 확인한 뒤</strong> 결제합니다.
+                {educationMode() ? (
+                  "객체와 장면 전체를 별도의 워크플로로 다루며, 실제 검증한 기능부터 제공합니다."
+                ) : (
+                  <>
+                    객체와 장면 전체의 요금표를 분리하고,{" "}
+                    <strong>서버 견적을 확인한 뒤</strong> 결제합니다.
+                  </>
+                )}
               </p>
             </div>
             <Button asChild variant="outline">
               <Link href="/pricing">
-                전체 요금 구간 확인 <MoveUpRight size={16} />
+                {educationMode() ? "이용 범위 확인" : "전체 요금 구간 확인"}{" "}
+                <MoveUpRight size={16} />
               </Link>
             </Button>
           </div>
@@ -279,8 +297,9 @@ export default function Landing() {
         <div className="release-note">
           <span className="status-dot" />
           <p>
-            현재 사전 출시 단계입니다. GPU 실측 검증과 결제 제공사 연결을 마친
-            기능부터 열립니다.
+            {educationMode()
+              ? "학교 교육·연구용 사전 출시입니다. 업로드·SAM2 마스크 검토를 제공하며 3D 생성의 일반 공개는 검증 중입니다."
+              : "현재 사전 출시 단계입니다. GPU 실측 검증과 결제 제공사 연결을 마친 기능부터 열립니다."}
           </p>
           <Link href="/docs#readiness">
             서비스 상태 <ArrowUpRight size={13} />

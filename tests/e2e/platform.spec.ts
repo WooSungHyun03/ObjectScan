@@ -65,63 +65,82 @@ test("verified login, private project, real signed upload, object/scene separati
     await page.getByRole("button", { name: "로그인", exact: true }).click();
     await expect(page).toHaveURL(/dashboard/);
     // A disposable order fixture tests review/authorization only. No provider payment is made.
-    const orderId = randomUUID();
-    const fixtureProject = randomUUID();
-    const { error: fixtureError } = await admin.from("projects").insert({
-      id: fixtureProject,
-      owner_id: data.user!.id,
-      name: "Refund review fixture",
-      mode: "object",
-    });
-    if (fixtureError) throw fixtureError;
-    const { error: orderError } = await admin.from("orders").insert({
-      id: orderId,
-      buyer_id: data.user!.id,
-      kind: "generation",
-      project_id: fixtureProject,
-      project_revision: 0,
-      image_count: 1,
-      mode: "object",
-      amount: 1000,
-      status: "paid",
-      idempotency_key: randomUUID(),
-    });
-    if (orderError) throw orderError;
-    await page.setViewportSize({ width: 360, height: 800 });
-    await page.goto("/billing");
-    await page.getByLabel("환불 검토할 주문").selectOption(orderId);
-    await page
-      .getByLabel("환불 요청 사유")
-      .fill("브라우저 테스트 환불 검토 사유");
-    await page
-      .getByRole("button", { name: "환불 검토 요청", exact: true })
-      .click();
-    await expect(page.getByRole("status")).toContainText(
-      "환불 검토 요청을 접수했습니다",
-    );
-    expect(
-      (
-        await page.request.post(`/api/orders/${randomUUID()}/refund-request`, {
+    if (process.env.TEST_EDUCATION_MODE === "true") {
+      await page.goto("/billing");
+      await expect(
+        page.getByRole("heading", { name: "이용 안내" }),
+      ).toBeVisible();
+      await expect(page.getByLabel("출금 요청 금액")).not.toBeVisible();
+      for (const route of ["orders", "payouts"]) {
+        const response = await page.request.post(`/api/${route}`, {
           headers: { origin: "http://127.0.0.1:3000" },
-          data: { reason: "다른 주문 접근 시도" },
-        })
-      ).status(),
-    ).toBe(404);
-    expect(
-      (
-        await page.request.post("/api/admin/refund", {
-          headers: { origin: "http://127.0.0.1:3000" },
-          data: { order_id: orderId, reason: "비관리자 환불 시도" },
-        })
-      ).status(),
-    ).toBe(404);
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-    await admin.from("orders").delete().eq("id", orderId);
-    await admin.from("projects").delete().eq("id", fixtureProject);
+          data: {},
+        });
+        expect(response.status()).toBe(403);
+        expect((await response.json()).code).toBe("NONCOMMERCIAL_ONLY");
+      }
+    } else {
+      const orderId = randomUUID();
+      const fixtureProject = randomUUID();
+      const { error: fixtureError } = await admin.from("projects").insert({
+        id: fixtureProject,
+        owner_id: data.user!.id,
+        name: "Refund review fixture",
+        mode: "object",
+      });
+      if (fixtureError) throw fixtureError;
+      const { error: orderError } = await admin.from("orders").insert({
+        id: orderId,
+        buyer_id: data.user!.id,
+        kind: "generation",
+        project_id: fixtureProject,
+        project_revision: 0,
+        image_count: 1,
+        mode: "object",
+        amount: 1000,
+        status: "paid",
+        idempotency_key: randomUUID(),
+      });
+      if (orderError) throw orderError;
+      await page.setViewportSize({ width: 360, height: 800 });
+      await page.goto("/billing");
+      await page.getByLabel("환불 검토할 주문").selectOption(orderId);
+      await page
+        .getByLabel("환불 요청 사유")
+        .fill("브라우저 테스트 환불 검토 사유");
+      await page
+        .getByRole("button", { name: "환불 검토 요청", exact: true })
+        .click();
+      await expect(page.getByRole("status")).toContainText(
+        "환불 검토 요청을 접수했습니다",
+      );
+      expect(
+        (
+          await page.request.post(
+            `/api/orders/${randomUUID()}/refund-request`,
+            {
+              headers: { origin: "http://127.0.0.1:3000" },
+              data: { reason: "다른 주문 접근 시도" },
+            },
+          )
+        ).status(),
+      ).toBe(404);
+      expect(
+        (
+          await page.request.post("/api/admin/refund", {
+            headers: { origin: "http://127.0.0.1:3000" },
+            data: { order_id: orderId, reason: "비관리자 환불 시도" },
+          })
+        ).status(),
+      ).toBe(404);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await admin.from("orders").delete().eq("id", orderId);
+      await admin.from("projects").delete().eq("id", fixtureProject);
+    }
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/reconstruct/new?mode=object");
     const image = await sharp({

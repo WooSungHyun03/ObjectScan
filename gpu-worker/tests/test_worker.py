@@ -167,6 +167,32 @@ def test_oom_before_long_native_backtrace_is_classified(tmp_path):
     assert failure.value.code == "GPU_OOM"
 
 
+def test_native_model_child_does_not_inherit_control_plane_credentials(
+    monkeypatch, tmp_path
+):
+    names = [
+        "OBJECTSCAN_WORKER_TOKEN",
+        "OBJECTSCAN_VERCEL_BYPASS_SECRET",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "VERCEL_OIDC_TOKEN",
+        "TOSS_SECRET_KEY",
+    ]
+    for name in names:
+        monkeypatch.setenv(name, "private-test-credential")
+    monkeypatch.setenv("CUDA_HOME", "/test/cuda")
+    run_stage(
+        [
+            sys.executable,
+            "-c",
+            f"import os; assert all(n not in os.environ for n in {names!r}); assert os.environ['CUDA_HOME']=='/test/cuda'",
+        ],
+        tmp_path,
+        tmp_path / "child.log",
+        lambda: True,
+        timeout=5,
+    )
+
+
 def test_public_preview_is_small_distinct_and_preserves_measured_color(tmp_path):
     import trimesh
     from objectscan_worker.bake import bake_vertex_colors, make_preview
@@ -222,6 +248,38 @@ def test_dense_refined_mesh_is_bounded_before_uv_baking(tmp_path):
     with pytest.raises(ValueError, match="MESH_SIMPLIFICATION_ERROR"):
         bake_vertex_colors(
             source, tmp_path / "rejected.glb", resolution=128, max_faces=400
+        )
+
+
+def test_triangle_tile_atlas_preserves_geometry_uv_and_independent_colors(tmp_path):
+    import trimesh
+    from objectscan_worker.bake import bake_mesh_colors
+
+    vertices = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [2, 0, 0], [3, 0, 0], [2, 1, 0]]
+    mesh = trimesh.Trimesh(
+        vertices=vertices, faces=[[0, 1, 2], [3, 4, 5]], process=False
+    )
+    mesh.visual.vertex_colors = [[255, 0, 0, 255]] * 3 + [[0, 0, 255, 255]] * 3
+    path = tmp_path / "tiles.glb"
+    report = bake_mesh_colors(
+        mesh, path, resolution=64, atlas_strategy="triangle_tiles"
+    )
+    actual = trimesh.load(path, force="mesh", process=False)
+    assert report["atlas_strategy"] == "triangle_tiles"
+    assert np.allclose(actual.vertices, mesh.vertices)
+    uv = np.asarray(actual.visual.uv)
+    assert np.isfinite(uv).all() and uv.min() >= 0 and uv.max() <= 1
+    a = uv[actual.faces][:, 1] - uv[actual.faces][:, 0]
+    b = uv[actual.faces][:, 2] - uv[actual.faces][:, 0]
+    assert np.all(np.abs(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]) > 0)
+    sampled = actual.visual.to_color().vertex_colors
+    assert np.array_equal(sampled[:, :3], np.asarray(mesh.visual.vertex_colors)[:, :3])
+    with pytest.raises(ValueError, match="ATLAS_CAPACITY_EXCEEDED"):
+        bake_mesh_colors(
+            trimesh.creation.icosphere(subdivisions=3),
+            tmp_path / "too-many.glb",
+            resolution=64,
+            atlas_strategy="triangle_tiles",
         )
 
 

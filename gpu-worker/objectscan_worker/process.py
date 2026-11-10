@@ -50,13 +50,23 @@ def run_stage(
         raise ValueError("argv must contain nonempty strings; shell is forbidden")
     with log.open("ab") as output:
         stage_start = output.tell()
+        child_env = os.environ.copy()
+        for name in (
+            "OBJECTSCAN_WORKER_TOKEN",
+            "OBJECTSCAN_VERCEL_BYPASS_SECRET",
+            "OBJECTSCAN_VERCEL_OIDC_TOKEN",
+            "VERCEL_OIDC_TOKEN",
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "TOSS_SECRET_KEY",
+        ):
+            child_env.pop(name, None)
         proc = subprocess.Popen(
             argv,
             cwd=cwd,
             stdout=output,
             stderr=subprocess.STDOUT,
             start_new_session=True,
-            env=os.environ.copy(),
+            env=child_env,
         )
         started = time.monotonic()
         try:

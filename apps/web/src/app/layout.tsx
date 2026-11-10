@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Link from "next/link";
+import { educationMode } from "@/lib/project-purpose";
 export const metadata: Metadata = {
   title: {
     default: "ObjectScan — Turn images into 3D.",
@@ -15,6 +17,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <a href="#main" className="skip-link">
           본문으로 건너뛰기
         </a>
+        {educationMode() && (
+          <aside className="education-banner" aria-label="운영 목적">
+            학교 교육·연구용 · 비상업 서비스{" "}
+            <Link href="/docs#research">이용 범위와 모델 출처</Link>
+          </aside>
+        )}
         {children}
       </body>
     </html>

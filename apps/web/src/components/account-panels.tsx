@@ -1,4 +1,5 @@
 "use client";
+import { educationMode } from "@/lib/project-purpose";
 import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { api, post, date } from "@/lib/client-api";
 import { Button } from "./ui/button";
@@ -61,6 +62,18 @@ export function BillingPanel() {
       setBusy(false);
     }
   }
+  if (educationMode())
+    return (
+      <>
+        <PageTitle
+          title="이용 안내"
+          description="학교 프로젝트의 비상업 교육·연구용 서비스입니다."
+        />
+        <div className="notice">
+          결제·판매·정산을 운영하지 않으며 이용 금액을 청구하지 않습니다.
+        </div>
+      </>
+    );
   return (
     <>
       <PageTitle

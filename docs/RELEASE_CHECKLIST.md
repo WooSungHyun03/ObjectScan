@@ -1,6 +1,6 @@
 # Release gates
 
-Implemented and tested evidence is recorded in TASKS.md. Unchecked items block production launch.
+Implemented and tested evidence is recorded in TASKS.md. Unchecked items block the full reconstruction/commercial release. The authorized school pre-release below has a separate, narrower scope.
 
 - [x] Independent Next.js app builds; two-user RLS and global queue concurrency tests pass locally.
 - [x] No model success fabricated; generation gates default closed.
@@ -17,3 +17,16 @@ Implemented and tested evidence is recorded in TASKS.md. Unchecked items block p
 - [ ] Reviewed PR merged; CI green and rollback documented.
 
 A deployable build or a frontend preview alone does not satisfy these production gates.
+
+## Authorized public school pre-release
+
+- [x] User confirms exclusively noncommercial school use and requests public hosting.
+- [x] Education-purpose notice and model/dependency attribution displayed.
+- [x] Server disables payment calls despite test keys; sales publication, orders and payouts denied.
+- [x] Dedicated hosted DB/Auth/private Storage, migrations, two-identity boundaries tested.
+- [x] Persistent SAM2-only worker and actual hosted browser/upload/CUDA/private mask/review verified.
+- [x] 44 Node/DB +25 Python +3 production-build browser checks pass; education public/mobile viewer smoke passes.
+- [ ] Final tested build promoted and public alias checked without Vercel automation credentials.
+- [ ] Hosted SMTP delivery (user is configuring directly). Email confirmation remains required.
+
+Reconstruction stays disabled: captured multi-view Pixal workflow not qualified; OAL/GW visual quality failed. The site exposes working project/upload/mask functionality and an explicitly labeled sample viewer. It does not claim that these model generation gates or the full original scope are complete.
