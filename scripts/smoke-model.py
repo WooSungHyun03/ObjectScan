@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--python", required=True)
     parser.add_argument("--weights", type=Path)
     parser.add_argument("--pixal-naf-fp16", action="store_true")
+    parser.add_argument("--gw-cuda-rasterizer", action="store_true")
     parser.add_argument("--iterations", type=int, default=30000)
     parser.add_argument("--timeout", type=int, default=14400)
     parser.add_argument(
@@ -56,6 +57,8 @@ def main():
         argv += ["--weights", str(args.weights.resolve(strict=True))]
     if args.pixal_naf_fp16:
         argv += ["--pixal-naf-fp16"]
+    if args.gw_cuda_rasterizer:
+        argv += ["--gw-cuda-rasterizer"]
     running = [True]
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda *_: running.__setitem__(0, False))

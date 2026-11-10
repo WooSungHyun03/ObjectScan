@@ -14,11 +14,40 @@ from objectscan_worker.contracts import checked_storage_url
 from objectscan_worker.process import JobStopped, ProcessFailure, run_stage
 
 
+def test_headless_gw_context_uses_upstream_option_without_changing_other_inputs(
+    tmp_path,
+):
+    from objectscan_worker.gw_stage_runner import use_cuda_context
+    from objectscan_worker.reconstruct_adapter import plan
+
+    class Rasterizer:
+        def __init__(self, cameras=None, raster_settings=None, use_opengl=True):
+            self.settings = (cameras, raster_settings, use_opengl)
+
+    use_cuda_context(Rasterizer)
+    camera, settings = object(), object()
+    assert Rasterizer(camera, settings).settings == (camera, settings, False)
+    with pytest.raises(ValueError, match="RASTERIZER_CONFIGURATION_CONFLICT"):
+        Rasterizer(use_opengl=True)
+    regular = plan("gaussian_wrapping", tmp_path, tmp_path, "python")
+    headless = plan(
+        "gaussian_wrapping", tmp_path, tmp_path, "python", gw_cuda_rasterizer=True
+    )
+    assert headless[0] == regular[0]
+    for i in (1, 2):
+        assert headless[i][headless[i].index("--") + 1 :] == regular[i][2:]
+        assert headless[i][headless[i].index("--stage") + 1] == Path(regular[i][1]).name
+
+
 def test_lazy_cuda_build_uses_family_host_compiler(monkeypatch, tmp_path):
     from objectscan_worker.reconstruct_adapter import model_environment
 
     monkeypatch.setattr("shutil.which", lambda path: path)
-    for model, version in (("object_aware_loss", "11"), ("gaussian_wrapping", "12"), ("pixal3d", "12")):
+    for model, version in (
+        ("object_aware_loss", "11"),
+        ("gaussian_wrapping", "12"),
+        ("pixal3d", "12"),
+    ):
         env = model_environment(model, tmp_path, {"PATH": "/bin", "CXX": "g++-13"})
         assert env["CC"] == f"/usr/bin/gcc-{version}"
         assert env["CXX"] == env["CUDAHOSTCXX"] == f"/usr/bin/g++-{version}"
@@ -108,6 +137,25 @@ def test_public_preview_is_small_distinct_and_preserves_measured_color(tmp_path)
     assert full.read_bytes() != preview.read_bytes()
     pixels = np.asarray(result.visual.material.baseColorTexture)
     assert len(np.unique(pixels.reshape(-1, 3), axis=0)) > 10
+
+
+def test_dense_refined_mesh_is_bounded_before_uv_baking(tmp_path):
+    import trimesh
+    from objectscan_worker.bake import bake_vertex_colors
+
+    mesh = trimesh.creation.icosphere(subdivisions=5)
+    mesh.visual.vertex_colors = [120, 80, 30, 255]
+    source, output = tmp_path / "dense.ply", tmp_path / "bounded.glb"
+    mesh.export(source)
+    report = bake_vertex_colors(source, output, resolution=128, max_faces=400)
+    assert report["source_triangles"] == len(mesh.faces)
+    assert report["simplified"] is True
+    assert 0 < report["triangles"] <= 400
+    assert report["nearest_source_vertex_distance_ratio"] <= 0.01
+    result = trimesh.load(output, force="mesh", process=False)
+    assert result.visual.kind == "texture"
+    pixels = np.asarray(result.visual.material.baseColorTexture)
+    assert np.any(np.all(np.abs(pixels.astype(float) - [120, 80, 30]) <= 1, axis=-1))
 
 
 def test_pose_conversion_preserves_camera_center_and_handedness():

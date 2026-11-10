@@ -8,13 +8,48 @@ import numpy as np
 from PIL import Image
 
 
-def bake_vertex_colors(source: Path, output: Path, resolution=2048):
+def bake_vertex_colors(source: Path, output: Path, resolution=2048, max_faces=1000000):
     import trimesh
 
     mesh = trimesh.load(source, force="mesh", process=False)
     if not len(mesh.faces) or mesh.visual.kind != "vertex":
         raise ValueError("REFINED_VERTEX_COLORS_REQUIRED")
-    return bake_mesh_colors(mesh, output, resolution)
+    original_faces = len(mesh.faces)
+    if max_faces < 1:
+        raise ValueError("MESH_BUDGET_INVALID")
+    mesh.update_faces(mesh.nondegenerate_faces())
+    distance_ratio = 0.0
+    if len(mesh.faces) > max_faces:
+        from scipy.spatial import cKDTree
+
+        # Dense refined colors are measured at source vertices. Keep the source
+        # intact; transfer these colors to a bounded derived mesh before xatlas.
+        geometry = trimesh.Trimesh(
+            vertices=mesh.vertices, faces=mesh.faces, process=True
+        )
+        simplified = geometry.simplify_quadric_decimation(
+            face_count=max_faces, aggression=7
+        )
+        distances, nearest = cKDTree(mesh.vertices).query(simplified.vertices)
+        distance_ratio = float(
+            distances.max() / max(float(np.linalg.norm(mesh.extents)), 1e-12)
+        )
+        if not np.isfinite(distances).all() or distance_ratio > 0.01:
+            raise ValueError("MESH_SIMPLIFICATION_ERROR")
+        simplified.visual = trimesh.visual.ColorVisuals(
+            mesh=simplified,
+            vertex_colors=np.asarray(mesh.visual.vertex_colors)[nearest],
+        )
+        mesh = simplified
+    if not 0 < len(mesh.faces) <= max_faces:
+        raise ValueError("MESH_BUDGET_EXCEEDED")
+    report = bake_mesh_colors(mesh, output, resolution)
+    report.update(
+        source_triangles=original_faces,
+        simplified=len(mesh.faces) < original_faces,
+        nearest_source_vertex_distance_ratio=distance_ratio,
+    )
+    return report
 
 
 def bake_mesh_colors(mesh, output: Path, resolution=2048):

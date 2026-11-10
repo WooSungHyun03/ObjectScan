@@ -36,6 +36,7 @@ class Context:
     max_gaussians: int = 500000
     weights: Path | None = None
     pixal_naf_fp16: bool = False
+    gw_cuda_rasterizer: bool = False
 
     def progress(self, state: str, progress: int, message: str):
         # Append each transition so a fast stage cannot overwrite an unobserved transition.
@@ -196,7 +197,13 @@ class GaussianAdapter(BaseAdapter):
                     raise ValueError("MASK_ALIGNMENT_REQUIRED")
                 shutil.copy2(source, masks / source.name)
         self.stages = plan(
-            self.model, c.work, c.repo, c.python, c.iterations, c.max_gaussians
+            self.model,
+            c.work,
+            c.repo,
+            c.python,
+            c.iterations,
+            c.max_gaussians,
+            c.gw_cuda_rasterizer,
         )
 
     def execute(self):
@@ -217,7 +224,8 @@ class GaussianAdapter(BaseAdapter):
             source = c.work / "trained/train" / f"ours_{c.iterations}" / "fuse_post.ply"
         if not source.is_file():
             raise ValueError("TEXTURE_BAKE_FAILED")
-        bake_vertex_colors(source, c.work / "mesh.glb")
+        report = bake_vertex_colors(source, c.work / "mesh.glb")
+        (c.work / "bake-report.json").write_text(json.dumps(report))
         self.create_preview()
 
 

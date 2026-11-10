@@ -39,3 +39,5 @@ An operator can run **만료된 업로드 정리** in the admin panel (POST `/ap
 ### Dedicated hosted staging (2026-11-10)
 
 User authorized pausing AISaaS; project `dvkfvommrhvlvuccxgeh` is INACTIVE and recoverable through Supabase. Do not delete it. SceneScan is untouched. ObjectScan `ctdzibelbwaujvngmxgg` (Seoul) has11 migrations; scoped Preview environment uses this project, while local tests keep loopback56321/56322. Vercel Deployment Protection remains enabled. Preview Auth allows only the ObjectScan deployment hostname pattern and requires email confirmation. Hosted test identities were created confirmed through the admin API, so SMTP delivery is still a release gate. Never run the destructive local test suite against hosted data. Production promotion remains blocked by model/rights/payment/SMTP/review gates.
+
+User decision for this continuation: leave PAYMENTS_MODE=disabled. Do not request or provision Toss credentials or enable charges until the user changes that decision.

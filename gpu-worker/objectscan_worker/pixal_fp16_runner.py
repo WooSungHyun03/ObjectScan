@@ -9,6 +9,7 @@ import hashlib
 import importlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -37,6 +38,13 @@ def main():
     if image.mode != "RGBA" or image.getchannel("A").getextrema()[0] == 255:
         raise ValueError("SAM2_ALPHA_REQUIRED")
     lock = json.loads((Path(__file__).parent.parent / "models.lock.json").read_text())
+    if (
+        subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=args.repo, text=True
+        ).strip()
+        != lock["pixal3d"]["commit"]
+    ):
+        raise ValueError("MODEL_COMMIT_MISMATCH")
     root = Path(torch.hub.get_dir()) / "valeoai_NAF_main"
     digest = hashlib.sha256()
     for path in [root / "hubconf.py", *sorted((root / "src").rglob("*.py"))]:

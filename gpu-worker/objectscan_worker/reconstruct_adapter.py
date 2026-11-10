@@ -39,7 +39,15 @@ def model_environment(model, prefix, parent):
     return env
 
 
-def plan(model, work, repo, python, iterations=30000, max_gaussians=500000):
+def plan(
+    model,
+    work,
+    repo,
+    python,
+    iterations=30000,
+    max_gaussians=500000,
+    gw_cuda_rasterizer=False,
+):
     work, repo = Path(work), Path(repo)
     dataset = work / "dataset"
     output = work / "trained"
@@ -73,7 +81,7 @@ def plan(model, work, repo, python, iterations=30000, max_gaussians=500000):
         ]
     if model == "gaussian_wrapping":
         shared = ["-s", str(dataset), "-m", str(output), "-r", "2"]
-        return [
+        stages = [
             [
                 python,
                 str(repo / "gaussian_wrapping/train.py"),
@@ -126,6 +134,20 @@ def plan(model, work, repo, python, iterations=30000, max_gaussians=500000):
                 str(iterations),
             ],
         ]
+        if gw_cuda_rasterizer:
+            runner = str(Path(__file__).with_name("gw_stage_runner.py"))
+            for i in (1, 2):
+                stages[i] = [
+                    python,
+                    runner,
+                    "--repo",
+                    str(repo),
+                    "--stage",
+                    Path(stages[i][1]).name,
+                    "--",
+                    *stages[i][2:],
+                ]
+        return stages
     raise ValueError("MODEL_UNAVAILABLE")
 
 
@@ -234,6 +256,7 @@ def main():
     parser.add_argument("--python", required=True)
     parser.add_argument("--weights", type=Path)
     parser.add_argument("--pixal-naf-fp16", action="store_true")
+    parser.add_argument("--gw-cuda-rasterizer", action="store_true")
     parser.add_argument("--iterations", type=int, default=30000)
     parser.add_argument(
         "--normal-field-gaussian-cap",
@@ -249,6 +272,8 @@ def main():
     model = manifest["model"]
     if args.pixal_naf_fp16 and model != "pixal3d":
         raise ValueError("PRECISION_PROFILE_MODEL_MISMATCH")
+    if args.gw_cuda_rasterizer and model != "gaussian_wrapping":
+        raise ValueError("RASTERIZER_PROFILE_MODEL_MISMATCH")
     lock = json.loads((Path(__file__).parent.parent / "models.lock.json").read_text())[
         model
     ]
@@ -314,6 +339,7 @@ def main():
         )
         context.weights = args.weights
         context.pixal_naf_fp16 = args.pixal_naf_fp16
+        context.gw_cuda_rasterizer = args.gw_cuda_rasterizer
         adapter = REGISTRY[model](context)
         adapter.validate()
         adapter.prepare()
@@ -328,6 +354,8 @@ def main():
                     "quality": report,
                     "execution_profile": "naf_fp16"
                     if args.pixal_naf_fp16
+                    else "gw_cuda_rasterizer"
+                    if args.gw_cuda_rasterizer
                     else "upstream",
                 }
             )
