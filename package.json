@@ -1,0 +1,43 @@
+{
+  "name": "objectscan",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @objectscan/web",
+    "build": "npm run build -w @objectscan/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint apps packages scripts tests --no-error-on-unmatched-pattern",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write apps packages contracts docs scripts supabase .github",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.15.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.4.5",
+    "pg": "^8.16.0",
+    "prettier": "^3.6.0",
+    "supabase": "3.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.0.0"
+  },
+  "type": "module",
+  "overrides": {
+    "minimatch": "^11.0.1"
+  }
+}

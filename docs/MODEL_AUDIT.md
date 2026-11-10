@@ -2,10 +2,10 @@
 
 Source checkouts inspected outside application at ../model-audit. These are code findings, not successful GPU benchmarks.
 
-| Adapter | Pinned upstream commit | Inspected entrypoints |
-|---|---|---|
-| pixal3d | f7cf38429b0bd264f1995f0f8743a88b1c728b94 | inference.py, inference_mv.py, pixal3d/pipelines, assets/mv_images/example/transforms.json |
-| object_aware_loss | 3221821b165865dc77b7636598e55675043b87f4 | train.py, render.py, scene, utils/camera_utils.py, utils/mesh_utils.py |
+| Adapter           | Pinned upstream commit                   | Inspected entrypoints                                                                                   |
+| ----------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| pixal3d           | f7cf38429b0bd264f1995f0f8743a88b1c728b94 | inference.py, inference_mv.py, pixal3d/pipelines, assets/mv_images/example/transforms.json              |
+| object_aware_loss | 3221821b165865dc77b7636598e55675043b87f4 | train.py, render.py, scene, utils/camera_utils.py, utils/mesh_utils.py                                  |
 | gaussian_wrapping | 11e3b6fb5ca6f0a54e2b5587a09693488f3655af | gaussian_wrapping/scripts/train_and_extract_gw_ours.py, train_and_extract_gw_radegs.py, texture_mesh.py |
 
 ## Pixal3D
@@ -31,3 +31,9 @@ texture_mesh.py optimizes `verts_colors` as torch parameters and exports a trime
 ## Observed host, not model validation
 
 nvidia-smi sees NVIDIA GeForce RTX 4080, 16,376 MiB total, driver 580.173.02; about 2,256 MiB was already allocated at inspection. System Python has no torch. Existing unrelated conda environments and services will not be modified. Model environments/checkpoints/CUDA extension readiness must be inspected separately before smoke. REAL_GPU_VALIDATED=false for all three until model-specific reports pass geometry/UV/baseColor validation and visual review. No VRAM/time estimates are invented.
+
+## 2026-11-10 installation findings
+
+SAM2.1 small passed real RTX4080 inference and browser/queue/private-mask/review integration; see validation/sam2-single.json. Pixal3D torch2.6/cu124 and NATTEN0.21.0 built in a dedicated environment. System nvcc12.0 was incorrectly selected by CMake despite CUDA_HOME; explicitly selecting CUDACXX for the isolated12.4 compiler and GCC12 fixed the build. Native CuMesh/FlexGEMM compilation succeeded; o-voxel requires initializing TRELLIS.2's pinned Eigen submodule. Installing both a local CuMesh checkout and o-voxel's unpinned direct Git dependency in one pip resolution conflicts, so dependencies are pinned and installed separately.
+
+Upstream Pixal3D's unpinned MoGe URL now resolves v3, which requires trimesh>=4.11 and conflicts with Pixal3D's4.10.1 pin. We selected the immutable MoGe v2 commit07444410f1e33f402353b99d6ccd26bd31e469e8 matching the importedv2 API. No vendor code was changed. The model weight repository contains42.88GiB including MV; pinned single-view weights are being downloaded first. Object-Aware Loss torch2.5.1/cu118, Open3D.18 and its pinned surfel/simple-knn native extensions installed in a separate environment. Gaussian Wrapping's separate Python3.9 environment is being provisioned. None of these installation results constitutes a successful reconstruction model smoke.

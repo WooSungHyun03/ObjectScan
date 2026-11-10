@@ -1,0 +1,9 @@
+# Worker protocol v1
+
+POST /api/internal/{claim,heartbeat-idle} uses {worker_id,models}. Models: sam2, colmap, pixal3d, object_aware_loss, gaussian_wrapping. Claim returns job:null or a manifest with UUID job_id/lease_token, kind, mode, model, revision, selection, image metadata and signed transfer capabilities. API validates all input/output ownership; Worker pins the storage origin. No service-role key leaves web server.
+
+All other calls include job_id and lease_token. heartbeat renews lease; failure/expired response stops processes. manifest renews download URLs. progress uses legal state transitions and monotonic0–99; terminal completed is available only through result validation. failure has an enumerated error code. stop-ack requires gpu_stopped:true and an already cancelled job.
+
+Adapter subprocess receives work/manifest.json with signed URLs removed and work/images/{image_uuid}.jpg; object masks are work/masks/{image_uuid}.png. Output result.json contains pose (measured COLMAP calibrated report), or mask_paths (worker remaps exact lease paths), or quality plus work/mesh.glb and optional separately simplified preview.glb. Quality includes actual sha256,size_bytes,triangles,vertices,uv_count,texture_bytes,watertight,measured gpu_peak_mib,elapsed_seconds,real_gpu:true. The server re-decodes the GLB and compares byte/hash/geometry counts. Masks must retain normalized image dimensions. Full scene never receives background-removal masks.
+
+A GPU adapter is allowed to fail with MODEL_UNAVAILABLE/POSE_UNAVAILABLE/TEXTURE_BAKE_FAILED. It must not manufacture geometry, measured values, cameras or success metadata to satisfy this protocol. The protocol and supervisor are implemented; model-specific integration is gated until isolated dependencies, checkpoints and real smoke outputs pass.

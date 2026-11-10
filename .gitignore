@@ -22,3 +22,7 @@ weights/
 *.pt
 *.pth
 *.safetensors
+!apps/web/public/demo/*.glb
+
+*.egg-info/
+*.tsbuildinfo

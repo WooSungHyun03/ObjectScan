@@ -1,0 +1,15 @@
+.git
+**/node_modules
+**/.next
+**/.venv
+**/.env*
+**/__pycache__
+artifacts
+playwright-report
+test-results
+gpu-worker
+tests
+/supabase
+design
+docs
+CODEX_MASTER_PROMPT.md

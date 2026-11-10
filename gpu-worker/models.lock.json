@@ -1,0 +1,35 @@
+{
+  "pixal3d": {
+    "commit": "f7cf38429b0bd264f1995f0f8743a88b1c728b94",
+    "remote": "https://github.com/TencentARC/Pixal3D.git",
+    "weights": {
+      "repo": "TencentARC/Pixal3D",
+      "revision": "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f"
+    }
+  },
+  "object_aware_loss": {
+    "commit": "3221821b165865dc77b7636598e55675043b87f4",
+    "remote": "https://github.com/WooSungHyun03/object-aware-loss.git"
+  },
+  "gaussian_wrapping": {
+    "commit": "11e3b6fb5ca6f0a54e2b5587a09693488f3655af",
+    "remote": "https://github.com/diego1401/GaussianWrapping.git"
+  },
+  "sam2": {
+    "commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+    "remote": "https://github.com/facebookresearch/sam2.git",
+    "checkpoint": {
+      "filename": "sam2.1_hiera_small.pt",
+      "sha256": "6d1aa6f30de5c92224f8172114de081d104bbd23dd9dc5c58996f0cad5dc4d38"
+    }
+  },
+  "trellis2": {
+    "commit": "75fbf0183001ed9876c8dbb35de6b68552ee08bd",
+    "remote": "https://github.com/microsoft/TRELLIS.2.git"
+  },
+  "moge": {
+    "remote": "https://github.com/microsoft/MoGe.git",
+    "commit": "07444410f1e33f402353b99d6ccd26bd31e469e8",
+    "reason": "MoGe v2 imported by pinned Pixal3D; current v3 conflicts with pinned trimesh"
+  }
+}

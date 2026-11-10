@@ -1,0 +1,25 @@
+{
+  "scope": "single licensed shoe image; SAM2 only, not 3D reconstruction",
+  "source": {
+    "commit": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+    "remote": "https://github.com/facebookresearch/sam2.git",
+    "checkpoint": {
+      "filename": "sam2.1_hiera_small.pt",
+      "sha256": "6d1aa6f30de5c92224f8172114de081d104bbd23dd9dc5c58996f0cad5dc4d38"
+    }
+  },
+  "real_gpu": true,
+  "checkpoint": "sam2.1_hiera_small.pt",
+  "elapsed_seconds": 0.924811008037068,
+  "gpu_peak_mib": 600.75146484375,
+  "frames": 1,
+  "source_dimensions": [520, 370],
+  "browser_integration": "tests/gpu/sam2.spec.ts passed 2026-11-09",
+  "postprocessing_cuda_extension": false,
+  "limitations": [
+    "One image does not validate orbit sequence propagation",
+    "Optional hole/sprinkle CUDA postprocessing omitted per upstream documented install option",
+    "Torch peak allocation is not total device memory",
+    "REAL_GPU_VALIDATED remains false for reconstruction models"
+  ]
+}

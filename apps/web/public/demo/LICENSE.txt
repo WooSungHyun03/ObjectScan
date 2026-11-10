@@ -1,0 +1,5 @@
+Materials Variants Shoe
+Copyright 2021 Shopify. Creative Commons Attribution 4.0 International.
+https://creativecommons.org/licenses/by/4.0/
+Source: https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/MaterialsVariantsShoe
+The original GLB and sample screenshot are used as clearly labeled demonstration assets. They are not ObjectScan inference results or marketplace listings.
