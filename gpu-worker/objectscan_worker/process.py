@@ -68,10 +68,15 @@ def run_stage(
                 time.sleep(0.2)
             if proc.returncode:
                 with log.open("rb") as captured:
-                    captured.seek(max(stage_start, log.stat().st_size - 8192))
-                    tail = captured.read().lower()
-                raise ProcessFailure(
-                    "GPU_OOM" if b"out of memory" in tail else "WORKER_ERROR"
-                )
+                    captured.seek(stage_start)
+                    carry = b""
+                    oom = False
+                    while chunk := captured.read(65536):
+                        text = carry + chunk.lower()
+                        if b"out of memory" in text:
+                            oom = True
+                            break
+                        carry = text[-32:]
+                raise ProcessFailure("GPU_OOM" if oom else "WORKER_ERROR")
         finally:
             terminate_group(proc)

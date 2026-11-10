@@ -1,0 +1,14 @@
+{
+  "scope": "official four-view cameras and supplied alpha; backend diagnostic, not SAM2 or captured SfM integration",
+  "execution_profile": "naf_fp16",
+  "resolution": 1024,
+  "result": "GPU_OOM",
+  "stage": "texture conditioning / NAF / cutlass-fna",
+  "requested_gib": 4,
+  "free_gib_at_failure": 2.99,
+  "process_gib_at_failure": 10.79,
+  "input_view_count": 4,
+  "output_validated": false,
+  "production_enabled": false,
+  "upstream_commit": "f7cf38429b0bd264f1995f0f8743a88b1c728b94"
+}

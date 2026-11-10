@@ -23,12 +23,16 @@ class Worker:
         self.storage = os.environ["OBJECTSCAN_STORAGE_ORIGIN"]
         self.root = Path(os.environ.get("OBJECTSCAN_WORK_ROOT", "./work")).resolve()
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        headers = {"Authorization": "Bearer " + os.environ["OBJECTSCAN_WORKER_TOKEN"]}
+        bypass = os.environ.get("OBJECTSCAN_VERCEL_BYPASS_SECRET")
+        if bypass:
+            if not self.base.startswith("https://"):
+                raise ValueError("HTTPS_REQUIRED_FOR_DEPLOYMENT_AUTH")
+            headers["x-vercel-protection-bypass"] = bypass
         self.client = httpx.Client(
             timeout=30,
             follow_redirects=False,
-            headers={
-                "Authorization": "Bearer " + os.environ["OBJECTSCAN_WORKER_TOKEN"]
-            },
+            headers=headers,
         )
         # A model is advertised only after an operator has supplied a pinned, isolated adapter and real smoke report.
         self.adapters = json.loads(

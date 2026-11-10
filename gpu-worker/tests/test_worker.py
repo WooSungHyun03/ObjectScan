@@ -14,6 +14,50 @@ from objectscan_worker.contracts import checked_storage_url
 from objectscan_worker.process import JobStopped, ProcessFailure, run_stage
 
 
+def test_protected_worker_credentials_never_follow_storage_download(
+    monkeypatch, tmp_path
+):
+    import contextlib
+    import httpx
+    from objectscan_worker.main import Worker
+
+    config = tmp_path / "adapters.json"
+    config.write_text("{}")
+    for key, value in {
+        "OBJECTSCAN_API_URL": "https://objectscan.example",
+        "OBJECTSCAN_STORAGE_ORIGIN": "https://storage.example",
+        "OBJECTSCAN_WORK_ROOT": str(tmp_path),
+        "OBJECTSCAN_ADAPTER_CONFIG": str(config),
+        "OBJECTSCAN_WORKER_TOKEN": "test-worker-token",
+        "OBJECTSCAN_VERCEL_BYPASS_SECRET": "test-preview-token",
+    }.items():
+        monkeypatch.setenv(key, value)
+    worker = Worker()
+    assert worker.client.headers["x-vercel-protection-bypass"] == "test-preview-token"
+
+    @contextlib.contextmanager
+    def storage_stream(method, url, **kwargs):
+        assert method == "GET"
+        assert "headers" not in kwargs
+        assert kwargs["follow_redirects"] is False
+        yield httpx.Response(
+            200, content=b"private image", request=httpx.Request(method, url)
+        )
+
+    monkeypatch.setattr(httpx, "stream", storage_stream)
+    try:
+        worker.download(
+            "https://storage.example/storage/v1/object/sign/input/a.jpg",
+            tmp_path / "input.jpg",
+        )
+        assert (tmp_path / "input.jpg").read_bytes() == b"private image"
+    finally:
+        worker.client.close()
+    monkeypatch.setenv("OBJECTSCAN_API_URL", "http://127.0.0.1:3000")
+    with pytest.raises(ValueError, match="HTTPS_REQUIRED_FOR_DEPLOYMENT_AUTH"):
+        Worker()
+
+
 def test_headless_gw_context_uses_upstream_option_without_changing_other_inputs(
     tmp_path,
 ):
@@ -107,6 +151,22 @@ def test_failure_classification_ignores_oom_from_prior_stage(tmp_path):
     assert failure.value.code == "WORKER_ERROR"
 
 
+def test_oom_before_long_native_backtrace_is_classified(tmp_path):
+    with pytest.raises(ProcessFailure) as failure:
+        run_stage(
+            [
+                sys.executable,
+                "-c",
+                "import sys; print('CUDA out of memory'); print('native frame\\n' * 10000); sys.exit(1)",
+            ],
+            tmp_path,
+            tmp_path / "stage.log",
+            lambda: True,
+            timeout=5,
+        )
+    assert failure.value.code == "GPU_OOM"
+
+
 def test_public_preview_is_small_distinct_and_preserves_measured_color(tmp_path):
     import trimesh
     from objectscan_worker.bake import bake_vertex_colors, make_preview
@@ -156,6 +216,13 @@ def test_dense_refined_mesh_is_bounded_before_uv_baking(tmp_path):
     assert result.visual.kind == "texture"
     pixels = np.asarray(result.visual.material.baseColorTexture)
     assert np.any(np.all(np.abs(pixels.astype(float) - [120, 80, 30]) <= 1, axis=-1))
+    coarse = trimesh.creation.icosphere(subdivisions=3)
+    coarse.visual.vertex_colors = [120, 80, 30, 255]
+    coarse.export(source)
+    with pytest.raises(ValueError, match="MESH_SIMPLIFICATION_ERROR"):
+        bake_vertex_colors(
+            source, tmp_path / "rejected.glb", resolution=128, max_faces=400
+        )
 
 
 def test_pose_conversion_preserves_camera_center_and_handedness():
