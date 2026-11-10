@@ -14,6 +14,24 @@ try {
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
   });
+  for (const path of [
+    "/",
+    "/docs",
+    "/pricing",
+    "/marketplace",
+    "/login",
+    "/signup",
+    "/demo",
+    "/reset-password",
+  ]) {
+    const response = await context.request.get(origin + path);
+    assert.equal(response.status(), 200, `Public route ${path}`);
+    assert.equal(
+      new URL(response.url()).origin,
+      origin,
+      `Unexpected external redirect for ${path}`,
+    );
+  }
   const page = await context.newPage();
   await page.goto(origin);
   await page.getByRole("complementary", { name: "운영 목적" }).waitFor();
