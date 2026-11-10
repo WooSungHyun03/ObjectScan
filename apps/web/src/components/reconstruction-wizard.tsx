@@ -1,4 +1,5 @@
 "use client";
+import { educationMode } from "@/lib/project-purpose";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -856,7 +857,7 @@ export function ReconstructionWizard({
                 </div>
               )}
               <div className="quote-box">
-                <h3>제작 요금</h3>
+                <h3>{educationMode() ? "연구용 생성" : "제작 요금"}</h3>
                 <div>
                   <span>
                     {mode === "object" ? "객체 복원" : "장면 복원"} ·{" "}
@@ -865,14 +866,18 @@ export function ReconstructionWizard({
                       : "—"}
                     장 구간
                   </span>
-                  <strong>서버 견적 필요</strong>
+                  <strong>
+                    {educationMode() ? "과금 없음" : "서버 견적 필요"}
+                  </strong>
                 </div>
                 <p>
-                  가격은 관리자 구성에서 불러옵니다. GPU 실측 검증과 모델
-                  가용성이 확인되기 전에는 결제하지 않습니다.
+                  {educationMode()
+                    ? "업로드와 SAM2 마스크 검토를 먼저 사용할 수 있습니다. 일반 입력의 3D 생성은 GPU·입력 경로·품질 검증 중이며, 결제를 요구하지 않습니다."
+                    : "가격은 관리자 구성에서 불러옵니다. GPU 실측 검증과 모델 가용성이 확인되기 전에는 결제하지 않습니다."}
                 </p>
                 <Button
                   disabled={
+                    educationMode() ||
                     busy ||
                     health?.payments_mode !== "test" ||
                     !health.real_gpu_validated
@@ -892,7 +897,9 @@ export function ReconstructionWizard({
                   }
                 >
                   <LockKeyhole size={15} />
-                  견적 확인 및 테스트 결제
+                  {educationMode()
+                    ? "3D 생성 검증 중"
+                    : "견적 확인 및 테스트 결제"}
                 </Button>
               </div>
             </>

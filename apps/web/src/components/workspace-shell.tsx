@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { educationMode } from "@/lib/project-purpose";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -24,7 +25,11 @@ const links = [
   { href: "/reconstruct/new", label: "새로 만들기", icon: Plus },
   { href: "/assets", label: "내 에셋", icon: Box },
   { href: "/marketplace", label: "에셋 마켓", icon: Store },
-  { href: "/billing", label: "사용량 및 결제", icon: CreditCard },
+  {
+    href: "/billing",
+    label: educationMode() ? "이용 안내" : "사용량 및 결제",
+    icon: CreditCard,
+  },
   { href: "/settings", label: "설정", icon: Settings },
 ];
 export function WorkspaceShell({

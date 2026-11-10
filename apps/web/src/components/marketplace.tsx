@@ -123,8 +123,9 @@ export function Marketplace() {
       <div className="workspace-notice">
         <ShieldCheck size={16} />
         <span>
-          권리 동의와 운영자 검토를 거친 에셋만 게시됩니다. 결제 제공사 연결
-          전에는 구매가 비활성화됩니다.
+          {educationMode()
+            ? "비상업 교육·연구용으로 운영합니다. 미리보기는 공개를 승인한 자료에 한하며 원본 사진은 비공개입니다."
+            : "권리 동의와 운영자 검토를 거친 에셋만 게시됩니다. 결제 제공사 연결 전에는 구매가 비활성화됩니다."}
         </span>
       </div>
       {error && (
