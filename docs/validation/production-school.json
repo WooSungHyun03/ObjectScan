@@ -45,6 +45,65 @@
   },
   "generation_enabled": false,
   "payments_enabled": false,
-  "public_alias_promotion": "pending",
-  "smtp": "User will configure directly; not configured at last check"
+  "public_alias_promotion": "final workspace copy build promoted after staged browser checks and successful CI",
+  "smtp": "User will configure directly; not configured at last check",
+  "public_url": "https://objectscan-six.vercel.app",
+  "hosted_public": {
+    "deployment": "https://objectscan-six.vercel.app",
+    "project_ref": "ctdzibelbwaujvngmxgg",
+    "scope": "disposable hosted fixtures; actual SAM2 CUDA queue; admin-confirmed identities; no SMTP delivery, 3D generation or provider payments",
+    "checks": [
+      "persistent SAM2 systemd worker online",
+      "public production health HTTP200",
+      "hosted Supabase configured",
+      "production money and unqualified GPU gates closed",
+      "browser password login to hosted Auth",
+      "school server denies orders",
+      "school server denies payouts",
+      "browser signed upload decoded and finalized in hosted database",
+      "owner private normalized image signed download",
+      "anonymous hosted DB access denies private project",
+      "second identity hosted RLS denies owner project",
+      "normalized image bucket remains private",
+      "browser to hosted queue to actual SAM2 CUDA to human review",
+      "hosted private mask is decoded and correctly aligned",
+      "hosted scene workflow skips object masks",
+      "hosted 360px no horizontal overflow"
+    ],
+    "health": {
+      "configured": true,
+      "worker_online": true,
+      "busy": false,
+      "models": [],
+      "real_gpu_validated": false,
+      "payments_mode": "disabled",
+      "payouts_enabled": false
+    },
+    "passed": true,
+    "fixture_cleanup": true
+  },
+  "public_pages_without_vercel_credentials": true,
+  "public_pages": [
+    "/",
+    "/docs",
+    "/pricing",
+    "/marketplace",
+    "/login",
+    "/signup",
+    "/demo",
+    "/reset-password"
+  ],
+  "production_deployment_id": "dpl_8ENcphbDdiBsrLJjMGCK88EiCLfR",
+  "ci_verified_source": "f2534dd662685287ff89d956a3da20ba50d4310e",
+  "worker": {
+    "persistent_systemd": true,
+    "lingering": true,
+    "public_origin": true,
+    "deployment_bypass_removed": true,
+    "advertised_adapters": ["sam2"],
+    "os_reboot_test": false
+  },
+  "error_log_scan": "Vercel error-level scan last30m returned no logs; not a long-term monitoring guarantee",
+  "deployment_source_commit": "f2534dd662685287ff89d956a3da20ba50d4310e",
+  "ci_url": "https://github.com/WooSungHyun03/ObjectScan/actions/runs/42821022739"
 }

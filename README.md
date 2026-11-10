@@ -21,3 +21,5 @@ See [architecture](docs/ARCHITECTURE.md), [model audit](docs/MODEL_AUDIT.md), [1
 ## School deployment
 
 This project is exclusively for noncommercial school education/research. Deploy with `NEXT_PUBLIC_PROJECT_PURPOSE=education`: payments, asset sales and payouts are disabled server-side. Actual SAM2 processing works through the hosted queue; reconstruction remains gated on input-workflow and visual quality. See [release scope](docs/validation/production-school.json), [GPU experiments](docs/validation/) and [runbook](docs/RUNBOOK.md). Hosted email delivery awaits user-provided SMTP.
+
+Public school pre-release: [ObjectScan](https://objectscan-six.vercel.app). Working scope: authenticated projects, private upload, actual queued SAM2 masks/review and sample 3D viewer. Reconstruction and commerce are disabled; external signup email delivery still needs SMTP verification.

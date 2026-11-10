@@ -26,7 +26,7 @@ A deployable build or a frontend preview alone does not satisfy these production
 - [x] Dedicated hosted DB/Auth/private Storage, migrations, two-identity boundaries tested.
 - [x] Persistent SAM2-only worker and actual hosted browser/upload/CUDA/private mask/review verified.
 - [x] 44 Node/DB +25 Python +3 production-build browser checks pass; education public/mobile viewer smoke passes.
-- [ ] Final tested build promoted and public alias checked without Vercel automation credentials.
+- [x] Public school build promoted and all public routes/viewer/mobile checked without Vercel automation credentials; final copy-only build follows the same checks.
 - [ ] Hosted SMTP delivery (user is configuring directly). Email confirmation remains required.
 
 Reconstruction stays disabled: captured multi-view Pixal workflow not qualified; OAL/GW visual quality failed. The site exposes working project/upload/mask functionality and an explicitly labeled sample viewer. It does not claim that these model generation gates or the full original scope are complete.
