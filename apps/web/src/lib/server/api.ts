@@ -48,6 +48,8 @@ const uuid = z.uuid();
 // TEST listings must remain invisible to the existing public deployment.
 const marketStatus = (status: string) =>
   paymentMode() === "test" ? `sandbox_${status}` : status;
+const commissionKey = () =>
+  paymentMode() === "test" ? "sandbox_commission_bps" : "commission_bps";
 const marketStatuses = () =>
   ["draft", "pending", "approved", "rejected", "removed"].map(marketStatus);
 async function mutable(pid: string) {
@@ -202,7 +204,7 @@ export function handle(req: Request) {
           db
             .from("app_config")
             .select("value")
-            .eq("key", "commission_bps")
+            .eq("key", commissionKey())
             .single(),
         ]);
         dbError(error);
@@ -996,7 +998,7 @@ export function handle(req: Request) {
           const { data: config } = await db
             .from("app_config")
             .select("value")
-            .eq("key", "commission_bps")
+            .eq("key", commissionKey())
             .single();
           if (!Number.isInteger(config?.value))
             fail(503, "COMMISSION_NOT_CONFIGURED");
@@ -1244,7 +1246,7 @@ export function handle(req: Request) {
           { error } = await db
             .from("app_config")
             .update({ value: v.bps })
-            .eq("key", "commission_bps");
+            .eq("key", commissionKey());
         dbError(error);
         return json({ ok: true });
       }
