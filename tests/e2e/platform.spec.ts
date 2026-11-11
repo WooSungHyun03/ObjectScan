@@ -6,7 +6,6 @@ import sharp from "sharp";
 if (existsSync(".env.test.local")) process.loadEnvFile(".env.test.local");
 test("landing, pricing, real viewer controls and responsive navigation", async ({
   page,
-  baseURL,
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(

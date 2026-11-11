@@ -126,3 +126,33 @@ it("single-image validation never authorizes multi-view generation", () => {
     generationGate({ ...base, count: 1, included: 1, selected: 1 }).allowed,
   ).toBe(true);
 });
+
+it("qualification profile never authorizes another customer", () => {
+  const input = {
+    mode: "object" as const,
+    count: 1,
+    included: 1,
+    capture: "camera_orbit" as const,
+    masksReviewed: true,
+    posesValid: false,
+    selected: 1,
+    realGpuValidated: true,
+    workerOnline: true,
+    availableModels: ["pixal3d" as const],
+    validatedProfiles: [
+      {
+        model: "pixal3d" as const,
+        min_images: 1,
+        max_images: 1,
+        owner_ids: ["fixture-owner"],
+      },
+    ],
+  };
+  expect(generationGate({ ...input, ownerId: "fixture-owner" }).allowed).toBe(
+    true,
+  );
+  expect(generationGate({ ...input, ownerId: "other-owner" }).allowed).toBe(
+    false,
+  );
+  expect(generationGate(input).allowed).toBe(false);
+});

@@ -44,6 +44,11 @@ import { editorRoute } from "./editor-api";
 import { cleanupUploads } from "./maintenance";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
+// TEST listings must remain invisible to the existing public deployment.
+const marketStatus = (status: string) =>
+  paymentMode() === "test" ? `sandbox_${status}` : status;
+const marketStatuses = () =>
+  ["draft", "pending", "approved", "rejected", "removed"].map(marketStatus);
 async function mutable(pid: string) {
   const { error } = await adminClient().rpc("check_project_mutable", {
     p_project: pid,
@@ -116,6 +121,7 @@ async function gateProject(pid: string, owner: string) {
     workerOnline: h.worker_online,
     availableModels: h.models as ModelFamily[],
     validatedProfiles: h.validated_profiles,
+    ownerId: owner,
   });
   return { project, gate, health: h };
 }
@@ -136,8 +142,16 @@ export function handle(req: Request) {
           single_photo:
             models.includes("pixal3d") &&
             validated_profiles.some(
-              (p: { model: string; min_images: number; max_images: number }) =>
-                p.model === "pixal3d" && p.min_images <= 1 && p.max_images >= 1,
+              (p: {
+                model: string;
+                min_images: number;
+                max_images: number;
+                owner_ids?: string[];
+              }) =>
+                p.model === "pixal3d" &&
+                p.min_images <= 1 &&
+                p.max_images >= 1 &&
+                !p.owner_ids,
             ),
         },
       });
@@ -216,7 +230,7 @@ export function handle(req: Request) {
         .select(
           "id,title,description,category,price,currency,license,public_preview_path,created_at",
         )
-        .eq("status", "approved");
+        .eq("status", marketStatus("approved"));
       if (path[1]) {
         const { data, error } = await q
           .eq("id", uuid.parse(path[1]))
@@ -774,6 +788,17 @@ export function handle(req: Request) {
             "PREVIEW_REQUIRED",
             "공개용 경량 미리보기 검증이 필요합니다. 초안을 저장하고 관리자에게 재생성을 요청하세요.",
           );
+        const { data: existing } = await db
+          .from("marketplace_listings")
+          .select("status")
+          .eq("artifact_id", a.id)
+          .maybeSingle();
+        if (existing && !marketStatuses().includes(existing.status))
+          fail(
+            409,
+            "LISTING_ENVIRONMENT_MISMATCH",
+            "다른 판매 환경에 등록된 에셋입니다.",
+          );
         const { data, error } = await db
           .from("marketplace_listings")
           .upsert(
@@ -784,7 +809,7 @@ export function handle(req: Request) {
               description: v.description,
               category: v.category,
               price: v.price,
-              status: v.status,
+              status: marketStatus(v.status),
               rights_consent_at: new Date().toISOString(),
             },
             { onConflict: "artifact_id" },
@@ -798,9 +823,15 @@ export function handle(req: Request) {
         if (a.owner_id !== user.id) fail(404, "ASSET_NOT_FOUND");
         const { data: l } = await db
           .from("marketplace_listings")
-          .select("id")
+          .select("id,status")
           .eq("artifact_id", a.id)
           .maybeSingle();
+        if (l && !marketStatuses().includes(l.status))
+          fail(
+            409,
+            "LISTING_ENVIRONMENT_MISMATCH",
+            "다른 판매 환경에 등록된 에셋입니다.",
+          );
         if (l) {
           const { count } = await db
             .from("orders")
@@ -961,7 +992,7 @@ export function handle(req: Request) {
             .from("marketplace_listings")
             .select("*")
             .eq("id", v.listing_id)
-            .eq("status", "approved")
+            .eq("status", marketStatus("approved"))
             .maybeSingle();
           if (!l || l.seller_id === user.id) fail(404, "LISTING_NOT_FOUND");
           const { data: owned } = await db
@@ -1085,7 +1116,7 @@ export function handle(req: Request) {
         .from("marketplace_listings")
         .select("id")
         .eq("id", lid)
-        .eq("status", "approved")
+        .eq("status", marketStatus("approved"))
         .maybeSingle();
       if (!l) fail(404, "LISTING_NOT_FOUND");
       const { error } = await db.from("audit_logs").insert({
@@ -1122,6 +1153,7 @@ export function handle(req: Request) {
             db
               .from("marketplace_listings")
               .select("*")
+              .in("status", marketStatuses())
               .order("created_at", { ascending: false })
               .limit(100),
             db.from("pricing_tiers").select("*").order("min_images"),
@@ -1240,6 +1272,7 @@ export function handle(req: Request) {
           .from("marketplace_listings")
           .select("*,artifacts(*)")
           .eq("id", v.listing_id)
+          .in("status", marketStatuses())
           .single();
         if (!l) fail(404, "LISTING_NOT_FOUND");
         let preview: string | null = l.public_preview_path;
@@ -1272,7 +1305,10 @@ export function handle(req: Request) {
         }
         const { error } = await db
           .from("marketplace_listings")
-          .update({ status: v.status, public_preview_path: preview })
+          .update({
+            status: marketStatus(v.status),
+            public_preview_path: preview,
+          })
           .eq("id", l.id);
         dbError(error);
         await db.from("audit_logs").insert({

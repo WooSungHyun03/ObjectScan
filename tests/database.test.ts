@@ -394,9 +394,31 @@ integration(
         [asset, projects[0], ids[0], job],
       );
       await db.query(
-        "insert into marketplace_listings(id,artifact_id,seller_id,title,description,category,price,status,rights_consent_at) values($1,$2,$3,'test','test','objects',1000,'approved',now())",
+        "insert into marketplace_listings(id,artifact_id,seller_id,title,description,category,price,status,rights_consent_at) values($1,$2,$3,'test','test','objects',1000,'sandbox_approved',now())",
         [listing, asset, ids[0]],
       );
+      // Legacy public clients and anonymous RLS cannot discover TEST fixtures.
+      expect(
+        (
+          await db.query(
+            "select id from marketplace_listings where id=$1 and status='approved'",
+            [listing],
+          )
+        ).rowCount,
+      ).toBe(0);
+      await db.query("begin");
+      try {
+        await db.query("set local role anon");
+        expect(
+          (
+            await db.query("select id from marketplace_listings where id=$1", [
+              listing,
+            ])
+          ).rowCount,
+        ).toBe(0);
+      } finally {
+        await db.query("rollback");
+      }
       await db.query("begin");
       try {
         await db.query("set local role authenticated");
