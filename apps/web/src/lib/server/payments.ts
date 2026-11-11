@@ -37,14 +37,15 @@ async function toss(path: string, options: RequestInit = {}) {
     cache: "no-store",
   });
   const data = await r.json();
-  if (!r.ok)
+  if (!r.ok) {
+    // Provider diagnostics may contain infrastructure addresses; keep them off customer screens.
+    console.warn("TOSS_PROVIDER_ERROR", { status: r.status, code: data.code });
     fail(
       502,
       "PROCESSOR_ERROR",
-      typeof data.message === "string"
-        ? data.message
-        : "결제 제공사 확인에 실패했습니다.",
+      "결제사 연결을 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.",
     );
+  }
   return data;
 }
 export async function verifyPayment(

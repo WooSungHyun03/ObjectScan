@@ -67,6 +67,8 @@ export function PublishForm({
         <input
           required
           maxLength={100}
+          name="title"
+          autoComplete="off"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -75,13 +77,19 @@ export function PublishForm({
         설명
         <textarea
           maxLength={1500}
+          name="description"
+          autoComplete="off"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
       <label className="field">
         카테고리
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="objects">사물</option>
           <option value="scenes">장면</option>
           <option value="furniture">가구</option>
@@ -91,7 +99,11 @@ export function PublishForm({
       </label>
       <label className="field">
         이용 라이선스
-        <select value={license} onChange={(e) => setLicense(e.target.value)}>
+        <select
+          name="license"
+          value={license}
+          onChange={(e) => setLicense(e.target.value)}
+        >
           <option value="standard">일반 이용 — 재판매·재배포 제외</option>
           <option value="cc-by-4.0">
             CC BY 4.0 — 출처 표시 후 이용·재배포
@@ -108,6 +120,9 @@ export function PublishForm({
         <input
           required
           type="number"
+          inputMode="numeric"
+          name="price"
+          autoComplete="off"
           min={1}
           max={100000000}
           value={price}
@@ -118,6 +133,7 @@ export function PublishForm({
         <input
           required
           checked={consent}
+          name="rightsConsent"
           type="checkbox"
           onChange={(e) => setConsent(e.target.checked)}
         />

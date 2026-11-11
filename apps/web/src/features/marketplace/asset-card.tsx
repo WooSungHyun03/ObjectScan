@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { categoryLabels } from "./presentation";
 import { Box, Images, ArrowUpRight } from "lucide-react";
 export type Listing = {
   id: string;
@@ -12,13 +13,6 @@ export type Listing = {
   public_preview_path?: string;
   seller_badge?: string;
   test_mode?: boolean;
-};
-const categories: Record<string, string> = {
-  objects: "사물",
-  scenes: "공간",
-  furniture: "가구",
-  decor: "소품",
-  other: "기타",
 };
 export function AssetCard({
   listing: l,
@@ -38,7 +32,7 @@ export function AssetCard({
       </div>
       <div className="project-info">
         <h3>{l.title}</h3>
-        <p>{categories[l.category] ?? "3D 에셋"} · 크리에이터 에셋</p>
+        <p>{categoryLabels[l.category] ?? "3D 에셋"} · 크리에이터 에셋</p>
         {l.test_mode && <small>테스트 가격 · 실제 청구 없음</small>}
         <strong className="listing-price">
           {educational
