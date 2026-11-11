@@ -1,0 +1,13 @@
+
+> objectscan@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.12 /home/m4ml/Desktop/ObjectScan/ObjectScan-v2
+
+
+ Test Files  9 passed | 1 skipped (10)
+      Tests  60 passed | 1 skipped (61)
+   Start at  06:29:50
+   Duration  1.68s (transform 344ms, setup 0ms, import 1.26s, tests 3.32s, environment 1ms)
+

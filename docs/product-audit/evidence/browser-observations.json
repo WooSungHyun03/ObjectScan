@@ -1,0 +1,225 @@
+{
+  "checked_at": "2026-11-11T21:29:54.532Z",
+  "method": "public Chromium browser; no account creation, paid generation or uploads",
+  "pages": [
+    {
+      "id": "meshy",
+      "url": "https://www.meshy.ai/",
+      "final_url": "https://www.meshy.ai/",
+      "status": 200,
+      "title": "AI 3D Model Generator: Create 3D from Text & Images | Meshy",
+      "headings": [
+        "What will you create in 3D today?",
+        "High-Fidelity Image-to-3D",
+        "The Only 3D AI Trained to Print",
+        "AI Assets to Get Your Game Playable",
+        "Trusted by Millions of Creators",
+        "See what the community is creating",
+        "Start Creating in 3D"
+      ],
+      "entry_links": [
+        {
+          "text": "Pricing",
+          "href": "https://www.meshy.ai/pricing"
+        },
+        {
+          "text": "Product Design",
+          "href": "https://www.meshy.ai/use-cases/product-design"
+        },
+        {
+          "text": "NewMeshy N1 is live. Cleanest and Fastest Texturing. Start generating",
+          "href": "https://www.meshy.ai/workspace#CoachMark-NativeTexture"
+        },
+        {
+          "text": "Start Creating",
+          "href": "https://www.meshy.ai/workspace?sidebar=model&model-tab=image-to-3d&from=home"
+        },
+        {
+          "text": "Start Creating",
+          "href": "https://www.meshy.ai/discover"
+        },
+        {
+          "text": "Start Creating",
+          "href": "https://www.meshy.ai/discover"
+        },
+        {
+          "text": "Interior Design",
+          "href": "https://www.meshy.ai/use-cases/interior-design"
+        },
+        {
+          "text": "Industrial Design",
+          "href": "https://www.meshy.ai/use-cases/product-design"
+        },
+        {
+          "text": "Start Creating for Free",
+          "href": "https://www.meshy.ai/discover"
+        },
+        {
+          "text": "Pricing",
+          "href": "https://www.meshy.ai/pricing"
+        },
+        {
+          "text": "Product Design",
+          "href": "https://www.meshy.ai/use-cases/product-design"
+        },
+        {
+          "text": "Toy Design",
+          "href": "https://www.meshy.ai/use-cases/toy-design"
+        },
+        {
+          "text": "Interior Design",
+          "href": "https://www.meshy.ai/use-cases/interior-design"
+        }
+      ],
+      "mobile_overflow": false
+    },
+    {
+      "id": "tripo",
+      "url": "https://www.tripo3d.ai/",
+      "final_url": "https://www.tripo3d.ai/",
+      "status": 403,
+      "title": "Just a moment...",
+      "headings": [],
+      "entry_links": [],
+      "mobile_overflow": false
+    },
+    {
+      "id": "polycam",
+      "url": "https://poly.cam/",
+      "final_url": "https://poly.cam/",
+      "status": 200,
+      "title": "Polycam — AI 3D Scanning, Floor Plans & Reality Capture for Teams",
+      "headings": [
+        "Scan the room. Get everything you need from it.",
+        "Try Business on your next site visit.",
+        "Leave the site with a floor plan you can send to CAD.",
+        "Existing conditions in one site visit.",
+        "Scan the loss. Send the sketch to Xactimate.",
+        "Measure the whole home in one walk-through.",
+        "Document the site once. Check it from anywhere.",
+        "Measure the site once. Leave with the plan.",
+        "Turn anything you photograph into a 3D model.",
+        "Skip the tape measure on your next room.",
+        "Your first scan takes one walk-through.",
+        "Trusted by Half of the fortune 500",
+        "10 Million Users have Made Polycam their 3D Capture System of Record",
+        "One scan, every output.",
+        "From the field to the office. One scan your whole team can work from.",
+        "Floor plans in minutes",
+        "Measurements you can bid on",
+        "One link instead of a site visit",
+        "Try it youself",
+        "Rooms, objects and whole sites.",
+        "Capture your content now"
+      ],
+      "entry_links": [
+        {
+          "text": "Photogrammetry tool",
+          "href": "https://poly.cam/tools/photogrammetry"
+        },
+        {
+          "text": "Drone photogrammetry",
+          "href": "https://poly.cam/tools/drone-photogrammetry"
+        },
+        {
+          "text": "Structural design",
+          "href": "https://poly.cam/solutions/structural-design"
+        },
+        {
+          "text": "Product design",
+          "href": "https://poly.cam/solutions/product-design"
+        },
+        {
+          "text": "Interior design",
+          "href": "https://poly.cam/solutions/interior-design"
+        },
+        {
+          "text": "All Pricing Plans",
+          "href": "https://poly.cam/pricing"
+        },
+        {
+          "text": "Browse example scans",
+          "href": "https://poly.cam/capture/b0616349-4284-4125-99ff-35791d164e0b"
+        },
+        {
+          "text": "Photogrammetry creator & viewer",
+          "href": "https://poly.cam/tools/photogrammetry"
+        },
+        {
+          "text": "Drone photogrammetry tool",
+          "href": "https://poly.cam/tools/drone-photogrammetry"
+        },
+        {
+          "text": "3D Room scanner",
+          "href": "https://poly.cam/tools/3d-room-scanner"
+        },
+        {
+          "text": "3D lidar scanner",
+          "href": "https://poly.cam/tools/3d-lidar-scanner"
+        },
+        {
+          "text": "Structural design",
+          "href": "https://poly.cam/solutions/structural-design"
+        },
+        {
+          "text": "Pricing",
+          "href": "https://poly.cam/pricing"
+        }
+      ],
+      "mobile_overflow": false
+    },
+    {
+      "id": "kiri",
+      "url": "https://www.kiriengine.app/",
+      "final_url": "https://www.kiriengine.app/",
+      "status": 200,
+      "title": "KIRI Engine: 3D Scanner App for iPhone, Android, and Web",
+      "headings": [
+        " Best   3D Scanner App   for all smartphones ",
+        " Our Best   3D SCANNER   APP for all smartphones   & web browsers ",
+        "Meet KIRI Engine  the BEST 3D scanner app we've ever created",
+        "Features",
+        "Explore and Create Stunning 3D Scanned Models",
+        "Production-Ready  3D Models from Photos Or Videos",
+        "Explore More Features",
+        "Loved by Millions of 3D Creators Worldwide",
+        "Try KIRI Engine now, for free"
+      ],
+      "entry_links": [
+        {
+          "text": "Pricing",
+          "href": "https://www.kiriengine.app/pricing"
+        },
+        {
+          "text": "Photo Scan",
+          "href": "https://www.kiriengine.app/blog/explained/photo-scan-mode"
+        },
+        {
+          "text": "LiDAR Scan",
+          "href": "https://www.kiriengine.app/blog/explained/lidar-scan-mode"
+        },
+        {
+          "text": "Featureless Object Scan",
+          "href": "https://www.kiriengine.app/blog/explained/featureless-object-scan"
+        },
+        {
+          "text": "Pricing",
+          "href": "https://www.kiriengine.app/pricing"
+        },
+        {
+          "text": "What's photogrammetry?",
+          "href": "https://www.kiriengine.app/blog/explained/what-is-photogrammetry"
+        },
+        {
+          "text": "Scaniverse vs. KIRI Engine",
+          "href": "https://www.kiriengine.app/blog/comparison/kiri-engine-vs-scaniverse"
+        },
+        {
+          "text": "Reality Scan vs. KIRI Engine",
+          "href": "https://www.kiriengine.app/blog/comparison/kiri-engine-vs-reality-scan"
+        }
+      ],
+      "mobile_overflow": false
+    }
+  ]
+}

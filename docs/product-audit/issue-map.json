@@ -1,0 +1,117 @@
+{
+  "OS-01": {
+    "title": "[OS-01] 지원 범위·오류 계약과 로컬 실행 기준 고정",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/8",
+    "number": 8
+  },
+  "OS-02": {
+    "title": "[OS-02] 가입 확인·비밀번호 재설정의 이탈 복구",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/9",
+    "number": 9
+  },
+  "OS-03": {
+    "title": "[OS-03] 브라우저 종료·통신 단절 후 작업 상태와 크레딧 복구",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/10",
+    "number": 10
+  },
+  "OS-04": {
+    "title": "[OS-04] 구매 시점 라이선스·에셋 버전 불변 스냅샷",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/11",
+    "number": 11
+  },
+  "OS-05": {
+    "title": "[OS-05] 단일 이미지 GPU 품질·메모리 회귀 기준 수립",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/12",
+    "number": 12
+  },
+  "OS-06": {
+    "title": "[OS-06] 결과·편집 버전의 휴대 가능한 Mesh 품질 카드",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/13",
+    "number": 13
+  },
+  "OS-07": {
+    "title": "[OS-07] 업로드 선명도·유사 이미지 사전 진단",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/14",
+    "number": 14
+  },
+  "OS-08": {
+    "title": "[OS-08] 대상 마스크 검토의 실패 복구와 이미지 제외 명확화",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/15",
+    "number": 15
+  },
+  "OS-09": {
+    "title": "[OS-09] 마켓 실물 썸네일과 검증된 파일 정보",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/16",
+    "number": 16
+  },
+  "OS-10": {
+    "title": "[OS-10] Toss TEST 승인 복귀·중복 요청·불명 상태 복구 계약",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/17",
+    "number": 17
+  },
+  "OS-11": {
+    "title": "[OS-11] 프로젝트 삭제의 안전한 저장소 정리와 거래 보존",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/18",
+    "number": 18
+  },
+  "OS-12": {
+    "title": "[OS-12] 두 사람 통합 브랜치의 재현 가능한 로컬 릴리스 게이트",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/19",
+    "number": 19
+  },
+  "OS-13": {
+    "title": "[OS-13] 2~20장 실촬영·보정 카메라 MV 적합성 연구",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/20",
+    "number": 20
+  },
+  "OS-14": {
+    "title": "[OS-14] 21장 이상 객체 복원 구멍·파편 원인 분리 연구",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/21",
+    "number": 21
+  },
+  "OS-15": {
+    "title": "[OS-15] 장면 전체 Mesh 품질 기준과 파편 재현 연구",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/22",
+    "number": 22
+  },
+  "OS-16": {
+    "title": "[OS-16] UV 보존 face crop 기술 spike",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/23",
+    "number": 23
+  },
+  "OS-17": {
+    "title": "[OS-17] 외부 소유 GLB의 검증·비공개 수입·게시 bridge",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/24",
+    "number": 24
+  },
+  "OS-18": {
+    "title": "[OS-18] 마켓 검색·신고와 판매 원장 탐색 확장",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/25",
+    "number": 25
+  },
+  "OWN-01": {
+    "title": "[OWN-01] 외부 가입 SMTP·콜백 설정과 실제 신규 사용자 확인",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/26",
+    "number": 26
+  },
+  "OWN-02": {
+    "title": "[OWN-02] 모델·체크포인트·판매 권리 및 가격 정책 승인",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/27",
+    "number": 27
+  },
+  "OWN-03": {
+    "title": "[OWN-03] Toss TEST 실제 인증·복귀·webhook 전달 재검증",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/28",
+    "number": 28
+  },
+  "OWN-04": {
+    "title": "[OWN-04] Preview 구성·최종 배포 승인 및 운영 권한",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/29",
+    "number": 29
+  },
+  "OWN-05": {
+    "title": "[OWN-05] be-celeb.org 기존 서비스 충돌 결정과 DNS",
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/30",
+    "number": 30
+  }
+}
