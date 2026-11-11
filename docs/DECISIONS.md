@@ -21,3 +21,6 @@
 - 2026-11-10: Dedicated SAM2-only user service uses project-scoped Vercel automation access plus independent application worker authentication, without a DB service-role key. Model children lose control-plane credentials; Storage HTTP clients never receive API authentication. Generation models remain unadvertised.
 
 - School-only public hosting: use `NEXT_PUBLIC_PROJECT_PURPOSE=education`, keep payments/sales/payouts disabled even if test keys are supplied, and display source/license notices. User instruction supersedes the former commercial hosting gate. Unqualified reconstruction paths stay disabled for measured quality/workflow reasons.
+
+## V3 mascot redesign (2026-11-11)
+User explicitly supersedes the v2 visual reference with supplied bear assets and Korean service UX. Keep the tested Next/Supabase/pull-worker stack and school no-commerce policy. Retain original v2 specs in docs/archive. Editor uses a separate typed-command package with Three rendering and glTF-Transform/meshoptimizer CPU processing; no inference/GPU lock is used for edits. Originals are immutable, versions private and owner-only.

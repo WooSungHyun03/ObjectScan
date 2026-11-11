@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import { useState } from "react";
 import type { Artifact } from "@objectscan/shared";
@@ -38,7 +39,7 @@ export function PublishForm({
       );
       onComplete();
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }

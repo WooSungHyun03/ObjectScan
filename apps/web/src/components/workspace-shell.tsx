@@ -22,7 +22,7 @@ import { NavigationSheet } from "./ui/sheet";
 import { browserClient } from "@/lib/supabase/client";
 const links = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
-  { href: "/reconstruct/new", label: "새로 만들기", icon: Plus },
+  { href: "/create", label: "새로 만들기", icon: Plus },
   { href: "/assets", label: "내 에셋", icon: Box },
   { href: "/marketplace", label: "에셋 마켓", icon: Store },
   {
@@ -30,7 +30,7 @@ const links = [
     label: educationMode() ? "이용 안내" : "사용량 및 결제",
     icon: CreditCard,
   },
-  { href: "/settings", label: "설정", icon: Settings },
+  { href: "/account", label: "설정", icon: Settings },
 ];
 export function WorkspaceShell({
   children,
@@ -67,9 +67,7 @@ export function WorkspaceShell({
           >
             <l.icon size={18} />
             {l.label}
-            {l.href === "/reconstruct/new" && (
-              <span className="key-hint">＋</span>
-            )}
+            {l.href === "/create" && <span className="key-hint">＋</span>}
           </Link>
         ))}
         {admin && (
@@ -92,7 +90,7 @@ export function WorkspaceShell({
         <div className="worker-state">
           <span className="status-dot" />
           <div>
-            GPU 검증 및 연결 준비<small>동시 GPU 작업 1개</small>
+            제작 기능 검증 중<small>한 번에 한 작업씩 처리</small>
           </div>
         </div>
         <div className="sidebar-user">

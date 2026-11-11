@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -48,7 +49,8 @@ export function Marketplace() {
             }
           })
           .catch((e) => {
-            if (alive && e.name !== "AbortError") setError(e.message);
+            if (alive && e.name !== "AbortError")
+              setError(customerError(undefined, e.message));
           })
           .finally(() => {
             if (alive) setLoading(false);

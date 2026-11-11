@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ShieldCheck, Flag, Box } from "lucide-react";
@@ -16,7 +17,7 @@ export function ListingDetail({ id }: { id: string }) {
   useEffect(() => {
     void api<Listing>(`listings/${id}`)
       .then(setListing)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(customerError(undefined, e.message)));
   }, [id]);
   return (
     <>
@@ -90,7 +91,9 @@ export function ListingDetail({ id }: { id: string }) {
                       setMessage("신고가 등록되었습니다. 운영자가 검토합니다.");
                       setReport(false);
                     })
-                    .catch((e) => setError(e.message));
+                    .catch((e) =>
+                      setError(customerError(undefined, e.message)),
+                    );
                 }}
               >
                 <label className="field">

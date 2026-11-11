@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/client-api";
 import { Viewer } from "./viewer";
@@ -24,7 +25,7 @@ export function AssetDetail({ id }: { id: string }) {
         setAsset(a);
         setUrl(u.url);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(customerError(undefined, e.message)));
   }, [id]);
   return (
     <>
@@ -47,7 +48,7 @@ export function AssetDetail({ id }: { id: string }) {
               onClick={() =>
                 void api<{ url: string }>(`assets/${id}/download`)
                   .then((u) => location.assign(u.url))
-                  .catch((e) => setError(e.message))
+                  .catch((e) => setError(customerError(undefined, e.message)))
               }
             >
               <Download size={16} />

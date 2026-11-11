@@ -227,7 +227,7 @@ export function ModelViewer({
             <directionalLight
               position={[-4, 2, -3]}
               intensity={2.4}
-              color="#a9f5cd"
+              color="#a6bcE6"
             />
             <Mesh url={url} wire={wire} texture={texture} split={hero} />
             {grid && (

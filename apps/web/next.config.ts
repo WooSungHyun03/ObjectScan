@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
-  transpilePackages: ["@objectscan/shared"],
+  transpilePackages: ["@objectscan/shared", "@objectscan/mesh-editor"],
   poweredByHeader: false,
   experimental: { serverActions: { bodySizeLimit: "1mb" } },
   async headers() {

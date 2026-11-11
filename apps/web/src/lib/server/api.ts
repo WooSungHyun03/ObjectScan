@@ -40,6 +40,7 @@ import {
   verifyPayment,
   refundTestPayment,
 } from "./payments";
+import { editorRoute } from "./editor-api";
 import { cleanupUploads } from "./maintenance";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
@@ -222,6 +223,13 @@ export function handle(req: Request) {
     const user = await requireUser();
     await rate(user.id, method === "GET" ? 240 : 60);
     const db = adminClient();
+    if (
+      (path[0] === "projects" && path[2] === "editor") ||
+      (path[0] === "assets" && path[2] === "versions")
+    ) {
+      const result = await editorRoute(req, path, user.id);
+      if (result) return result;
+    }
     if (path[0] === "settings" && method === "PATCH") {
       const v = await input(
           req,

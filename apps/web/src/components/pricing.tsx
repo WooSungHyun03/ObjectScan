@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import { educationMode } from "@/lib/project-purpose";
 import { useEffect, useState } from "react";
@@ -24,7 +25,7 @@ export function Pricing() {
   useEffect(() => {
     void api<Pricing>("pricing")
       .then(setData)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(customerError(undefined, e.message)));
   }, []);
   return (
     <>
@@ -50,7 +51,7 @@ export function Pricing() {
           aria-pressed={mode === "object"}
         >
           <Box size={18} />
-          Object Mesh
+          물체 3D 제작
         </button>
         <button
           className={mode === "scene" ? "active" : ""}
@@ -58,7 +59,7 @@ export function Pricing() {
           aria-pressed={mode === "scene"}
         >
           <Globe2 size={18} />
-          Full Scene Mesh
+          공간 3D 제작
         </button>
       </div>
       {error && (
@@ -87,10 +88,10 @@ export function Pricing() {
                   </td>
                   <td>
                     {mode === "scene"
-                      ? "Gaussian Wrapping"
+                      ? "공간 전체 제작"
                       : t.upper <= 20
-                        ? "Pixal3D"
-                        : "Object-Aware Loss"}
+                        ? "사진 기반 물체 제작"
+                        : "여러 사진 정합 제작"}
                   </td>
                   <td>
                     {educationMode() ? (

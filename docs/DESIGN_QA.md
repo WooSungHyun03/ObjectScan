@@ -1,0 +1,7 @@
+# V3 design QA
+
+Review1: actual home-first/editor-first screenshots opened. Found legacy class collisions: old section-heading flex and process-list card styles compressed new content; new classes now use studio prefixes. The source shoe image was a technical montage, so a clearly attributed crop is used instead. Hero caption overlapped the bear and was removed. Editor initial screenshot was taken before camera-fit transition completed; fit is now immediate for reliable first rendering.
+
+Self-critique scale0=absent,5=severe: repeated cards1,neon0,purple gradients0,awkward Korean1,mascot repetition0,upload confusion1,mobile issues pending final screenshots. Remaining P0 verification: updated desktop/tablet/mobile views and actual private version browser flow. Unverified generation remains disabled. No synthetic mesh is presented as a generated result.
+
+Review2: final home390 and editor-mobile captures opened after the final production build; earlier final desktop/tablet captures also reviewed. No horizontal overflow at360/390/768/1440. Mobile inspector is a focus-trapped bottom sheet; keyboard Escape and numeric edits pass. Actual private version and996k-triangle display-LOD browser checks pass. Self-critique: repeated cards1,neon0,purple gradients0,awkward Korean1,mascot repetition0,upload confusion1,mobile blocking defects0. Existing generic workspace panels remain practical task surfaces; advanced face tools are out of P0 scope.

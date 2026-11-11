@@ -1,0 +1,11 @@
+# Mascot/editor release evidence — 2026-11-11
+
+Local final application verification: typecheck and production build pass; ESLint0 errors /8 existing warnings; Prettier pass. Node/DB/mesh54 tests pass, including the optional actual Pixal artifact CPU test. Python worker25 tests passed without worker source changes. Chromium7 tests pass against the production build in38.1s, including local email confirmation/recovery, upload/workflow separation, immutable private version save/reopen and second-identity DB/Storage denial. Read-only school public-route smoke passes locally.
+
+Supplied18 mascot originals were visually audited; valid alpha originals produce224KB optimized derivatives and the committed SHA/dimensions manifest. Actual360/390/768/1440 landing captures and desktop/mobile editor captures were reviewed. Legacy layout collisions, hero overlap, technical montage, initial camera fit and old mint hover were fixed and rerun.
+
+The previously generated40,363,180-byte /996,087-triangle Pixal GLB imports into the CPU editor and retains full export geometry/textures. Its display-only LOD is220,227 triangles /14,829,464 bytes. A separate Node measurement took2.59s with470MiB RSS at end, not peak or a browser hardware benchmark. These checks do not validate a reconstruction pipeline or enable generation.
+
+Private version migration12 is additive; no original storage paths are overwritten. Host rollout and remote CI are pending at this checkpoint. Hosted SMTP is not configured at the read-only check; user previously elected to configure it directly. Admin-confirmed hosted test identities cannot establish external email delivery. Payments/sales/payouts remain disabled and reconstruction capability gates remain unchanged.
+
+Screenshots and logs are private ignored artifacts under artifacts/mascot-redesign; no credentials, signed URLs, user uploads, GPU models or generated meshes are committed. Public demo uses the existing attributed example, explicitly labeled as an example. P0 supports object/part operations, not face-level sculpt/cut/remesh. Maximum64MiB embedded GLB and bounded image/geometry budgets are enforced; larger/compressed/animated/skinned assets are unsupported with customer-safe errors.

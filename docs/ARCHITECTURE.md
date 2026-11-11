@@ -27,3 +27,9 @@ Seller publication requires rights consent. Operator approval requires a distinc
 ## Deployment topology
 
 Vercel serves the independent frontend/API. The dedicated Seoul Supabase project and protected Preview pass browser identity/upload/RLS and real SAM2 queue integration; hosted SMTP delivery remains unverified. The dedicated GPU host needs outbound HTTPS only. Long-running GPU computation does not run in a Vercel request. Protected Preview worker requests may carry a project automation credential only on the fixed API client. Model subprocesses receive neither that credential nor application worker/service/payment secrets. Local Supabase uses isolated ports 56321–56329; credentials remain ignored. See RUNBOOK.md for operations and RELEASE_CHECKLIST.md for launch gates.
+
+## V3 editor boundary
+
+`packages/mesh-editor/contracts` defines bounded typed edit operations; its engine reads embedded GLB, replays operations from immutable bytes, simplifies with meshoptimizer and verifies geometry/UV/material/exact texture preservation after export/reimport. A dedicated browser Web Worker owns processing; the presentation and `use-mesh-editor` hook coordinate scene resources, history and persistence. R3F/Three/Drei render a separate editor route with optional display-only LOD. GPU reconstruction remains a separate host/process/queue.
+
+`lib/server/editor-api.ts` rechecks identity/ownership and validates reserved size/hash, semantic GLB and immutable upload paths. PostgreSQL migration12 stores pending/ready versions, owner quotas, parent lineage and idempotency under advisory locks; only service-role RPCs can mutate versions. RLS and private Storage provide additional boundaries. Signed upload/download URLs are short-lived; originals and paid entitlements are untouched. Failed pending reservations require operator inspection after URL expiry rather than unsafe eager deletion.

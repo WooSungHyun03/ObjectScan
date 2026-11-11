@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -32,14 +33,14 @@ export function ProjectDetail({ id }: { id: string }) {
     [id],
   );
   useEffect(() => {
-    void load().catch((e) => setError(e.message));
+    void load().catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
   useEffect(() => {
     const a = p?.artifacts[0];
     if (a)
       void api<{ url: string }>(`assets/${a.id}/download`)
         .then((v) => setUrl(v.url))
-        .catch((e) => setError(e.message));
+        .catch((e) => setError(customerError(undefined, e.message)));
   }, [p?.artifacts]);
   async function download() {
     try {
@@ -51,7 +52,7 @@ export function ProjectDetail({ id }: { id: string }) {
       a.download = `${p!.name}.glb`;
       a.click();
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     }
   }
   return (
@@ -60,6 +61,11 @@ export function ProjectDetail({ id }: { id: string }) {
         <ArrowLeft size={14} />
         프로젝트 목록
       </Link>
+      {p?.artifacts[0] && (
+        <Button asChild variant="outline">
+          <Link href={`/projects/${id}/edit`}>내 모델 편집하기</Link>
+        </Button>
+      )}
       {error && (
         <div className="notice error" role="alert">
           <AlertCircle size={17} />
@@ -70,7 +76,7 @@ export function ProjectDetail({ id }: { id: string }) {
         <>
           <PageTitle
             title={p.name}
-            description={`${p.mode === "object" ? "Object Mesh" : "Full Scene Mesh"} · 원본 ${p.input_image_count}장 · ${stateLabels[p.status]}`}
+            description={`${p.mode === "object" ? "물체 3D 제작" : "공간 3D 제작"} · 원본 ${p.input_image_count}장 · ${stateLabels[p.status]}`}
           >
             <span className="private-label">
               <LockKeyhole size={14} />

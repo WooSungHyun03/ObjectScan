@@ -1,6 +1,6 @@
 # ObjectScan v2 engineering instructions
 
-Read CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
+Read OBJECTSCAN_CODEX_MASCOT_REDESIGN_HARNESS.md, CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The v3 mascot brief supersedes the archived mint reference. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
 
 ## Scope and interfaces
 - A: apps/web design, accessible UI, auth pages, dual reconstruction wizard, viewer.
@@ -20,3 +20,13 @@ Work on a feature branch; do not merge unreviewed application changes into main.
 
 ## Checks
 npm run typecheck; npm run lint; npm test; npm run build; npm run test:e2e. Python: gpu-worker/.venv/bin/python -m pytest gpu-worker/tests. Local Supabase migrations + SQL/RLS/atomic concurrency integration tests. Real GPU smoke remains separate from mocks. Use local isolated resources; never mutate another project's databases/containers/environments.
+
+## V3 product and module boundaries
+- A: mascot brand assets, Korean marketing/auth/workspace and responsive visual QA.
+- B: packages/mesh-editor typed operations, GLB roundtrip/decimation, CPU-only processing; GPU model work remains isolated.
+- C: private immutable asset versions, owner authorization/RLS, API validation, integration/CI.
+- Customer text must not contain adapter/model identifiers, raw errors or filesystem paths. Keep required source attribution only on /legal/opensource; operator diagnostics may retain identifiers.
+- Use actual alpha-transparent supplied mascot derivatives. Never use the baked checkerboard images or invent a new character. No signs/logos held by the character.
+- Original assets are immutable. Edits are typed commands and new private versions. No arbitrary scripts, external glTF references, paid entitlement changes or fake GPU completion.
+- Prior user decisions persist: exclusively noncommercial school service, payments/sales/payouts disabled. Redesign does not enable unqualified generation paths.
+- Loop: discover → plan → implement → static/integration/browser verify → screenshot critique → fix → integrate. Existing public deployment stays unchanged until new UI/editor passes its gates.

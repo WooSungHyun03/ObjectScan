@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export function PaymentResult({ failed = false }: { failed?: boolean }) {
         setDone(true);
         setMessage("테스트 결제 확인이 완료되었습니다.");
       })
-      .catch((e) => setMessage(e.message));
+      .catch((e) => setMessage(customerError(undefined, e.message)));
   }, [q, failed]);
   return (
     <main className="auth-page">

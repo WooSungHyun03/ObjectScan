@@ -1,7 +1,9 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -29,7 +31,6 @@ import {
   type Job,
   type ObjectSelection,
   pricingTier,
-  routeModel,
   sceneWarnings,
 } from "@objectscan/shared";
 import { api, post } from "@/lib/client-api";
@@ -101,10 +102,10 @@ export function ReconstructionWizard({
     }
   }, [pid]);
   useEffect(() => {
-    void load().catch((e) => setError(e.message));
+    void load().catch((e) => setError(customerError(undefined, e.message)));
     void api<Health>("health")
       .then(setHealth)
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
   useEffect(() => () => abort.current?.abort(), []);
   async function action(fn: () => Promise<void>) {
@@ -115,7 +116,7 @@ export function ReconstructionWizard({
       await fn();
       await load();
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -197,7 +198,7 @@ export function ReconstructionWizard({
       if (!errors.length)
         setMessage(`${files.length}장의 사진을 비공개로 저장했습니다.`);
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
       abort.current = null;
@@ -265,7 +266,7 @@ export function ReconstructionWizard({
         >
           <Box size={19} />
           <span>
-            Object Mesh<small>객체만 3D로 복원</small>
+            물체 3D 제작<small>객체만 3D로 복원</small>
           </span>
         </Link>
         <Link
@@ -274,7 +275,7 @@ export function ReconstructionWizard({
         >
           <Globe2 size={19} />
           <span>
-            Full Scene Mesh<small>장면 전체를 3D로 복원</small>
+            공간 3D 제작<small>장면 전체를 3D로 복원</small>
           </span>
         </Link>
       </div>
@@ -376,8 +377,8 @@ export function ReconstructionWizard({
                 <div className="notice warning">
                   <AlertCircle size={16} />
                   <span>
-                    턴테이블은 배경에 카메라 정합이 고정될 수 있습니다. 객체
-                    중심 정합 검증 전에는 분석과 생성이 차단됩니다.
+                    턴테이블은 배경에 사진 정합이 고정될 수 있습니다. 객체 중심
+                    정합 검증 전에는 분석과 생성이 차단됩니다.
                   </span>
                 </div>
               )}
@@ -401,9 +402,15 @@ export function ReconstructionWizard({
                     void upload(Array.from(e.dataTransfer.files));
                 }}
               >
-                <span className="upload-zone-icon">
-                  <ImagePlus size={29} strokeWidth={1.3} />
-                </span>
+                {!project?.input_image_count && (
+                  <Image
+                    className="mascot-empty"
+                    src="/brand/mascot/work.webp"
+                    alt="사진 준비를 돕는 노트북 앞의 ObjectScan 곰"
+                    width={112}
+                    height={112}
+                  />
+                )}
                 <h3>
                   {busy
                     ? `사진 업로드 중 ${progress.done} / ${progress.total}`
@@ -510,8 +517,8 @@ export function ReconstructionWizard({
                 <ShieldCheck size={16} />
                 <p>
                   {mode === "scene"
-                    ? "장면 모드에서는 배경을 삭제하거나 SAM2 마스크를 적용하지 않습니다."
-                    : "사진은 비공개로 보관됩니다. 다음 단계에서 SAM2로 원하는 사물을 선택하세요."}
+                    ? "공간 모드에서는 사진 전체를 사용합니다. 대상을 따로 선택할 필요가 없습니다."
+                    : "사진은 비공개로 보관됩니다. 다음 단계에서 만들고 싶은 물체를 선택해 주세요."}
                 </p>
               </div>
             </>
@@ -680,7 +687,7 @@ export function ReconstructionWizard({
                       onClick={() => void requestAnalysis("masks")}
                     >
                       <Layers size={15} />
-                      {hasMasks ? "마스크 다시 분석" : "SAM2 마스크 분석"}
+                      {hasMasks ? "마스크 다시 분석" : "선택 영역 분석"}
                     </Button>
                   </div>
                   <section className="mask-review">
@@ -746,7 +753,7 @@ export function ReconstructionWizard({
                       <div className="inline-empty">
                         <Layers size={27} strokeWidth={1.2} />
                         <p>아직 실제 마스크 결과가 없습니다.</p>
-                        <small>SAM2 작업자가 반환한 마스크만 표시합니다.</small>
+                        <small>분석이 완료된 선택 영역만 표시합니다.</small>
                       </div>
                     )}
                   </section>
@@ -770,7 +777,7 @@ export function ReconstructionWizard({
                   </h2>
                   <p>
                     {mode === "scene"
-                      ? "배경을 유지한 원본 이미지로 카메라 정합을 검증합니다."
+                      ? "배경을 유지한 원본 이미지로 사진 정합을 검증합니다."
                       : "검토한 마스크와 실제 카메라 결과를 사용합니다."}
                   </p>
                 </div>
@@ -812,30 +819,22 @@ export function ReconstructionWizard({
               <div className="pipeline-summary">
                 <Settings2 size={24} />
                 <div>
-                  <small>복원 파이프라인</small>
+                  <small>제작 방식</small>
                   <h3>
-                    {project?.input_image_count
-                      ? {
-                          pixal3d: "Pixal3D",
-                          object_aware_loss: "Object-Aware Loss",
-                          gaussian_wrapping: "Gaussian Wrapping",
-                        }[routeModel(mode, project.input_image_count)]
-                      : "사진 업로드 후 결정"}
+                    {mode === "scene"
+                      ? "공간 전체 3D 제작"
+                      : "선택한 물체 3D 제작"}
                   </h3>
                   <p>
                     {mode === "scene"
-                      ? "COLMAP → 전체 장면 학습 → 메시 추출 → 텍스처 정제 → UV GLB"
-                      : project?.input_image_count === 1
-                        ? "SAM2 → 단일 시점 추론 → PBR GLB"
-                        : project && project.input_image_count <= 20
-                          ? "SAM2 → 보정된 카메라와 2/4/6/8개 대표 시점 → PBR GLB"
-                          : "SAM2 → COLMAP → 2DGS → TSDF 메시 → UV 베이킹 → GLB"}
+                      ? "겹치는 사진을 확인하고 공간 전체를 하나의 모델로 준비합니다."
+                      : "선택한 영역과 촬영 위치를 확인해 대상을 3D 모델로 준비합니다."}
                   </p>
                 </div>
               </div>
               {!(mode === "object" && project?.input_image_count === 1) && (
                 <div className="camera-qa">
-                  <h3>카메라 정합 확인</h3>
+                  <h3>사진 정합 확인</h3>
                   <p>
                     {project?.pose_report
                       ? `${project.pose_report.registered} / ${project.pose_report.candidate_count}장 정합 · 재투영 오차 ${project.pose_report.reprojection_error.toFixed(3)}px`
@@ -872,7 +871,7 @@ export function ReconstructionWizard({
                 </div>
                 <p>
                   {educationMode()
-                    ? "업로드와 SAM2 마스크 검토를 먼저 사용할 수 있습니다. 일반 입력의 3D 생성은 GPU·입력 경로·품질 검증 중이며, 결제를 요구하지 않습니다."
+                    ? "업로드와 선택 영역 검토를 먼저 사용할 수 있습니다. 일반 입력의 3D 생성은 GPU·입력 경로·품질 검증 중이며, 결제를 요구하지 않습니다."
                     : "가격은 관리자 구성에서 불러옵니다. GPU 실측 검증과 모델 가용성이 확인되기 전에는 결제하지 않습니다."}
                 </p>
                 <Button
@@ -981,7 +980,7 @@ export function ReconstructionWizard({
             <div>
               <span>선택 모드</span>
               <strong>
-                {mode === "object" ? "Object Mesh" : "Full Scene Mesh"}
+                {mode === "object" ? "물체 3D 제작" : "공간 3D 제작"}
               </strong>
             </div>
             <div>

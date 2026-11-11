@@ -1,320 +1,214 @@
+import Image from "next/image";
 import Link from "next/link";
-import { educationMode } from "@/lib/project-purpose";
 import {
-  ArrowRight,
   ArrowUpRight,
-  Box,
-  ImagePlus,
-  ScanLine,
-  Download,
-  Layers3,
+  Upload,
   MousePointer2,
-  ShieldCheck,
-  Check,
-  Play,
-  Globe2,
-  MoveUpRight,
+  Download,
+  Box,
+  Images,
 } from "lucide-react";
 import { PublicHeader } from "@/components/public-header";
-import { Brand } from "@/components/brand";
+import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
-import { Viewer } from "@/components/viewer";
-export default function Landing() {
+import { mascots } from "@/lib/brand/mascot-manifest";
+export default function Home() {
   return (
     <>
       <PublicHeader />
-      <main id="main" className="landing">
-        <section className="landing-hero">
-          <div className="hero-copy">
-            <span className="outline-label">
-              <span />
-              사진 기반 텍스처 메시 워크스페이스
-            </span>
-            <h1>
-              사진을 3D로.
+      <main id="main" className="studio-home">
+        <section className="studio-hero" aria-labelledby="hero-title">
+          <div className="studio-hero-copy">
+            <p className="service-label">사진으로 시작하는 3D 제작</p>
+            <h1 id="hero-title">
+              사진 속 대상을,
               <br />
-              새로운 차원을 만드세요.
+              쓰임 있는 3D로.
             </h1>
-            <p>
-              하나의 사물부터 그 사물이 놓인 공간까지.
+            <p className="hero-summary">
+              소중한 물건부터 머물렀던 공간까지.
               <br />
-              사진을 담고, 복원할 대상을 선택하고,
-              <br className="mobile-break" /> 텍스처 3D 메시로 완성하세요.
+              사진을 올리고, 원하는 대상을 골라 3D 제작을 준비하세요.
             </p>
             <div className="hero-actions">
               <Button asChild>
-                <Link href="/reconstruct/new?mode=object">
-                  무료로 시작하기 <ArrowRight size={17} />
+                <Link href="/create">
+                  내 사진으로 시작하기 <ArrowUpRight size={18} />
                 </Link>
               </Button>
-              <Button asChild variant="outline">
-                <Link href="/demo">
-                  <Play size={15} />
-                  3D 미리보기
-                </Link>
-              </Button>
+              <Link className="text-action" href="/demo">
+                결과 예시 살펴보기
+              </Link>
             </div>
-            <div className="hero-assurances">
-              <span>
-                <ShieldCheck size={14} />
-                비공개 프로젝트
-              </span>
-              <span>
-                <Box size={14} />
-                텍스처 GLB
-              </span>
-            </div>
+            <p className="availability-note">
+              학교 교육·연구용 사전 공개 · 3D 생성은 검증 중입니다.
+            </p>
           </div>
-          <div className="hero-visual">
-            <div className="photo-stack" aria-hidden="true">
-              <div />
-              <div />
-              <div>
-                <div className="shoe-photo" />
-                <span>공개 예제 이미지</span>
+          <div className="mascot-stage">
+            <Image
+              src={mascots.wave.src}
+              width={mascots.wave.width}
+              height={mascots.wave.height}
+              alt={mascots.wave.alt}
+              priority
+              sizes="(max-width: 767px) 75vw, 480px"
+            />
+            <span className="stage-signature">ObjectScan 제작 도우미</span>
+          </div>
+        </section>
+        <section id="product" className="service-section">
+          <div className="studio-section-heading">
+            <p className="service-label">무엇을 만들고 싶으세요?</p>
+            <h2>물건 하나도, 공간 전체도.</h2>
+            <p>만들고 싶은 결과에 맞춰 시작하세요.</p>
+          </div>
+          <div className="service-choices">
+            <Link href="/create/object" className="service-choice">
+              <div className="choice-mark">
+                <Box size={31} />
               </div>
-            </div>
-            <Viewer hero showControls={false} />
-            <span className="visual-input">
-              <ImagePlus size={19} />
-              <span>
-                사진을 입력하고<small>원본 이미지 1–200장</small>
-              </span>
-            </span>
-            <span className="visual-output">
-              <Box size={21} />
-              <span>
-                텍스처 메시로<small>Object / Full Scene</small>
-              </span>
-            </span>
-            <Link className="demo-credit" href="/docs#credits">
-              예제 © Shopify · CC BY 4.0
+              <div>
+                <small>물건 · 소품 · 제품</small>
+                <h3>원하는 물체만 3D로 만들기</h3>
+                <p>배경에서 대상을 골라, 하나의 모델로 준비합니다.</p>
+              </div>
+              <ArrowUpRight aria-hidden="true" />
+            </Link>
+            <Link href="/create/scene" className="service-choice">
+              <div className="choice-mark scene">
+                <Images size={31} />
+              </div>
+              <div>
+                <small>방 · 전시 · 건축 공간</small>
+                <h3>공간 전체를 3D로 만들기</h3>
+                <p>여러 방향의 사진으로 공간과 배치를 함께 담습니다.</p>
+              </div>
+              <ArrowUpRight aria-hidden="true" />
             </Link>
           </div>
         </section>
-        <section id="product" className="mode-cards">
-          <Link
-            href="/reconstruct/new?mode=object"
-            className="mode-card object"
-          >
-            <span className="mode-icon">
-              <Box size={34} strokeWidth={1.3} />
-            </span>
-            <span>
-              <small>Object Mesh</small>
-              <h2>객체만 3D로 복원</h2>
-              <p>제품, 소품. 원하는 사물 하나에 집중하세요.</p>
-            </span>
-            <ArrowUpRight size={22} />
-          </Link>
-          <Link href="/reconstruct/new?mode=scene" className="mode-card scene">
-            <span className="mode-icon">
-              <Globe2 size={34} strokeWidth={1.3} />
-            </span>
-            <span>
-              <small>Full Scene Mesh</small>
-              <h2>장면 전체를 3D로 복원</h2>
-              <p>공간의 형태와 질감을, 한 번에 담아내세요.</p>
-            </span>
-            <ArrowUpRight size={22} />
-          </Link>
-        </section>
-        <section className="process-section">
-          <div className="section-intro">
-            <span className="section-kicker">사진에서 입체까지</span>
-            <h2>
-              복잡한 과정은 뒤로.
-              <br />
-              창작에 집중하세요.
-            </h2>
+        <section className="example-section">
+          <div className="example-photo">
+            <Image
+              src="/demo/shoe-photo.webp"
+              width={520}
+              height={370}
+              alt="3D 예시로 제공되는 운동화 사진"
+            />
+            <span>공개 예시 이미지</span>
           </div>
-          <ol className="process-list">
+          <div className="example-copy">
+            <p className="service-label">완성 후에도, 내 작업답게</p>
+            <h2>
+              돌려 보고.
+              <br />
+              다듬고. 내려받고.
+            </h2>
+            <p>
+              입체적으로 확인하고, 위치와 크기를 조정한 뒤 새 버전으로
+              보관하세요. 원본은 그대로 남습니다.
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/demo/edit">
+                예시 모델 편집해 보기 <ArrowUpRight size={17} />
+              </Link>
+            </Button>
+            <p className="example-license">
+              이 모델은 Shopify의 공개 예시입니다. 이 서비스에서 생성한 결과가
+              아닙니다. <Link href="/legal/opensource">출처 보기</Link>
+            </p>
+          </div>
+        </section>
+        <section className="service-section studio-process-section">
+          <div className="studio-section-heading">
+            <p className="service-label">복잡한 설정 없이</p>
+            <h2>사진에서 시작하는 세 단계.</h2>
+          </div>
+          <ol className="studio-process-list">
             {[
               {
-                icon: ImagePlus,
-                title: "사진 업로드",
-                text: "한 장부터 시작하는 사물 복원. 장면은 겹치는 여러 시점으로.",
+                icon: Upload,
+                title: "사진을 올려주세요",
+                text: "대상이 잘 보이는 사진을 올리세요. 원본은 비공개로 보관합니다.",
               },
               {
-                icon: ScanLine,
-                title: "복원할 대상 선택",
-                text: "사물은 SAM2로 선택하고, 장면은 배경까지 그대로 담으세요.",
+                icon: MousePointer2,
+                title: "만들 대상을 확인하세요",
+                text: "물체는 원하는 부분을 고르고, 공간은 사진의 겹침을 확인하세요.",
               },
               {
                 icon: Download,
-                title: "3D 메시 확인",
-                text: "실제 결과를 회전해 보고, 검증된 텍스처 GLB를 다운로드하세요.",
+                title: "모델을 확인하고 다듬으세요",
+                text: "지원되는 생성 경로가 열리면 결과를 편집하고 내려받을 수 있습니다.",
               },
             ].map((s, i) => (
               <li key={s.title}>
-                <span className="process-icon">
-                  <s.icon size={25} />
-                </span>
-                <div>
-                  <h3>
-                    <span>{i + 1}.</span> {s.title}
-                  </h3>
-                  <p>{s.text}</p>
-                </div>
-                {i < 2 && <ArrowRight className="process-arrow" size={18} />}
+                <span className="step-number">{i + 1}</span>
+                <s.icon size={24} />
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
               </li>
             ))}
           </ol>
         </section>
-        <section className="technology-section">
-          <div className="section-intro">
-            <span className="section-kicker">대상에 맞는 복원 방식</span>
-            <h2>
-              하나의 워크스페이스.
-              <br />세 가지 가능성.
-            </h2>
-            <p>
-              입력과 복원 목적에 맞는 모델을 연결합니다. 검증되지 않은 모델은
-              유료 제작에 사용하지 않습니다.
-            </p>
-          </div>
-          <div className="technology-grid">
-            {[
-              {
-                name: "SAM2",
-                tag: "사물 선택",
-                icon: MousePointer2,
-                text: "클릭이나 박스로 대상을 지정하고, 사진별 분리 마스크를 직접 검토합니다.",
-              },
-              {
-                name: "Pixal3D",
-                tag: "객체 · 1–20장",
-                icon: Box,
-                text: "한 장은 단일 시점으로, 여러 장은 검증된 카메라와 대표 시점으로.",
-              },
-              {
-                name: "Object-Aware Loss",
-                tag: "객체 · 21–200장",
-                icon: Layers3,
-                text: "물체 중심 학습과 메시 추출, 별도의 UV 텍스처 베이킹을 연결합니다.",
-              },
-              {
-                name: "Gaussian Wrapping",
-                tag: "장면 전체",
-                icon: Globe2,
-                text: "배경을 제거하지 않고, COLMAP으로 정렬된 장면 전체를 복원합니다.",
-              },
-            ].map((t) => (
-              <article className="technology-card" key={t.name}>
-                <div className="technology-graphic">
-                  <t.icon size={44} strokeWidth={1} />
-                  <span />
-                  <span />
-                </div>
-                <span className="technology-tag">{t.tag}</span>
-                <h3>{t.name}</h3>
-                <p>{t.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-        <section className="market-invitation">
+        <section className="school-section">
           <div>
-            <span className="section-kicker">3D Asset Marketplace</span>
-            <h2>
-              직접 만든 사물,
-              <br className="mobile-break" /> 다음 창작의 재료로.
-            </h2>
+            <p className="service-label">부담 없이 알아보세요</p>
+            <h2>배우고, 실험하는 3D 작업실.</h2>
             <p>
-              {educationMode()
-                ? "교육·연구 목적으로 3D 에셋을 살펴보고,"
-                : "권리를 보유한 에셋만 직접 게시하고,"}
-              <br />
-              새로운 창작에 필요한 모델을 찾아보세요.
+              ObjectScan은 비상업 학교 프로젝트입니다. 결제·에셋 판매를 운영하지
+              않으며, 현재 사진 업로드와 대상 선택을 이용할 수 있습니다.
             </p>
-            <Button asChild>
-              <Link href="/marketplace">
-                에셋 마켓 둘러보기 <ArrowUpRight size={16} />
-              </Link>
-            </Button>
+            <Link className="text-action" href="/pricing">
+              지원 범위와 이용 안내 <ArrowUpRight size={16} />
+            </Link>
           </div>
-          <div className="market-objects" aria-hidden="true">
-            <span className="specimen specimen-chair">
-              <Box size={66} strokeWidth={0.8} />
-              <small>Objects</small>
-            </span>
-            <span className="specimen specimen-scene">
-              <Globe2 size={72} strokeWidth={0.8} />
-              <small>Spaces</small>
-            </span>
-            <span className="specimen specimen-layers">
-              <Layers3 size={65} strokeWidth={0.8} />
-              <small>Textures</small>
-            </span>
+          <div className="market-intro">
+            <h3>다른 작업도 둘러보세요</h3>
+            <p>공개를 승인한 3D 에셋의 미리보기를 확인하는 공간입니다.</p>
+            <Link className="text-action" href="/marketplace">
+              3D 에셋 둘러보기 <ArrowUpRight size={16} />
+            </Link>
           </div>
         </section>
-        <section className="pricing-intro">
-          <div className="section-intro">
-            <span className="section-kicker">
-              {educationMode() ? "학교 프로젝트" : "명확한 제작 비용"}
-            </span>
-            <h2>
-              {educationMode() ? "사진으로 실험하고," : "사용한 만큼,"}
-              <br />
-              {educationMode() ? "3D로 배웁니다." : "확인한 금액으로."}
-            </h2>
+        <section className="faq-section">
+          <div className="studio-section-heading">
+            <h2>시작 전, 궁금한 점.</h2>
           </div>
-          <div className="pricing-explanation">
-            <div>
-              <Check size={18} />
-              <p>
-                {educationMode() ? (
-                  "비상업 교육·연구용으로 운영하며 결제와 에셋 판매를 제공하지 않습니다."
-                ) : (
-                  <>
-                    업로드한 사진 수를 기준으로 <strong>20장 단위</strong> 요금
-                    구간이 적용됩니다.
-                  </>
-                )}
-              </p>
-            </div>
-            <div>
-              <Check size={18} />
-              <p>
-                {educationMode() ? (
-                  "객체와 장면 전체를 별도의 워크플로로 다루며, 실제 검증한 기능부터 제공합니다."
-                ) : (
-                  <>
-                    객체와 장면 전체의 요금표를 분리하고,{" "}
-                    <strong>서버 견적을 확인한 뒤</strong> 결제합니다.
-                  </>
-                )}
-              </p>
-            </div>
-            <Button asChild variant="outline">
-              <Link href="/pricing">
-                {educationMode() ? "이용 범위 확인" : "전체 요금 구간 확인"}{" "}
-                <MoveUpRight size={16} />
-              </Link>
-            </Button>
-          </div>
+          {[
+            {
+              q: "어떤 사진을 준비하면 되나요?",
+              a: "대상이 흔들리지 않고 선명하게 나온 사진을 준비하세요. 여러 장을 촬영할 때는 조명과 초점을 일정하게 유지하고, 인접한 사진에 같은 부분이 충분히 보이게 해주세요.",
+            },
+            {
+              q: "지금 3D 모델을 바로 생성할 수 있나요?",
+              a: "현재 사진 업로드·대상 선택·영역 검토를 사용할 수 있습니다. 일반 사진의 3D 생성은 입력 처리와 결과 품질을 검증 중이며, 준비되지 않은 기능은 활성화하지 않습니다.",
+            },
+            {
+              q: "올린 사진은 다른 사람에게 보이나요?",
+              a: "프로젝트의 사진과 결과물은 비공개입니다. 에셋 공개는 별도 동의와 검토를 거치며 원본 사진을 공개하지 않습니다.",
+            },
+            {
+              q: "편집하면 원래 모델이 바뀌나요?",
+              a: "원본 모델을 덮어쓰지 않습니다. 편집 결과를 새 버전으로 저장하고, 이전 버전을 다시 확인할 수 있습니다. 공개 예시는 내려받기 체험만 제공됩니다.",
+            },
+          ].map((f) => (
+            <details key={f.q}>
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
         </section>
-        <div className="release-note">
-          <span className="status-dot" />
-          <p>
-            {educationMode()
-              ? "학교 교육·연구용 사전 출시입니다. 업로드·SAM2 마스크 검토를 제공하며 3D 생성의 일반 공개는 검증 중입니다."
-              : "현재 사전 출시 단계입니다. GPU 실측 검증과 결제 제공사 연결을 마친 기능부터 열립니다."}
-          </p>
-          <Link href="/docs#readiness">
-            서비스 상태 <ArrowUpRight size={13} />
-          </Link>
-        </div>
+        <section className="closing-section">
+          <h2>첫 장의 사진부터 시작해 보세요.</h2>
+          <Button asChild>
+            <Link href="/create">
+              3D 제작 준비하기 <ArrowUpRight size={18} />
+            </Link>
+          </Button>
+        </section>
       </main>
-      <footer className="public-footer">
-        <Brand />
-        <nav>
-          <Link href="/docs">문서 및 촬영 가이드</Link>
-          <Link href="/docs#privacy">데이터·저작권 안내</Link>
-          <Link href="/docs#credits">예제 출처</Link>
-        </nav>
-        <span>© {new Date().getFullYear()} ObjectScan</span>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
