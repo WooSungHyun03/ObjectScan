@@ -23,13 +23,13 @@
 |한국어 랜딩/모바일/요금/마켓 탐색|실제 동작 검증|이번 360/768/1440 캡처 및 9 Chromium 회귀. semantic dark/마스코트 적용됨|
 |가입 확인/비밀번호 복구|실제 동작 검증(로컬), 접근 불가(외부 메일)|auth-email.spec.ts + Mailpit. 외부 SMTP 신규 메일은 미확인|
 |프로젝트/private 업로드/권한|실제 동작 검증|platform.spec.ts; signed upload/RLS, 파일 정규화·SHA dedup 존재|
-|대상 선택/마스크 승인·제외|실제 동작 검증|SAM2 CUDA 이전 실GPU, 현재 local API/UI 회귀. 수동 brush 없음|
+|대상 선택/마스크 승인·제외|실제 동작 검증|SAM2 CUDA 이전 실GPU, 현재 local API/UI 회귀. 수동 brush 없음. 서버 reviewed/revision gate는 이미 존재|
 |이미지1장 textured GLB|실제 동작 검증(이전 단일 사례)|job ea25227c-abba-42ff-8e45-d4224b503a47; 원본39,134,488B; 964,287 triangles; UV734,969; texture3,286,528B; 489.46s adapter, peak12994MiB; 전체 브라우저 약10.8분. 이번 새 GPU 생성 없음|
 |2~20장 MV|코드만 존재/실험 실패|1024 4뷰 OOM. 512 진단은 실촬영 카메라/마스크 경로 검증 아님. 지원 gate 유지|
 |21장 이상 객체|코드만 존재/품질 실패|OAL30k 학습/UV GLB 존재하지만 구멍·파편으로 시각 탈락|
 |장면 전체|코드만 존재/품질 실패|GW32장 학습·102.7MB GLB viewer 성공, 시각 파편 탈락. splat 성공을 Mesh 성공으로 대체하지 않음|
 |큐/취소/재시도/환급|실제 동작 검증(자동)|atomic GPU1 slot, lease/fencing/heartbeat, process-group cancel, exactly-once credit. 브라우저 재접속 전체 경계는 OS-03 보강|
-|3D 뷰어/기본 편집|실제 동작 검증|변환·노드 hide/delete·center/normalize·simplify·undo/redo·private version 저장·재열기·다운로드 roundtrip. 39MB fixture 이번 재검증|
+|3D 뷰어/기본 편집|실제 동작 검증|변환·노드 hide/delete·center/normalize·simplify·undo/redo·private version 저장·재열기·다운로드 roundtrip. 39MB fixture 이번 재검증. editor에 삼각형·파일크기·UV/표면이미지 기본 정보도 존재|
 |face crop/paint/remesh/UV 편집|미구현|노드 삭제와 face 편집은 다름. geometry decimation과 retopology는 다름|
 |로컬 외부 GLB 편집|실제 동작 검증|editor import/export. 외부 GLB를 cloud artifact로 등록·게시하는 bridge는 미구현|
 |크레딧/TEST 거래/환불|실제 동작 검증(이전 실제 TEST)|실사용자 TEST 인증,1000원 주문/환불,중복 재조회,market fee100/net900 가상원장. LIVE 결제/송금 아님|

@@ -19,7 +19,7 @@
 - create: 익명 파일 선택과 object/scene 분리 있음. 외부 모델명 고객노출 회귀는 기존 visual.spec가 검사한다. 사진선택 전에 현재 가능한 모드를 짧게 안내하는 것이 OS-01 핵심.
 - pricing: 상품 “준비 중” 상태는 실제 운영값을 반영. 임의가격/가짜 판매는 넣지 않는다. Owner 정책 후 계약값만 표시한다.
 - marketplace: 현재 빈 상태와 예시 편집 분리 안내가 정확하다. fake inventory를 채워 디자인을 평가하지 않는다. 기존 카드 결함은 code관찰이고 실제 유료재고에서 측정한 전환율은 없다.
-- editor: 이번 실제 변환/undo/간소화/버전복원/39MB파일 export 통과. node deletion을 crop으로 이름붙이지 않는다. face crop은 UV 보간 spike 후 별도 결정.
+- editor: 이번 실제 변환/undo/간소화/버전복원/39MB파일 export 통과. node deletion을 crop으로 이름붙이지 않는다. face crop은 UV 보간 spike 후 별도 결정. 기본 삼각형/파일크기/UV 정보는 이미 있으므로 OS-06은 버전 비교·단위·보고서만 추가한다. mask revision gate도 이미 있으며 OS-08은 재구현하지 않는다.
 - 로그인/가입·보호workspace·업로드·편집·결제결과는 이번9개 browser regression에서 확인. 실계정 SMTP/카드인증은 재실행 안함.
 
 ## 검수 규칙
