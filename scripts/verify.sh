@@ -4,6 +4,7 @@ cd "$(dirname "$0")/.."
 npx prettier --check apps packages scripts tests
 npm run lint
 npm run typecheck
+npx supabase migration up --local
 npm test
 npm run build
 if [[ -x gpu-worker/.venv/bin/python ]]; then
