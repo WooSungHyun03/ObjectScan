@@ -1,0 +1,192 @@
+{
+  "sprint": [
+    {
+      "id": "OS-01",
+      "title": "지원 범위·오류 계약과 로컬 실행 기준 고정",
+      "priority": "P0",
+      "assignee": "A",
+      "days": 0.5,
+      "dependencies": []
+    },
+    {
+      "id": "OS-02",
+      "title": "가입 확인·비밀번호 재설정의 이탈 복구",
+      "priority": "P0",
+      "assignee": "B",
+      "days": 1,
+      "dependencies": []
+    },
+    {
+      "id": "OS-03",
+      "title": "브라우저 종료·통신 단절 후 작업 상태와 크레딧 복구",
+      "priority": "P0",
+      "assignee": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ]
+    },
+    {
+      "id": "OS-04",
+      "title": "구매 시점 라이선스·에셋 버전 불변 스냅샷",
+      "priority": "P0",
+      "assignee": "B",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ]
+    },
+    {
+      "id": "OS-05",
+      "title": "단일 이미지 GPU 품질·메모리 회귀 기준 수립",
+      "priority": "P0",
+      "assignee": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ]
+    },
+    {
+      "id": "OS-06",
+      "title": "결과·편집 버전의 휴대 가능한 Mesh 품질 카드",
+      "priority": "P1",
+      "assignee": "B",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ]
+    },
+    {
+      "id": "OS-07",
+      "title": "업로드 선명도·유사 이미지 사전 진단",
+      "priority": "P1",
+      "assignee": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ]
+    },
+    {
+      "id": "OS-08",
+      "title": "대상 마스크 검토의 실패 복구와 이미지 제외 명확화",
+      "priority": "P1",
+      "assignee": "B",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01",
+        "OS-03"
+      ]
+    },
+    {
+      "id": "OS-09",
+      "title": "마켓 실물 썸네일과 검증된 파일 정보",
+      "priority": "P1",
+      "assignee": "A",
+      "days": 1,
+      "dependencies": [
+        "OS-06"
+      ]
+    },
+    {
+      "id": "OS-10",
+      "title": "Toss TEST 승인 복귀·중복 요청·불명 상태 복구 계약",
+      "priority": "P0",
+      "assignee": "B",
+      "days": 1,
+      "dependencies": [
+        "OS-01",
+        "OS-04"
+      ]
+    },
+    {
+      "id": "OS-11",
+      "title": "프로젝트 삭제의 안전한 저장소 정리와 거래 보존",
+      "priority": "P0",
+      "assignee": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01",
+        "OS-04"
+      ]
+    },
+    {
+      "id": "OS-12",
+      "title": "두 사람 통합 브랜치의 재현 가능한 로컬 릴리스 게이트",
+      "priority": "P0",
+      "assignee": "B",
+      "days": 1,
+      "dependencies": [
+        "OS-02",
+        "OS-03",
+        "OS-04",
+        "OS-05",
+        "OS-06",
+        "OS-07",
+        "OS-08",
+        "OS-09",
+        "OS-10",
+        "OS-11"
+      ]
+    }
+  ],
+  "future": [
+    {
+      "id": "OS-13",
+      "title": "2~20장 실촬영·보정 카메라 MV 적합성 연구",
+      "assignee": "A",
+      "days": 2
+    },
+    {
+      "id": "OS-14",
+      "title": "21장 이상 객체 복원 구멍·파편 원인 분리 연구",
+      "assignee": "B",
+      "days": 2
+    },
+    {
+      "id": "OS-15",
+      "title": "장면 전체 Mesh 품질 기준과 파편 재현 연구",
+      "assignee": "A",
+      "days": 2
+    },
+    {
+      "id": "OS-16",
+      "title": "UV 보존 face crop 기술 spike",
+      "assignee": "B",
+      "days": 2
+    },
+    {
+      "id": "OS-17",
+      "title": "외부 소유 GLB의 검증·비공개 수입·게시 bridge",
+      "assignee": "A",
+      "days": 2
+    },
+    {
+      "id": "OS-18",
+      "title": "마켓 검색·신고와 판매 원장 탐색 확장",
+      "assignee": "B",
+      "days": 2
+    }
+  ],
+  "owner": [
+    {
+      "id": "OWN-01",
+      "title": "외부 가입 SMTP·콜백 설정과 실제 신규 사용자 확인"
+    },
+    {
+      "id": "OWN-02",
+      "title": "모델·체크포인트·판매 권리 및 가격 정책 승인"
+    },
+    {
+      "id": "OWN-03",
+      "title": "Toss TEST 실제 인증·복귀·webhook 전달 재검증"
+    },
+    {
+      "id": "OWN-04",
+      "title": "Preview 구성·최종 배포 승인 및 운영 권한"
+    },
+    {
+      "id": "OWN-05",
+      "title": "be-celeb.org 기존 서비스 충돌 결정과 DNS"
+    }
+  ]
+}

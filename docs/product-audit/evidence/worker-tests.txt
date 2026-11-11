@@ -1,0 +1,10 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/m4ml/Desktop/ObjectScan/ObjectScan-v2/gpu-worker
+configfile: pyproject.toml
+plugins: anyio-4.16.0
+collected 26 items
+
+gpu-worker/tests/test_worker.py ..........................               [100%]
+
+============================= 26 passed in 19.38s ==============================

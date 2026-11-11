@@ -1,0 +1,16 @@
+
+> objectscan@0.1.0 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @objectscan/web@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @objectscan/mesh-editor@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @objectscan/shared@0.1.0 typecheck
+> tsc --noEmit
+
