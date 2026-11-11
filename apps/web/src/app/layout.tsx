@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import palette from "@/lib/design-tokens/tokens.json";
 import "@fontsource-variable/noto-sans-kr";
 import "./globals.css";
 import "./studio.css";
@@ -7,6 +8,7 @@ import "./premium.css";
 import Link from "next/link";
 import { DesignCapture } from "@/components/design/capture";
 import { educationMode } from "@/lib/project-purpose";
+export const viewport: Viewport = { themeColor: palette["color-canvas"] };
 export const metadata: Metadata = {
   icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
   manifest: "/manifest.webmanifest",

@@ -1054,3 +1054,7 @@ select,
 textarea {
   border-color: var(--color-control-border);
 }
+
+.result-switch button {
+  min-height: 44px;
+}
