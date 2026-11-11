@@ -13,6 +13,14 @@ from .contracts import Manifest, checked_storage_url
 from .process import JobStopped, ProcessFailure, run_stage
 
 
+def generation_result(report, artifact_path, preview_path=None):
+    """Only the public worker contract leaves the process; diagnostic metadata stays local."""
+    result = {"quality": report["quality"], "artifact_path": artifact_path}
+    if preview_path:
+        result["preview_path"] = preview_path
+    return result
+
+
 class Worker:
     def __init__(self):
         self.base = os.environ["OBJECTSCAN_API_URL"].rstrip("/")
@@ -205,7 +213,7 @@ class Worker:
                 upload(
                     fresh.artifact_upload_url, work / "mesh.glb", "model/gltf-binary"
                 )
-                result["artifact_path"] = fresh.artifact_path
+                result = generation_result(result, fresh.artifact_path)
                 if (work / "preview.glb").exists():
                     upload(
                         fresh.preview_upload_url,

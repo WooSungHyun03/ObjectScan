@@ -15,6 +15,7 @@ export function PublishForm({
   const [title, setTitle] = useState(asset.name),
     [description, setDescription] = useState(""),
     [price, setPrice] = useState(""),
+    [license, setLicense] = useState("standard"),
     [category, setCategory] = useState("objects"),
     [consent, setConsent] = useState(false),
     [error, setError] = useState(""),
@@ -29,6 +30,7 @@ export function PublishForm({
         description,
         price: Number(price),
         category,
+        license,
         consent,
         status,
       });
@@ -65,6 +67,8 @@ export function PublishForm({
         <input
           required
           maxLength={100}
+          name="title"
+          autoComplete="off"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -73,13 +77,19 @@ export function PublishForm({
         설명
         <textarea
           maxLength={1500}
+          name="description"
+          autoComplete="off"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
       <label className="field">
         카테고리
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="objects">사물</option>
           <option value="scenes">장면</option>
           <option value="furniture">가구</option>
@@ -88,10 +98,31 @@ export function PublishForm({
         </select>
       </label>
       <label className="field">
-        판매 가격 (원)
+        이용 라이선스
+        <select
+          name="license"
+          value={license}
+          onChange={(e) => setLicense(e.target.value)}
+        >
+          <option value="standard">일반 이용 — 재판매·재배포 제외</option>
+          <option value="cc-by-4.0">
+            CC BY 4.0 — 출처 표시 후 이용·재배포
+          </option>
+          <option value="cc0-1.0">CC0 1.0 — 권리 포기 범위 내 자유 이용</option>
+        </select>
+      </label>
+      <p className="muted">
+        선택한 이용 조건을 제공할 권한이 있어야 합니다. 출처 표시가 필요한 경우
+        설명에 저작자와 원본 링크를 기재해 주세요.
+      </p>
+      <label className="field">
+        테스트 판매 가격 (원)
         <input
           required
           type="number"
+          inputMode="numeric"
+          name="price"
+          autoComplete="off"
           min={1}
           max={100000000}
           value={price}
@@ -102,6 +133,7 @@ export function PublishForm({
         <input
           required
           checked={consent}
+          name="rightsConsent"
           type="checkbox"
           onChange={(e) => setConsent(e.target.checked)}
         />

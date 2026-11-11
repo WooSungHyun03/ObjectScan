@@ -38,6 +38,7 @@ async function verificationLink(
 test("signup requires email confirmation; recovery email changes only the disposable fixture password", async ({
   page,
   request,
+  baseURL,
 }) => {
   test.skip(
     !process.env.TEST_SERVICE_KEY,
@@ -65,7 +66,7 @@ test("signup requires email confirmation; recovery email changes only the dispos
     await page.goto(await verificationLink(request, email, /confirm/i));
     await expect(page).toHaveURL(/dashboard/);
     await page.getByRole("button", { name: "로그아웃" }).click();
-    await expect(page).toHaveURL("http://127.0.0.1:3000/");
+    await expect(page).toHaveURL(`${baseURL}/`);
     await page.goto("/forgot-password");
     await page.getByRole("textbox", { name: "이메일" }).fill(email);
     await page.getByRole("button", { name: "재설정 이메일 받기" }).click();
@@ -76,7 +77,7 @@ test("signup requires email confirmation; recovery email changes only the dispos
     await page.getByRole("button", { name: "새 비밀번호 저장" }).click();
     await expect(page).toHaveURL(/dashboard/);
     await page.getByRole("button", { name: "로그아웃" }).click();
-    await expect(page).toHaveURL("http://127.0.0.1:3000/");
+    await expect(page).toHaveURL(`${baseURL}/`);
     await page.goto("/login");
     await page.getByRole("textbox", { name: "이메일" }).fill(email);
     await page.getByLabel("비밀번호", { exact: true }).fill(replacement);

@@ -6,10 +6,10 @@ import { NavigationSheet } from "./ui/sheet";
 function Links() {
   return (
     <>
-      <Link href="/docs">이용 방법</Link>
-      <Link href="/create">3D 제작</Link>
-      <Link href="/marketplace">3D 에셋 마켓</Link>
-      <Link href="/pricing">요금</Link>
+      <Link href="/create">만들기</Link>
+      <Link href="/marketplace">에셋 마켓</Link>
+      <Link href="/pricing">요금 안내</Link>
+      <Link href="/projects">내 작업</Link>
     </>
   );
 }

@@ -9,7 +9,7 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "사진 속 대상을",
+    "사진을 올리고,",
   );
   await expect(
     page.getByRole("link", { name: /원하는 물체만 3D로 만들기/ }),
@@ -43,6 +43,7 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
 });
 test("verified login, private project, real signed upload, object/scene separation and logout", async ({
   page,
+  baseURL,
 }) => {
   test.skip(!process.env.TEST_SERVICE_KEY, "Needs isolated local Supabase");
   const admin = createClient(
@@ -90,7 +91,7 @@ test("verified login, private project, real signed upload, object/scene separati
       await expect(page.getByLabel("출금 요청 금액")).not.toBeVisible();
       for (const route of ["orders", "payouts"]) {
         const response = await page.request.post(`/api/${route}`, {
-          headers: { origin: "http://127.0.0.1:3000" },
+          headers: { origin: baseURL! },
           data: {},
         });
         expect(response.status()).toBe(403);
@@ -136,7 +137,7 @@ test("verified login, private project, real signed upload, object/scene separati
           await page.request.post(
             `/api/orders/${randomUUID()}/refund-request`,
             {
-              headers: { origin: "http://127.0.0.1:3000" },
+              headers: { origin: baseURL! },
               data: { reason: "다른 주문 접근 시도" },
             },
           )
@@ -145,7 +146,7 @@ test("verified login, private project, real signed upload, object/scene separati
       expect(
         (
           await page.request.post("/api/admin/refund", {
-            headers: { origin: "http://127.0.0.1:3000" },
+            headers: { origin: baseURL! },
             data: { order_id: orderId, reason: "비관리자 환불 시도" },
           })
         ).status(),
@@ -203,7 +204,7 @@ test("verified login, private project, real signed upload, object/scene separati
       page.getByText("객체 선택", { exact: true }),
     ).not.toBeVisible();
     await page.getByRole("button", { name: "로그아웃" }).click();
-    await expect(page).toHaveURL("http://127.0.0.1:3000/");
+    await expect(page).toHaveURL(`${baseURL}/`);
     await page.goto("/dashboard");
     await expect(page).toHaveURL(/login/);
   } finally {

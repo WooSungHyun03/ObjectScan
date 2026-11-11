@@ -1,4 +1,9 @@
 "use client";
+import {
+  categoryLabels,
+  licenseLabels,
+  licenseUrls,
+} from "@/features/marketplace/presentation";
 import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -47,7 +52,9 @@ export function ListingDetail({ id }: { id: string }) {
             </p>
           </div>
           <section className="listing-description">
-            <span className="subtle-badge">{listing.category}</span>
+            <span className="subtle-badge">
+              {categoryLabels[listing.category] ?? "3D 에셋"}
+            </span>
             <h1>{listing.title}</h1>
             <p className="seller-badge">
               <ShieldCheck size={15} />
@@ -56,13 +63,25 @@ export function ListingDetail({ id }: { id: string }) {
             <p>{listing.description}</p>
             <div className="listing-amount">
               ₩{Number(listing.price).toLocaleString()}
-              <small>KRW · 일회성 구매</small>
+              <small>
+                {listing.test_mode
+                  ? "테스트 금액 · 실제 청구 없음"
+                  : "KRW · 일회성 구매"}
+              </small>
             </div>
             <CheckoutButton listingId={listing.id} label="에셋 테스트 구매" />
             <dl className="detail-list">
               <div>
                 <dt>라이선스</dt>
-                <dd>{listing.license}</dd>
+                <dd>
+                  {licenseUrls[listing.license] ? (
+                    <a href={licenseUrls[listing.license]}>
+                      {licenseLabels[listing.license]}
+                    </a>
+                  ) : (
+                    (licenseLabels[listing.license] ?? listing.license)
+                  )}
+                </dd>
               </div>
               <div>
                 <dt>다운로드</dt>

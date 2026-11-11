@@ -40,6 +40,13 @@ const messages: Record<string, string> = {
     "저장 요청의 내용이 변경되었습니다. 모델을 다시 확인해 주세요.",
   GPU_OOM:
     "처리 가능한 메모리를 초과했습니다. 사진을 줄이거나 낮은 해상도로 다시 시도해 주세요.",
+  INPUT_PROFILE_NOT_VALIDATED:
+    "선택한 사진 구성의 제작을 준비하고 있습니다. 지원되는 제작 방식을 확인해 주세요.",
+  BALANCE_INSUFFICIENT: "크레딧이 부족합니다. 잔액을 확인해 주세요.",
+  TRIAL_UNAVAILABLE:
+    "체험 크레딧 제공이 마감되었거나 준비 중입니다. 이용 가능한 상품을 확인해 주세요.",
+  PRICE_NOT_CONFIGURED:
+    "요금이 아직 확정되지 않았습니다. 나중에 다시 확인해 주세요.",
   REAL_GPU_NOT_VALIDATED:
     "3D 생성 기능을 검증하고 있습니다. 사진 업로드와 대상 선택을 먼저 이용해 주세요.",
   MODEL_UNAVAILABLE:
@@ -55,6 +62,8 @@ const messages: Record<string, string> = {
     "현재 진행 중인 작업을 완료하거나 취소한 뒤 다시 시도해 주세요.",
   TURNTABLE_NOT_VALIDATED:
     "대상을 고정하고 카메라를 움직여 촬영한 사진을 사용해 주세요.",
+  PROCESSOR_ERROR:
+    "결제사 연결을 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.",
   PAYMENTS_DISABLED: "현재 결제를 운영하지 않습니다.",
   NONCOMMERCIAL_ONLY:
     "학교 교육·연구용 서비스에서는 결제·판매·정산을 운영하지 않습니다.",

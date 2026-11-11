@@ -33,7 +33,7 @@ export function ResultPreview() {
       <figcaption>
         <div>
           <strong>회전하고, 다듬고, 내 작업으로.</strong>
-          <span>공개 예시 모델 · 제작 결과 아님</span>
+          <span>3D 편집 예시</span>
         </div>
         <Link href="/demo" aria-label="공개 예시를 3D로 돌려보기">
           <ArrowUpRight aria-hidden="true" size={21} />

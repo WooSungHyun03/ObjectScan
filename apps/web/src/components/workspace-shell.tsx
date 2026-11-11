@@ -91,7 +91,7 @@ export function WorkspaceShell({
         <div className="worker-state">
           <span className="status-dot" />
           <div>
-            제작 기능 검증 중<small>한 번에 한 작업씩 처리</small>
+            나의 3D 작업실<small>완성한 모델을 한곳에서</small>
           </div>
         </div>
         <div className="sidebar-user">
@@ -143,7 +143,7 @@ export function WorkspaceShell({
           <ChevronRight size={13} />
           <strong>{title}</strong>
           <div className="workspace-header-right">
-            <span className="test-label">교육·연구용</span>
+            <span className="test-label">내 작업</span>
             <Link href="/docs">
               도움말 <ArrowUpRight size={13} />
             </Link>

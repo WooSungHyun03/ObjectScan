@@ -6,6 +6,7 @@ import {
   uploadInput,
   targetInput,
   pricingTier,
+  listingInput,
   generationGate,
   platformFee,
   type ModelFamily,
@@ -44,6 +45,13 @@ import { editorRoute } from "./editor-api";
 import { cleanupUploads } from "./maintenance";
 import { workerRoute } from "./worker-api";
 const uuid = z.uuid();
+// TEST listings must remain invisible to the existing public deployment.
+const marketStatus = (status: string) =>
+  paymentMode() === "test" ? `sandbox_${status}` : status;
+const commissionKey = () =>
+  paymentMode() === "test" ? "sandbox_commission_bps" : "commission_bps";
+const marketStatuses = () =>
+  ["draft", "pending", "approved", "rejected", "removed"].map(marketStatus);
 async function mutable(pid: string) {
   const { error } = await adminClient().rpc("check_project_mutable", {
     p_project: pid,
@@ -115,6 +123,8 @@ async function gateProject(pid: string, owner: string) {
     realGpuValidated: h.real_gpu_validated,
     workerOnline: h.worker_online,
     availableModels: h.models as ModelFamily[],
+    validatedProfiles: h.validated_profiles,
+    ownerId: owner,
   });
   return { project, gate, health: h };
 }
@@ -127,7 +137,28 @@ export function handle(req: Request) {
       method = req.method,
       dbReady = configured();
     if (path[0] === "internal") return workerRoute(req, path.slice(1));
-    if (path[0] === "health") return json(await health());
+    if (path[0] === "health") {
+      const { models, validated_profiles, ...status } = await health();
+      return json({
+        ...status,
+        capabilities: {
+          single_photo:
+            models.includes("pixal3d") &&
+            validated_profiles.some(
+              (p: {
+                model: string;
+                min_images: number;
+                max_images: number;
+                owner_ids?: string[];
+              }) =>
+                p.model === "pixal3d" &&
+                p.min_images <= 1 &&
+                p.max_images >= 1 &&
+                !p.owner_ids,
+            ),
+        },
+      });
+    }
     if (method === "POST" && path[0] === "payments" && path[1] === "webhook") {
       if (paymentMode() === "disabled") fail(503, "PAYMENTS_DISABLED");
       const v = await input(
@@ -173,12 +204,26 @@ export function handle(req: Request) {
           db
             .from("app_config")
             .select("value")
-            .eq("key", "commission_bps")
+            .eq("key", commissionKey())
             .single(),
         ]);
         dbError(error);
         return json({
           tiers,
+          packages:
+            (
+              await db
+                .from("credit_packages")
+                .select("id,name,credits,amount")
+                .eq("enabled", true)
+            ).data ?? [],
+          credit_rates:
+            (
+              await db
+                .from("generation_credit_rates")
+                .select("mode,min_images,credits")
+                .eq("enabled", true)
+            ).data ?? [],
           commission_bps: fee?.value ?? null,
           payments_mode: paymentMode(),
         });
@@ -188,7 +233,7 @@ export function handle(req: Request) {
         .select(
           "id,title,description,category,price,currency,license,public_preview_path,created_at",
         )
-        .eq("status", "approved");
+        .eq("status", marketStatus("approved"));
       if (path[1]) {
         const { data, error } = await q
           .eq("id", uuid.parse(path[1]))
@@ -203,6 +248,7 @@ export function handle(req: Request) {
                 .getPublicUrl(data.public_preview_path).data.publicUrl
             : null,
           seller_badge: "검토된 크리에이터",
+          test_mode: paymentMode() === "test",
         });
       }
       const url = new URL(req.url),
@@ -218,7 +264,12 @@ export function handle(req: Request) {
           : q.order("created_at", { ascending: false });
       const { data, error } = await q.limit(100);
       dbError(error);
-      return json(data);
+      return json(
+        data?.map((listing) => ({
+          ...listing,
+          test_mode: paymentMode() === "test",
+        })),
+      );
     }
     const user = await requireUser();
     await rate(user.id, method === "GET" ? 240 : 60);
@@ -551,13 +602,24 @@ export function handle(req: Request) {
         dbError(error);
         return json({ id: data.id }, 201);
       }
-      if (op === "qa" && method === "GET")
-        return json(await gateProject(pid, user.id));
+      if (op === "qa" && method === "GET") {
+        const { project, gate } = await gateProject(pid, user.id);
+        return json({
+          project: {
+            mode: project.mode,
+            input_image_count: project.input_image_count,
+          },
+          gate: { allowed: gate.allowed, errors: gate.errors },
+        });
+      }
       if (op === "generate" && method === "POST") {
         const v = await input(
             req,
             z
-              .object({ order_id: z.uuid(), idempotency_key: z.uuid() })
+              .object({
+                order_id: z.uuid().optional(),
+                idempotency_key: z.uuid(),
+              })
               .strict(),
           ),
           g = await gateProject(pid, user.id);
@@ -568,11 +630,50 @@ export function handle(req: Request) {
           p_owner: user.id,
           p_kind: "generation",
           p_key: v.idempotency_key,
-          p_order: v.order_id,
+          p_order: v.order_id ?? null,
         });
         dbError(error);
         return json({ id: data.id }, 201);
       }
+    }
+    if (path[0] === "wallet" && path[1] === "trial" && method === "POST") {
+      await rate(`trial:${user.id}`, 5);
+      const { data, error } = await adminClient().rpc("claim_trial_credits", {
+        p_owner: user.id,
+      });
+      dbError(error);
+      return json({ balance: data });
+    }
+    if (path[0] === "wallet" && method === "GET") {
+      const db = adminClient();
+      const [wallet, rates, entries] = await Promise.all([
+        db
+          .from("credit_wallets")
+          .select("balance")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        db.from("generation_credit_rates").select("*").eq("enabled", true),
+        db
+          .from("wallet_entries")
+          .select("id,kind,credits,created_at")
+          .eq("user_id", user.id)
+          .order("id", { ascending: false })
+          .limit(50),
+      ]);
+      for (const r of [wallet, rates, entries]) dbError(r.error);
+      return json({
+        trial_available:
+          (
+            await db
+              .from("app_config")
+              .select("value")
+              .eq("key", "trial_credits")
+              .maybeSingle()
+          ).data?.value?.enabled === true,
+        balance: wallet.data?.balance ?? 0,
+        rates: rates.data ?? [],
+        entries: entries.data ?? [],
+      });
     }
     if (path[0] === "jobs") {
       if (path[2] === "retry" && method === "POST") {
@@ -671,30 +772,23 @@ export function handle(req: Request) {
       if (path[2] === "publish" && method === "POST") {
         assertCommerceAllowed();
         if (a.owner_id !== user.id) fail(404, "ASSET_NOT_FOUND");
-        const v = await input(
-          req,
-          z
-            .object({
-              title: z.string().trim().min(1).max(100),
-              description: z.string().max(1500),
-              category: z.enum([
-                "objects",
-                "scenes",
-                "furniture",
-                "decor",
-                "other",
-              ]),
-              price: z.number().int().min(1).max(100000000),
-              consent: z.literal(true),
-              status: z.enum(["draft", "pending"]).default("pending"),
-            })
-            .strict(),
-        );
+        const v = await input(req, listingInput);
         if (v.status === "pending" && !a.preview_path)
           fail(
             409,
             "PREVIEW_REQUIRED",
             "공개용 경량 미리보기 검증이 필요합니다. 초안을 저장하고 관리자에게 재생성을 요청하세요.",
+          );
+        const { data: existing } = await db
+          .from("marketplace_listings")
+          .select("status")
+          .eq("artifact_id", a.id)
+          .maybeSingle();
+        if (existing && !marketStatuses().includes(existing.status))
+          fail(
+            409,
+            "LISTING_ENVIRONMENT_MISMATCH",
+            "다른 판매 환경에 등록된 에셋입니다.",
           );
         const { data, error } = await db
           .from("marketplace_listings")
@@ -705,8 +799,9 @@ export function handle(req: Request) {
               title: v.title,
               description: v.description,
               category: v.category,
+              license: v.license,
               price: v.price,
-              status: v.status,
+              status: marketStatus(v.status),
               rights_consent_at: new Date().toISOString(),
             },
             { onConflict: "artifact_id" },
@@ -720,9 +815,15 @@ export function handle(req: Request) {
         if (a.owner_id !== user.id) fail(404, "ASSET_NOT_FOUND");
         const { data: l } = await db
           .from("marketplace_listings")
-          .select("id")
+          .select("id,status")
           .eq("artifact_id", a.id)
           .maybeSingle();
+        if (l && !marketStatuses().includes(l.status))
+          fail(
+            409,
+            "LISTING_ENVIRONMENT_MISMATCH",
+            "다른 판매 환경에 등록된 에셋입니다.",
+          );
         if (l) {
           const { count } = await db
             .from("orders")
@@ -810,6 +911,13 @@ export function handle(req: Request) {
           z.discriminatedUnion("kind", [
             z
               .object({
+                kind: z.literal("credits"),
+                package_id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+                idempotency_key: z.uuid(),
+              })
+              .strict(),
+            z
+              .object({
                 kind: z.literal("generation"),
                 project_id: z.uuid(),
                 idempotency_key: z.uuid(),
@@ -832,7 +940,21 @@ export function handle(req: Request) {
           .maybeSingle();
         if (existing) return json(existing);
         let values: Record<string, unknown>;
-        if (v.kind === "generation") {
+        if (v.kind === "credits") {
+          const { data: pack, error: pe } = await db
+            .from("credit_packages")
+            .select("credits,amount")
+            .eq("id", v.package_id)
+            .eq("enabled", true)
+            .maybeSingle();
+          dbError(pe);
+          if (!pack) fail(409, "PRICE_NOT_CONFIGURED");
+          values = {
+            credit_units: pack.credits,
+            amount: pack.amount,
+            currency: "KRW",
+          };
+        } else if (v.kind === "generation") {
           const g = await gateProject(v.project_id, user.id);
           if (!g.gate.allowed)
             fail(
@@ -862,7 +984,7 @@ export function handle(req: Request) {
             .from("marketplace_listings")
             .select("*")
             .eq("id", v.listing_id)
-            .eq("status", "approved")
+            .eq("status", marketStatus("approved"))
             .maybeSingle();
           if (!l || l.seller_id === user.id) fail(404, "LISTING_NOT_FOUND");
           const { data: owned } = await db
@@ -876,7 +998,7 @@ export function handle(req: Request) {
           const { data: config } = await db
             .from("app_config")
             .select("value")
-            .eq("key", "commission_bps")
+            .eq("key", commissionKey())
             .single();
           if (!Number.isInteger(config?.value))
             fail(503, "COMMISSION_NOT_CONFIGURED");
@@ -986,7 +1108,7 @@ export function handle(req: Request) {
         .from("marketplace_listings")
         .select("id")
         .eq("id", lid)
-        .eq("status", "approved")
+        .eq("status", marketStatus("approved"))
         .maybeSingle();
       if (!l) fail(404, "LISTING_NOT_FOUND");
       const { error } = await db.from("audit_logs").insert({
@@ -1023,6 +1145,7 @@ export function handle(req: Request) {
             db
               .from("marketplace_listings")
               .select("*")
+              .in("status", marketStatuses())
               .order("created_at", { ascending: false })
               .limit(100),
             db.from("pricing_tiers").select("*").order("min_images"),
@@ -1123,7 +1246,7 @@ export function handle(req: Request) {
           { error } = await db
             .from("app_config")
             .update({ value: v.bps })
-            .eq("key", "commission_bps");
+            .eq("key", commissionKey());
         dbError(error);
         return json({ ok: true });
       }
@@ -1141,6 +1264,7 @@ export function handle(req: Request) {
           .from("marketplace_listings")
           .select("*,artifacts(*)")
           .eq("id", v.listing_id)
+          .in("status", marketStatuses())
           .single();
         if (!l) fail(404, "LISTING_NOT_FOUND");
         let preview: string | null = l.public_preview_path;
@@ -1173,7 +1297,10 @@ export function handle(req: Request) {
         }
         const { error } = await db
           .from("marketplace_listings")
-          .update({ status: v.status, public_preview_path: preview })
+          .update({
+            status: marketStatus(v.status),
+            public_preview_path: preview,
+          })
           .eq("id", l.id);
         dbError(error);
         await db.from("audit_logs").insert({

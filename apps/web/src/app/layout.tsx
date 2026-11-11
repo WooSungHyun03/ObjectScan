@@ -1,3 +1,4 @@
+import { serviceOrigin } from "@/lib/service-origin";
 import type { Metadata, Viewport } from "next";
 import palette from "@/lib/design-tokens/tokens.json";
 import "@fontsource-variable/noto-sans-kr";
@@ -5,11 +6,14 @@ import "./globals.css";
 import "./studio.css";
 import "./design-tokens.css";
 import "./premium.css";
-import Link from "next/link";
 import { DesignCapture } from "@/components/design/capture";
-import { educationMode } from "@/lib/project-purpose";
 export const viewport: Viewport = { themeColor: palette["color-canvas"] };
 export const metadata: Metadata = {
+  metadataBase: new URL(serviceOrigin()),
+  robots:
+    process.env.VERCEL_ENV === "preview"
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
   icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
   manifest: "/manifest.webmanifest",
   title: {
@@ -26,12 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <a href="#main" className="skip-link">
           본문으로 건너뛰기
         </a>
-        {educationMode() && (
-          <aside className="education-banner" aria-label="운영 목적">
-            학교 교육·연구용 · 비상업 서비스{" "}
-            <Link href="/docs#research">이용 범위와 모델 출처</Link>
-          </aside>
-        )}
         {children}
       </body>
     </html>

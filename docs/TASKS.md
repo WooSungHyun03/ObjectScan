@@ -64,3 +64,18 @@ Follow docs/IMPLEMENTATION_PLAN.md for task IDs/owners/dependencies/evidence. V3
 ## V4 premium redesign
 
 V4-RESEARCH/TOOLS/SYSTEM/FLOWS/QA/RELEASE are tracked with owner, priority, dependency, evidence and blocker in design/IMPLEMENTATION_STATUS.md. V4 visual authority supersedes V3 layout/palette; original privacy, queue, finance and reconstruction gates remain.
+
+## V5 launch revision — latest2026-11-12
+
+Historical task notes above remain as history; v5 supersedes prior payment-disable presentation for TEST mode.
+
+| ID         | Acceptance                                                               | State / evidence                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V5-AUDIT   | actual repo/tools/domain inventory                                       | PASS; AS_IS_AUDIT/DOMAIN_MIGRATION                                                                                                                   |
+| V5-GPU     | single-photo upload→SAM2→credit→CUDA→textured GLB→viewer/download/reopen | PASS actual hosted;964287triangles,39MB,489.46s,12994MiB. Other input profiles blocked.                                                              |
+| V5-CREDIT  | atomic debit/recovery/retry, exact qualification, bounded trial          | PASS local60-test suite; Preview2 additional one-credit trials after preserved fixtures                                                              |
+| V5-TOSS    | actual SDK2 TEST approval/replay/refund                                  | PASS actual local topup/refund and hosted market approval/refund; Seoul region fixes provider IP denial                                              |
+| V5-DESIGN  | service copy/assets/nav/credit/confirmation UI and responsive review     | PASS15 Preview route-width/axe audits,9 browser regressions; actual tools/fallback recorded                                                          |
+| V5-MARKET  | two-account publish/approval/TEST buy/GLB/fee/refund                     | PASS actual hosted; fixture1000KRW/100fee, no withdrawable proceeds; listing removed/accounts quarantined after verification                         |
+| V5-DOMAIN  | protected Preview first, preserve existing BE CELEB                      | PASS preservation; DNS replacement still requires approval                                                                                           |
+| V5-RELEASE | static/build/CI, evidence, operations                                    | Local gates pass; source/deployment/CI exact results in reports/RELEASE_EVIDENCE.md. SMTP, multi-photo/scene quality and live commercial gates open. |

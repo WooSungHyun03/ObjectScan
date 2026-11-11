@@ -1,6 +1,6 @@
 "use client";
-import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
+import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import Image from "next/image";
 import { productPreview } from "@/lib/brand/product-preview";
@@ -71,12 +71,6 @@ export function Marketplace() {
           <Globe2 size={100} strokeWidth={0.7} />
         </div>
       </div>
-      {educationMode() && (
-        <p className="notice">
-          학교 교육·연구용 서비스에서는 에셋 판매·구매를 운영하지 않습니다. 이
-          화면에는 승인된 미리보기만 표시됩니다.
-        </p>
-      )}
       <div className="market-controls">
         <label className="market-search">
           <Search size={18} />
@@ -117,9 +111,8 @@ export function Marketplace() {
       <div className="workspace-notice">
         <ShieldCheck size={16} />
         <span>
-          {educationMode()
-            ? "비상업 교육·연구용으로 운영합니다. 미리보기는 공개를 승인한 자료에 한하며 원본 사진은 비공개입니다."
-            : "권리 동의와 운영자 검토를 거친 에셋만 게시됩니다. 결제 제공사 연결 전에는 구매가 비활성화됩니다."}
+          권리 확인과 게시 검토를 거친 에셋만 소개합니다. 원본 파일은 구매
+          권한을 확인한 뒤 다운로드할 수 있습니다.
         </span>
       </div>
       {!query && category === "all" && (

@@ -1,6 +1,6 @@
-# ObjectScan v4 engineering instructions
+# ObjectScan v5 engineering instructions
 
-Read ObjectScan_Design_Harness_v4_Codex.md, CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The v4 product-first premium direction supersedes v3 layout/color constraints; use design-system/objectscan/MASTER.md. Preserve the supplied mascot and actual functionality. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
+Read ObjectScan_Codex_Service_Launch_Revision_v5.md, CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The v4 product-first premium direction supersedes v3 layout/color constraints; use design-system/objectscan/MASTER.md. Preserve the supplied mascot and actual functionality. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
 
 ## Scope and interfaces
 - A: apps/web design, accessible UI, auth pages, dual reconstruction wizard, viewer.
@@ -28,5 +28,5 @@ npm run typecheck; npm run lint; npm test; npm run build; npm run test:e2e. Pyth
 - Customer text must not contain adapter/model identifiers, raw errors or filesystem paths. Keep required source attribution only on /legal/opensource; operator diagnostics may retain identifiers.
 - Use actual alpha-transparent supplied mascot derivatives. Never use the baked checkerboard images or invent a new character. No signs/logos held by the character.
 - Original assets are immutable. Edits are typed commands and new private versions. No arbitrary scripts, external glTF references, paid entitlement changes or fake GPU completion.
-- Prior user decisions persist: exclusively noncommercial school service, payments/sales/payouts disabled. Redesign does not enable unqualified generation paths.
+- V5 supersedes the prior school-only presentation and payment-disable preference: implement an isolated Toss TEST commerce environment. Never enable live billing/payouts, unqualified generation, or overwrite existing BE CELEB DNS/deployment. Preserve required license notices; commercial rights remain a separate release gate.
 - Loop: discover → plan → implement → static/integration/browser verify → screenshot critique → fix → integrate. Existing public deployment stays unchanged until new UI/editor passes its gates.
