@@ -356,3 +356,15 @@ export type Artifact = {
   quality: z.infer<typeof artifactReportSchema>;
   created_at: string;
 };
+
+export const listingInput = z
+  .object({
+    title: z.string().trim().min(1).max(100),
+    description: z.string().max(1500),
+    category: z.enum(["objects", "scenes", "furniture", "decor", "other"]),
+    price: z.number().int().min(1).max(100000000),
+    license: z.enum(["standard", "cc-by-4.0", "cc0-1.0"]).default("standard"),
+    consent: z.literal(true),
+    status: z.enum(["draft", "pending"]).default("pending"),
+  })
+  .strict();

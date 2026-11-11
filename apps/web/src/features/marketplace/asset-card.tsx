@@ -11,6 +11,7 @@ export type Listing = {
   preview_url?: string;
   public_preview_path?: string;
   seller_badge?: string;
+  test_mode?: boolean;
 };
 const categories: Record<string, string> = {
   objects: "사물",
@@ -38,6 +39,7 @@ export function AssetCard({
       <div className="project-info">
         <h3>{l.title}</h3>
         <p>{categories[l.category] ?? "3D 에셋"} · 크리에이터 에셋</p>
+        {l.test_mode && <small>테스트 가격 · 실제 청구 없음</small>}
         <strong className="listing-price">
           {educational
             ? "공개 미리보기"

@@ -156,3 +156,24 @@ it("qualification profile never authorizes another customer", () => {
   );
   expect(generationGate(input).allowed).toBe(false);
 });
+
+it("listing license is explicit and publication rejects unsupported rights and missing consent", async () => {
+  const { listingInput } = await import("../packages/shared/src/index");
+  const fixture = {
+    title: "검증용",
+    description: "저작자와 원본 링크",
+    category: "objects",
+    price: 1000,
+    consent: true,
+  };
+  expect(listingInput.parse(fixture).license).toBe("standard");
+  expect(listingInput.parse({ ...fixture, license: "cc-by-4.0" }).license).toBe(
+    "cc-by-4.0",
+  );
+  expect(
+    listingInput.safeParse({ ...fixture, license: "any-rights" }).success,
+  ).toBe(false);
+  expect(listingInput.safeParse({ ...fixture, consent: false }).success).toBe(
+    false,
+  );
+});

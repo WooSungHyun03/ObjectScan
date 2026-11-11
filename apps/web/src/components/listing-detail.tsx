@@ -56,13 +56,23 @@ export function ListingDetail({ id }: { id: string }) {
             <p>{listing.description}</p>
             <div className="listing-amount">
               ₩{Number(listing.price).toLocaleString()}
-              <small>KRW · 일회성 구매</small>
+              <small>
+                {listing.test_mode
+                  ? "테스트 금액 · 실제 청구 없음"
+                  : "KRW · 일회성 구매"}
+              </small>
             </div>
             <CheckoutButton listingId={listing.id} label="에셋 테스트 구매" />
             <dl className="detail-list">
               <div>
                 <dt>라이선스</dt>
-                <dd>{listing.license}</dd>
+                <dd>
+                  {{
+                    standard: "일반 이용 — 재판매·재배포 제외",
+                    "cc-by-4.0": "CC BY 4.0",
+                    "cc0-1.0": "CC0 1.0",
+                  }[listing.license] ?? listing.license}
+                </dd>
               </div>
               <div>
                 <dt>다운로드</dt>

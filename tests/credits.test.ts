@@ -58,6 +58,46 @@ test.skipIf(!url)(
           uid,
           key,
         ]);
+      await db.query(
+        "update app_config set value=$1::jsonb where key='validated_profiles'",
+        [
+          JSON.stringify([
+            {
+              model: "pixal3d",
+              min_images: 1,
+              max_images: 1,
+              owner_ids: [randomUUID()],
+            },
+          ]),
+        ],
+      );
+      // Savepoint retains the fixture after the expected transactional rejection.
+      await db.query("savepoint owner_scope");
+      await expect(run()).rejects.toThrow("INPUT_PROFILE_NOT_VALIDATED");
+      await db.query("rollback to savepoint owner_scope");
+      expect(
+        Number(
+          (
+            await db.query(
+              "select balance from credit_wallets where user_id=$1",
+              [uid],
+            )
+          ).rows[0].balance,
+        ),
+      ).toBe(5);
+      await db.query(
+        "update app_config set value=$1::jsonb where key='validated_profiles'",
+        [
+          JSON.stringify([
+            {
+              model: "pixal3d",
+              min_images: 1,
+              max_images: 1,
+              owner_ids: [uid],
+            },
+          ]),
+        ],
+      );
       const a = (await run()).rows[0];
       expect(a.order_id).toBeNull();
       expect((await run()).rows[0].id).toBe(a.id);

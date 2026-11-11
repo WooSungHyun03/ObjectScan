@@ -6,6 +6,7 @@ import {
   uploadInput,
   targetInput,
   pricingTier,
+  listingInput,
   generationGate,
   platformFee,
   type ModelFamily,
@@ -245,6 +246,7 @@ export function handle(req: Request) {
                 .getPublicUrl(data.public_preview_path).data.publicUrl
             : null,
           seller_badge: "검토된 크리에이터",
+          test_mode: paymentMode() === "test",
         });
       }
       const url = new URL(req.url),
@@ -260,7 +262,12 @@ export function handle(req: Request) {
           : q.order("created_at", { ascending: false });
       const { data, error } = await q.limit(100);
       dbError(error);
-      return json(data);
+      return json(
+        data?.map((listing) => ({
+          ...listing,
+          test_mode: paymentMode() === "test",
+        })),
+      );
     }
     const user = await requireUser();
     await rate(user.id, method === "GET" ? 240 : 60);
@@ -763,25 +770,7 @@ export function handle(req: Request) {
       if (path[2] === "publish" && method === "POST") {
         assertCommerceAllowed();
         if (a.owner_id !== user.id) fail(404, "ASSET_NOT_FOUND");
-        const v = await input(
-          req,
-          z
-            .object({
-              title: z.string().trim().min(1).max(100),
-              description: z.string().max(1500),
-              category: z.enum([
-                "objects",
-                "scenes",
-                "furniture",
-                "decor",
-                "other",
-              ]),
-              price: z.number().int().min(1).max(100000000),
-              consent: z.literal(true),
-              status: z.enum(["draft", "pending"]).default("pending"),
-            })
-            .strict(),
-        );
+        const v = await input(req, listingInput);
         if (v.status === "pending" && !a.preview_path)
           fail(
             409,
@@ -808,6 +797,7 @@ export function handle(req: Request) {
               title: v.title,
               description: v.description,
               category: v.category,
+              license: v.license,
               price: v.price,
               status: marketStatus(v.status),
               rights_consent_at: new Date().toISOString(),
