@@ -14,7 +14,7 @@ test("mascot routes, Korean customer copy and 360/390/768/1440 visual coverage",
     });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "사진 속 대상을",
+      "사진을 올리고,",
     );
     const mascot = page.locator('img[src*="wave.webp"]');
     await expect(mascot).toBeVisible();

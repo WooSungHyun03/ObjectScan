@@ -9,6 +9,7 @@ export async function health() {
       worker_online: false,
       busy: false,
       models: [],
+      validated_profiles: [],
       real_gpu_validated: false,
       payments_mode: "disabled",
       payouts_enabled: false,
@@ -22,16 +23,17 @@ export async function health() {
       .maybeSingle(),
     db
       .from("app_config")
-      .select("value")
-      .eq("key", "validated_models")
-      .maybeSingle(),
+      .select("key,value")
+      .in("key", ["validated_models", "validated_profiles"]),
   ]);
   const envModels = (process.env.ENABLED_MODELS ?? "")
     .split(",")
     .filter((x) => modelSchema.safeParse(x).success) as ModelFamily[];
   const real = process.env.REAL_GPU_VALIDATED === "true";
-  const validated: ModelFamily[] = Array.isArray(validation?.value)
-    ? validation.value
+  const validated: ModelFamily[] = Array.isArray(
+    validation?.find((v) => v.key === "validated_models")?.value,
+  )
+    ? validation!.find((v) => v.key === "validated_models")!.value
     : [];
   return {
     configured: true,
@@ -44,6 +46,9 @@ export async function health() {
       ? envModels.filter(
           (m) => validated.includes(m) && (slot?.models ?? []).includes(m),
         )
+      : [],
+    validated_profiles: real
+      ? (validation?.find((v) => v.key === "validated_profiles")?.value ?? [])
       : [],
     real_gpu_validated: real && validated.length > 0,
     payments_mode: paymentMode(),

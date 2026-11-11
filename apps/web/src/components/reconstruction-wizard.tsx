@@ -1,7 +1,7 @@
 "use client";
+import { GenerationCheckout } from "@/features/create/generation-checkout";
 import { DraftPhotos } from "@/features/create/draft-photos";
 import { customerError } from "@/lib/customer-copy";
-import { educationMode } from "@/lib/project-purpose";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -31,7 +31,6 @@ import {
   type ProjectImage,
   type Job,
   type ObjectSelection,
-  pricingTier,
   sceneWarnings,
 } from "@objectscan/shared";
 import { api, post } from "@/lib/client-api";
@@ -854,52 +853,13 @@ export function ReconstructionWizard({
                   </Button>
                 </div>
               )}
-              <div className="quote-box">
-                <h3>{educationMode() ? "연구용 생성" : "제작 요금"}</h3>
-                <div>
-                  <span>
-                    {mode === "object" ? "객체 복원" : "장면 복원"} ·{" "}
-                    {project?.input_image_count
-                      ? pricingTier(project.input_image_count).key
-                      : "—"}
-                    장 구간
-                  </span>
-                  <strong>
-                    {educationMode() ? "과금 없음" : "서버 견적 필요"}
-                  </strong>
-                </div>
-                <p>
-                  {educationMode()
-                    ? "업로드와 선택 영역 검토를 먼저 사용할 수 있습니다. 일반 입력의 3D 생성은 GPU·입력 경로·품질 검증 중이며, 결제를 요구하지 않습니다."
-                    : "가격은 관리자 구성에서 불러옵니다. GPU 실측 검증과 모델 가용성이 확인되기 전에는 결제하지 않습니다."}
-                </p>
-                <Button
-                  disabled={
-                    educationMode() ||
-                    busy ||
-                    health?.payments_mode !== "test" ||
-                    !health.real_gpu_validated
-                  }
-                  onClick={() =>
-                    void action(async () => {
-                      const order = await post<{ id: string; amount: number }>(
-                        "orders",
-                        {
-                          kind: "generation",
-                          project_id: pid,
-                          idempotency_key: crypto.randomUUID(),
-                        },
-                      );
-                      router.push(`/billing?order=${order.id}`);
-                    })
-                  }
-                >
-                  <LockKeyhole size={15} />
-                  {educationMode()
-                    ? "3D 생성 검증 중"
-                    : "견적 확인 및 테스트 결제"}
-                </Button>
-              </div>
+              <GenerationCheckout
+                projectId={pid}
+                onStarted={() => {
+                  setStep(processIndex);
+                  void load();
+                }}
+              />
             </>
           )}
           {step !== processIndex &&

@@ -64,6 +64,18 @@ describe("independent dual-workflow contract", () => {
       realGpuValidated: true,
       workerOnline: true,
       availableModels: ["gaussian_wrapping", "object_aware_loss"] as const,
+      validatedProfiles: [
+        {
+          model: "gaussian_wrapping" as const,
+          min_images: 20,
+          max_images: 200,
+        },
+        {
+          model: "object_aware_loss" as const,
+          min_images: 21,
+          max_images: 200,
+        },
+      ],
     };
     expect(
       generationGate({
@@ -91,4 +103,26 @@ describe("independent dual-workflow contract", () => {
     expect(platformFee(10001, 1250)).toBe(1250);
     expect(() => platformFee(-1, 1000)).toThrow();
   });
+});
+
+it("single-image validation never authorizes multi-view generation", () => {
+  const base = {
+    mode: "object" as const,
+    count: 4,
+    included: 4,
+    capture: "camera_orbit" as const,
+    masksReviewed: true,
+    posesValid: true,
+    selected: 4,
+    realGpuValidated: true,
+    workerOnline: true,
+    availableModels: ["pixal3d" as const],
+    validatedProfiles: [
+      { model: "pixal3d" as const, min_images: 1, max_images: 1 },
+    ],
+  };
+  expect(generationGate(base).errors).toContain("INPUT_PROFILE_NOT_VALIDATED");
+  expect(
+    generationGate({ ...base, count: 1, included: 1, selected: 1 }).allowed,
+  ).toBe(true);
 });

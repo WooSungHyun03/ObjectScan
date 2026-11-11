@@ -14,3 +14,11 @@
 | R10 | OAL/GW commercial license restrictions                    | Audit pinned LICENSE.md and dependencies/checkpoints; obtain applicable rights before paid launch; research smoke only meanwhile | School-only public hosting authorized; commercial operation prohibited by project policy                                                                         |
 
 V3 risks: baked checkerboard originals excluded; external glTF resources rejected to prevent remote fetch/SSRF; edited version quota/owner checks required; browser memory bounded and editing worker asynchronous; unknown units never labeled as metres. New branding must not silently activate generation or payments.
+
+## V5 launch revision
+
+- Existing be-celeb.org is attached to Vercel project sw-system and returns an existing service. DNS/association takeover is blocked until explicit approval and zone rollback snapshot. Cloudflare mail MX/SPF must survive.
+- Prior school-only presentation/payment preference is superseded for an isolated test service. Live financial operation is still OFF. Original OAL/GW noncommercial license restrictions remain an actual commercial release gate; source notices cannot be erased.
+- Single Pixal offline pass is not multi-view qualification. New validated_profiles and credit enqueue checks enforce exact input ranges; fail closed until configured.
+- Credit refunds reserve units atomically before provider cancellation. Uncertain provider outcomes retain the reservation for requery/operator recovery; never release on network timeout alone. Replay settlement and retry cycles preserve append-only credit movements. Actual provider refund verification remains a release gate.
+- Figma Starter MCP quota still rejects frame reads. New v5 changes are verified by local actual browser captures, not falsely described as Figma-synced.

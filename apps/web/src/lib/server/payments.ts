@@ -17,8 +17,8 @@ export function paymentMode() {
     client = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
   if (
     mode === "test" &&
-    secret?.startsWith("test_sk_") &&
-    client?.startsWith("test_ck_")
+    (secret?.startsWith("test_sk_") || secret?.startsWith("test_gsk_")) &&
+    (client?.startsWith("test_ck_") || client?.startsWith("test_gck_"))
   )
     return "test";
   return "disabled";
@@ -169,6 +169,12 @@ export async function refundTestPayment(orderId: string, reason: string) {
     dbError(je);
     if (jobs?.some((j) => !["failed", "cancelled"].includes(j.state)))
       fail(409, "GENERATION_REFUND_REVIEW_REQUIRED");
+  }
+  if (order.kind === "credits") {
+    const { error: reserveError } = await db.rpc("reserve_credit_refund", {
+      p_order: order.id,
+    });
+    dbError(reserveError);
   }
   await toss(`payments/${encodeURIComponent(payment.payment_key)}/cancel`, {
     method: "POST",

@@ -467,3 +467,10 @@ def test_pixal_rgba_keeps_framing_and_rejects_misaligned_mask(tmp_path):
     Image.new("L", (40, 30), 255).save(tmp_path / "masks/a.png")
     with pytest.raises(ValueError, match="MASK_INVALID"):
         pixal_views(tmp_path, {"input_image_count": 1, "images": [{"image_id": "a"}]})
+
+
+def test_generation_submission_excludes_local_execution_metadata():
+    from objectscan_worker.main import generation_result
+    report = {"quality": {"real_gpu": True}, "execution_profile": "naf_fp16", "local_path": "/private/diagnostic"}
+    assert generation_result(report, "owner/project/mesh.glb") == {"quality": {"real_gpu": True}, "artifact_path": "owner/project/mesh.glb"}
+    assert generation_result(report, "mesh.glb", "preview.glb")["preview_path"] == "preview.glb"

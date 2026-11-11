@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { mkdir, writeFile } from "node:fs/promises";
-test("v4 public design: real preview states, anonymous upload entry, responsive and axe audit", async ({
+test("v5 public design: real preview states, anonymous upload entry, responsive and axe audit", async ({
   page,
 }) => {
   test.setTimeout(180000);
-  await mkdir("artifacts/design-v4", { recursive: true });
+  await mkdir("artifacts/launch-v5", { recursive: true });
   const audit = [];
   for (const width of [1440, 1280, 768, 390, 360]) {
     await page.setViewportSize({
@@ -29,7 +29,7 @@ test("v4 public design: real preview states, anonymous upload entry, responsive 
         `${route} ${width}`,
       ).toBe(true);
       await page.screenshot({
-        path: `artifacts/design-v4/final-${route === "/" ? "home" : route.slice(1)}-${width}.png`,
+        path: `artifacts/launch-v5/final-${route === "/" ? "home" : route.slice(1)}-${width}.png`,
         fullPage: true,
       });
       if (width === 1440 || width === 390) {
@@ -41,7 +41,7 @@ test("v4 public design: real preview states, anonymous upload entry, responsive 
     }
   }
   await writeFile(
-    "artifacts/design-v4/axe.json",
+    "artifacts/launch-v5/axe.json",
     JSON.stringify(audit, null, 2),
   );
   expect(
@@ -61,7 +61,9 @@ test("v4 public design: real preview states, anonymous upload entry, responsive 
   await page.getByRole("button", { name: "구조 보기", exact: true }).click();
   await expect(page.locator('img[src*="shoe-wire"]')).toBeVisible();
   await page.getByRole("button", { name: "질감 보기", exact: true }).click();
-  await expect(page.locator('img[src*="shoe-render"]')).toBeVisible();
+  await expect(
+    page.locator('.result-preview img[src*="shoe-render"]'),
+  ).toBeVisible();
   await page.goto("/create");
   await page.locator("input[type=file]").setInputFiles({
     name: "unsupported.svg",

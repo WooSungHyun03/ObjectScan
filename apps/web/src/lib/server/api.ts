@@ -115,6 +115,7 @@ async function gateProject(pid: string, owner: string) {
     realGpuValidated: h.real_gpu_validated,
     workerOnline: h.worker_online,
     availableModels: h.models as ModelFamily[],
+    validatedProfiles: h.validated_profiles,
   });
   return { project, gate, health: h };
 }
@@ -127,7 +128,20 @@ export function handle(req: Request) {
       method = req.method,
       dbReady = configured();
     if (path[0] === "internal") return workerRoute(req, path.slice(1));
-    if (path[0] === "health") return json(await health());
+    if (path[0] === "health") {
+      const { models, validated_profiles, ...status } = await health();
+      return json({
+        ...status,
+        capabilities: {
+          single_photo:
+            models.includes("pixal3d") &&
+            validated_profiles.some(
+              (p: { model: string; min_images: number; max_images: number }) =>
+                p.model === "pixal3d" && p.min_images <= 1 && p.max_images >= 1,
+            ),
+        },
+      });
+    }
     if (method === "POST" && path[0] === "payments" && path[1] === "webhook") {
       if (paymentMode() === "disabled") fail(503, "PAYMENTS_DISABLED");
       const v = await input(
@@ -179,6 +193,20 @@ export function handle(req: Request) {
         dbError(error);
         return json({
           tiers,
+          packages:
+            (
+              await db
+                .from("credit_packages")
+                .select("id,name,credits,amount")
+                .eq("enabled", true)
+            ).data ?? [],
+          credit_rates:
+            (
+              await db
+                .from("generation_credit_rates")
+                .select("mode,min_images,credits")
+                .eq("enabled", true)
+            ).data ?? [],
           commission_bps: fee?.value ?? null,
           payments_mode: paymentMode(),
         });
@@ -551,13 +579,24 @@ export function handle(req: Request) {
         dbError(error);
         return json({ id: data.id }, 201);
       }
-      if (op === "qa" && method === "GET")
-        return json(await gateProject(pid, user.id));
+      if (op === "qa" && method === "GET") {
+        const { project, gate } = await gateProject(pid, user.id);
+        return json({
+          project: {
+            mode: project.mode,
+            input_image_count: project.input_image_count,
+          },
+          gate: { allowed: gate.allowed, errors: gate.errors },
+        });
+      }
       if (op === "generate" && method === "POST") {
         const v = await input(
             req,
             z
-              .object({ order_id: z.uuid(), idempotency_key: z.uuid() })
+              .object({
+                order_id: z.uuid().optional(),
+                idempotency_key: z.uuid(),
+              })
               .strict(),
           ),
           g = await gateProject(pid, user.id);
@@ -568,11 +607,50 @@ export function handle(req: Request) {
           p_owner: user.id,
           p_kind: "generation",
           p_key: v.idempotency_key,
-          p_order: v.order_id,
+          p_order: v.order_id ?? null,
         });
         dbError(error);
         return json({ id: data.id }, 201);
       }
+    }
+    if (path[0] === "wallet" && path[1] === "trial" && method === "POST") {
+      await rate(`trial:${user.id}`, 5);
+      const { data, error } = await adminClient().rpc("claim_trial_credits", {
+        p_owner: user.id,
+      });
+      dbError(error);
+      return json({ balance: data });
+    }
+    if (path[0] === "wallet" && method === "GET") {
+      const db = adminClient();
+      const [wallet, rates, entries] = await Promise.all([
+        db
+          .from("credit_wallets")
+          .select("balance")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        db.from("generation_credit_rates").select("*").eq("enabled", true),
+        db
+          .from("wallet_entries")
+          .select("id,kind,credits,created_at")
+          .eq("user_id", user.id)
+          .order("id", { ascending: false })
+          .limit(50),
+      ]);
+      for (const r of [wallet, rates, entries]) dbError(r.error);
+      return json({
+        trial_available:
+          (
+            await db
+              .from("app_config")
+              .select("value")
+              .eq("key", "trial_credits")
+              .maybeSingle()
+          ).data?.value?.enabled === true,
+        balance: wallet.data?.balance ?? 0,
+        rates: rates.data ?? [],
+        entries: entries.data ?? [],
+      });
     }
     if (path[0] === "jobs") {
       if (path[2] === "retry" && method === "POST") {
@@ -810,6 +888,13 @@ export function handle(req: Request) {
           z.discriminatedUnion("kind", [
             z
               .object({
+                kind: z.literal("credits"),
+                package_id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+                idempotency_key: z.uuid(),
+              })
+              .strict(),
+            z
+              .object({
                 kind: z.literal("generation"),
                 project_id: z.uuid(),
                 idempotency_key: z.uuid(),
@@ -832,7 +917,21 @@ export function handle(req: Request) {
           .maybeSingle();
         if (existing) return json(existing);
         let values: Record<string, unknown>;
-        if (v.kind === "generation") {
+        if (v.kind === "credits") {
+          const { data: pack, error: pe } = await db
+            .from("credit_packages")
+            .select("credits,amount")
+            .eq("id", v.package_id)
+            .eq("enabled", true)
+            .maybeSingle();
+          dbError(pe);
+          if (!pack) fail(409, "PRICE_NOT_CONFIGURED");
+          values = {
+            credit_units: pack.credits,
+            amount: pack.amount,
+            currency: "KRW",
+          };
+        } else if (v.kind === "generation") {
           const g = await gateProject(v.project_id, user.id);
           if (!g.gate.allowed)
             fail(

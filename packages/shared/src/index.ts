@@ -256,9 +256,23 @@ export function generationGate(input: {
   realGpuValidated: boolean;
   workerOnline: boolean;
   availableModels: ModelFamily[];
+  validatedProfiles?: {
+    model: ModelFamily;
+    min_images: number;
+    max_images: number;
+  }[];
 }) {
   const family = routeModel(input.mode, input.count),
     errors: string[] = [];
+  if (
+    !input.validatedProfiles?.some(
+      (p) =>
+        p.model === family &&
+        input.count >= p.min_images &&
+        input.count <= p.max_images,
+    )
+  )
+    errors.push("INPUT_PROFILE_NOT_VALIDATED");
   if (!input.realGpuValidated) errors.push("REAL_GPU_NOT_VALIDATED");
   if (!input.workerOnline || !input.availableModels.includes(family))
     errors.push("MODEL_UNAVAILABLE");

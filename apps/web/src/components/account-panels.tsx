@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { api, post, date } from "@/lib/client-api";
 import { Button } from "./ui/button";
 import { PageTitle } from "./page-title";
+import { CreditWallet } from "@/features/billing/credit-wallet";
 type Entry = {
   id: string;
   kind: string;
@@ -78,9 +79,10 @@ export function BillingPanel() {
   return (
     <>
       <PageTitle
-        title="결제 및 정산"
+        title="크레딧과 결제 내역"
         description="사용량별 주문과 판매 내역을 확인하세요."
       />
+      <CreditWallet />
       <div className="notice warning">
         현재 테스트 결제 준비 단계입니다. 테스트 거래는 출금 가능한 판매 잔액에
         반영되지 않습니다.
@@ -141,8 +143,12 @@ export function BillingPanel() {
           data.orders.map((o) => (
             <p key={o.id}>
               {date(o.created_at)} · {o.id.slice(0, 8)} ·{" "}
-              {o.kind === "generation" ? "3D 생성" : "에셋 구매"} · ₩
-              {Number(o.amount).toLocaleString()} · {o.status}
+              {o.kind === "credits"
+                ? "크레딧 충전"
+                : o.kind === "generation"
+                  ? "3D 생성"
+                  : "에셋 구매"}{" "}
+              · ₩{Number(o.amount).toLocaleString()} · {o.status}
             </p>
           ))
         ) : (

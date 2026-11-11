@@ -1,12 +1,9 @@
+import { serviceOrigin } from "@/lib/service-origin";
 import { NextResponse } from "next/server";
 import { userClient } from "@/lib/supabase/server";
 export async function GET(req: Request) {
   const url = new URL(req.url),
-    appOrigin =
-      process.env.NEXT_PUBLIC_APP_URL ??
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : url.origin),
+    appOrigin = serviceOrigin(),
     code = url.searchParams.get("code"),
     raw = url.searchParams.get("next") ?? "/dashboard",
     next =

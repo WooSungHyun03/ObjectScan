@@ -2,6 +2,10 @@
 
 Independent photo-to-textured-mesh web service built with Next.js, Supabase, Vercel and an outbound Python GPU worker. The earlier ChatGPT Sites architecture is superseded.
 
+## V5 service launch revision
+
+Authority: ObjectScan_Codex_Service_Launch_Revision_v5.md. Current production remains the prior v4 release; v5 progresses on feat/service-launch-v5 with a separate Preview. Actual status and release evidence: reports/RELEASE_EVIDENCE.md. Domain be-celeb.org is occupied by sw-system and is preserved until explicit approval. Test finance and scoped GPU qualification supersede the older school-only presentation below; no live payments or automatic payouts. See docs/RUNBOOK_V5.md.
+
 ## Run locally
 
 Node22 and Docker required. Run `npx --yes npm@11 ci`, `npm run db:start`, `npx supabase migration up --local`. Save `npx supabase status -o json` to a private temporary file and run `node scripts/configure-local.mjs /absolute/path/to/status.json` to configure isolated local services without printing credentials. Then `npm run dev`.

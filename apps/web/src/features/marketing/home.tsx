@@ -1,4 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
+import { roomConcept } from "@/lib/brand/design-assets";
+import { productPreview } from "@/lib/brand/product-preview";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -39,9 +42,9 @@ export function Home() {
           <div className="premium-hero-copy">
             <p className="eyebrow">사진에서 시작하는 나의 3D</p>
             <h1 id="hero-title">
-              사진 속 대상을,
+              사진을 올리고,
               <br />
-              <span>입체적인 작업으로.</span>
+              <span>3D로 완성하세요.</span>
             </h1>
             <p className="lead">
               물체 하나부터 공간 전체까지.
@@ -55,7 +58,7 @@ export function Home() {
                 </Link>
               </Button>
               <Link className="secondary-action" href="#how-it-works">
-                작동 방식 보기 <ArrowRight aria-hidden="true" size={16} />
+                이용 방법 보기 <ArrowRight aria-hidden="true" size={16} />
               </Link>
             </div>
           </div>
@@ -67,11 +70,11 @@ export function Home() {
         <aside className="release-note">
           <ShieldCheck aria-hidden="true" size={18} />
           <p>
-            <strong>내 사진은 기본 비공개로.</strong> 지금은 사진 업로드·대상
-            선택과 예시 모델 편집을 이용할 수 있습니다. 일반 사진의 3D 생성은
-            검증 중입니다.
+            <strong>내 사진은 기본 비공개로.</strong> 사진과 모델은 직접
+            게시하기 전까지 나에게만 보입니다. 지원하는 제작 방식은 사진을
+            선택한 뒤 확인할 수 있습니다.
           </p>
-          <Link href="/docs#research">제공 범위 보기</Link>
+          <Link href="/docs#research">촬영 가이드</Link>
         </aside>
         <section id="product" className="home-section">
           <div className="home-section-title">
@@ -93,6 +96,66 @@ export function Home() {
                 </span>
               </Link>
             ))}
+          </div>
+        </section>
+        <section
+          className="home-section showcase-section"
+          aria-labelledby="showcase-title"
+        >
+          <div className="home-section-title">
+            <div>
+              <p className="eyebrow">다음 창작의 시작</p>
+              <h2 id="showcase-title">
+                작은 물건부터,
+                <br />
+                머물고 싶은 공간까지.
+              </h2>
+            </div>
+            <Link href="/marketplace">
+              에셋 마켓 둘러보기 <ArrowUpRight size={18} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="showcase-grid">
+            <figure>
+              <div className="showcase-visual">
+                <Image
+                  src={productPreview.render}
+                  alt="파란 운동화 3D 편집 예시"
+                  width={1000}
+                  height={700}
+                  sizes="(max-width:767px) 90vw, 40vw"
+                />
+              </div>
+              <figcaption>
+                <div>
+                  <span>물체 · 3D 편집 예시</span>
+                  <h3>질감까지 담긴 디테일</h3>
+                </div>
+                <Link href="/demo/edit">
+                  직접 편집하기 <ArrowUpRight size={17} aria-hidden="true" />
+                </Link>
+              </figcaption>
+            </figure>
+            <figure>
+              <div className="showcase-visual">
+                <Image
+                  src={roomConcept.src}
+                  alt={roomConcept.alt}
+                  width={1200}
+                  height={800}
+                  sizes="(max-width:767px) 90vw, 55vw"
+                />
+              </div>
+              <figcaption>
+                <div>
+                  <span>{roomConcept.label}</span>
+                  <h3>나만의 공간을 그려보세요</h3>
+                </div>
+                <Link href="/create/scene">
+                  공간 제작 준비 <ArrowUpRight size={17} aria-hidden="true" />
+                </Link>
+              </figcaption>
+            </figure>
           </div>
         </section>
         <section id="how-it-works" className="home-section workflow-section">
@@ -162,12 +225,31 @@ export function Home() {
               <span>3D 에셋 마켓</span>
               <h3>다른 창작의 재료 찾기</h3>
               <p>
-                공개 승인된 미리보기만 소개합니다. 판매·구매는 운영하지
-                않습니다.
+                다음 프로젝트에 어울리는 에셋을 찾아보고, 3D로 미리 확인하세요.
               </p>
               <ArrowUpRight aria-hidden="true" />
             </Link>
           </div>
+        </section>
+        <section className="home-section home-price">
+          <div>
+            <p className="eyebrow">제작 크레딧</p>
+            <h2>
+              작업 전에 확인하고,
+              <br />
+              필요한 만큼 사용하세요.
+            </h2>
+            <p>
+              사진 수와 제작 방식에 따른 차감량을 확인하세요.
+              <br />
+              실패하거나 취소된 제작은 크레딧을 돌려드립니다.
+            </p>
+          </div>
+          <Button asChild variant="outline">
+            <Link href="/pricing">
+              요금 안내 <ArrowUpRight size={18} />
+            </Link>
+          </Button>
         </section>
         <section className="home-section faq-section">
           <h2>시작 전, 궁금한 점.</h2>
@@ -187,7 +269,7 @@ export function Home() {
               },
               {
                 q: "이용 요금이 있나요?",
-                a: "학교 교육·연구용 비상업 서비스로 운영하며 결제와 에셋 판매는 비활성 상태입니다. 임의의 금액을 청구하지 않습니다.",
+                a: "사진 수와 제작 방식에 따른 크레딧을 작업 전에 확인합니다. 요금 안내에서 확정된 상품을 확인해 주세요. 결제 테스트에는 실제 돈이 청구되지 않습니다.",
               },
             ].map(({ q, a }) => (
               <details key={q}>

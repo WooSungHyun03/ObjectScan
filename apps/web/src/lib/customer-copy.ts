@@ -40,6 +40,13 @@ const messages: Record<string, string> = {
     "저장 요청의 내용이 변경되었습니다. 모델을 다시 확인해 주세요.",
   GPU_OOM:
     "처리 가능한 메모리를 초과했습니다. 사진을 줄이거나 낮은 해상도로 다시 시도해 주세요.",
+  INPUT_PROFILE_NOT_VALIDATED:
+    "선택한 사진 구성의 제작을 준비하고 있습니다. 지원되는 제작 방식을 확인해 주세요.",
+  BALANCE_INSUFFICIENT: "크레딧이 부족합니다. 잔액을 확인해 주세요.",
+  TRIAL_UNAVAILABLE:
+    "체험 크레딧 제공이 마감되었거나 준비 중입니다. 이용 가능한 상품을 확인해 주세요.",
+  PRICE_NOT_CONFIGURED:
+    "요금이 아직 확정되지 않았습니다. 나중에 다시 확인해 주세요.",
   REAL_GPU_NOT_VALIDATED:
     "3D 생성 기능을 검증하고 있습니다. 사진 업로드와 대상 선택을 먼저 이용해 주세요.",
   MODEL_UNAVAILABLE:

@@ -64,3 +64,15 @@ Follow docs/IMPLEMENTATION_PLAN.md for task IDs/owners/dependencies/evidence. V3
 ## V4 premium redesign
 
 V4-RESEARCH/TOOLS/SYSTEM/FLOWS/QA/RELEASE are tracked with owner, priority, dependency, evidence and blocker in design/IMPLEMENTATION_STATUS.md. V4 visual authority supersedes V3 layout/palette; original privacy, queue, finance and reconstruction gates remain.
+
+## V5 launch revision
+
+| ID | Track | Acceptance | Current state |
+|---|---|---|---|
+| V5-AUDIT | C | real domain/GPU/keys/repo inventory | performed; AS_IS_AUDIT/DOMAIN_MIGRATION |
+| V5-GPU | B/C | real upload→mask→leased CUDA→textured GLB→viewer/download | actual local run in progress; no activation claim |
+| V5-CREDIT | C | atomic debit/idempotency/recovery/retry + scoped input qualification | SQL/domain tests33 passed; provider topup pending |
+| V5-TOSS | C | actual SDK2 test order→confirm→one credit grant | user test keys valid; real provider window under test |
+| V5-DESIGN | A | service copy/gallery/nav/credit UI360/768/1440 | implemented; first15 route/axe audits pass; final regression pending |
+| V5-MARKET | A/C | two-account post/approve/test buy/entitlement/fee | existing platform retained; v5 real transaction pending |
+| V5-DOMAIN | C | Preview first; explicit approval/rollback before switch | no DNS mutations; existing sw-system preserved |
