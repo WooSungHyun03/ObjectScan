@@ -6,6 +6,8 @@ Independent photo-to-textured-mesh web service built with Next.js, Supabase, Ver
 
 Authority: ObjectScan_Codex_Service_Launch_Revision_v5.md. Current production remains the prior v4 release; v5 progresses on feat/service-launch-v5 with a separate Preview. Actual status and release evidence: reports/RELEASE_EVIDENCE.md. Domain be-celeb.org is occupied by sw-system and is preserved until explicit approval. Test finance and scoped GPU qualification supersede the older school-only presentation below; no live payments or automatic payouts. See docs/RUNBOOK_V5.md.
 
+[Current protected v5 Preview](https://objectscan-qz44npios-sunghyuns-projects-da008879.vercel.app) runs in Seoul. Actual single-photo reconstruction,39MB private textured GLB/viewer/download and two-account Toss TEST marketplace purchase/refund pass.60 Node/DB tests,26 Python tests,9 browser regressions and15 responsive/axe checks pass; exact source/CI is in the evidence report. Two additional confirmed accounts can claim one free trial each. Multiple-photo/scene generation, external SMTP delivery and live commercial release are not qualified.
+
 ## Run locally
 
 Node22 and Docker required. Run `npx --yes npm@11 ci`, `npm run db:start`, `npx supabase migration up --local`. Save `npx supabase status -o json` to a private temporary file and run `node scripts/configure-local.mjs /absolute/path/to/status.json` to configure isolated local services without printing credentials. Then `npm run dev`.
@@ -14,7 +16,7 @@ Node22 and Docker required. Run `npx --yes npm@11 ci`, `npm run db:start`, `npx 
 
 Actual generated artifact checks require an explicit output: set `OBJECTSCAN_VALIDATE_GLB=/absolute/path/to/mesh.glb`, then run `npx vitest run --config vitest.gpu.config.ts` and `npx playwright test --config playwright.gpu.config.ts pixal-artifact.spec.ts`. The adjacent manifest, source images/masks, result and preview must belong to a real hardware run. Set `OBJECTSCAN_GPU_VIEWER_ONLY=1` to skip disposable local marketplace moderation for research outputs. These tests import the real offline artifact for viewer QA; they do not simulate paid generation or validate a model's production quality.
 
-## Status
+## Historical v2–v4 status
 
 Private auth/projects/uploads, two reconstruction interfaces, GLB viewer, queue/lease boundaries, sandbox financial APIs, marketplace publication/moderation and manual payout-review bookkeeping are implemented. The dedicated hosted Supabase project and [protected Vercel Preview](https://objectscan-pz9pnbynu-sunghyuns-projects-da008879.vercel.app) pass real browser login/upload/private download/RLS and SAM2 queue/CUDA/mask-review checks. Hosted SMTP delivery is still unverified.
 

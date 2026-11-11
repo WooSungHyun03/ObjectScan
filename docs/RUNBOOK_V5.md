@@ -21,3 +21,13 @@ Observe actual child processes/GPU use and the exact slot/job first. Stop the pr
 ## Rollback
 
 Keep the prior Vercel production alias/deployment. New migrations default to disabled gates and preserve prior order/marketplace settlement through dedicated wrapper functions. Roll back application by promoting its recorded prior artifact; do not drop financial history or down-migrate active ledgers. Disable new Preview variables/profiles/trial/package rates to close entry points. Domain changes require the separate DOMAIN_MIGRATION approval and exported zone snapshot.
+
+## Verified Preview operation (2026-11-12)
+
+Application source/deployment and gate results: reports/RELEASE_EVIDENCE.md. Worker environment remains private600 at ~/.config/objectscan/worker.env; adapter configuration is adapters-v5.json. It is pinned to the final protected Preview and supports SAM2 plus qualified single-photo reconstruction. Do not copy Supabase service-role/Toss secret into worker. Check the exact slot is idle before changing endpoint/config; retain global flock and systemd control-group process handling.
+
+Preview models/profile permit only one object image. Trial cap4 includes2 retained qualification grants and allows2 additional confirmed accounts one credit each. Financial/qualification history is retained; fixture users are banned and elevated test roles removed. No public fixture listing remains. Normal commission_bps is separate from sandbox_commission_bps; both currently JSON null. Setting a JSONB configuration to null through REST writes SQL NULL and is rejected: use a narrowly scoped parameterized SQL/management query for JSON null, never delete ledger/config history to suppress an error.
+
+apps/web/vercel.json pins icn1; manual deployment also used --regions icn1. Verify actual deployment API regions/source, not build-machine location. Default US execution was rejected by the supplied Toss key's access policy; Seoul actual confirmation/refund passed without changing the policy. Do not enable broad IP access or paid static egress as a workaround without assessing/authorizing the account change. Payment result retry repeats the same server-verified order, never creates a second charge.
+
+If a deployment access token appears in diagnostics, stop logging values, generate a replacement, set it as the project default, revoke each old token, then verify old credentials fail by HTTP after propagation. Preserve SSO and never print dictionary keys of protectionBypass (the keys themselves are secrets). Update only the worker's private header value. The v5 incident is resolved and recorded without values.

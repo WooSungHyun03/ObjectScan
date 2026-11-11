@@ -65,14 +65,17 @@ Follow docs/IMPLEMENTATION_PLAN.md for task IDs/owners/dependencies/evidence. V3
 
 V4-RESEARCH/TOOLS/SYSTEM/FLOWS/QA/RELEASE are tracked with owner, priority, dependency, evidence and blocker in design/IMPLEMENTATION_STATUS.md. V4 visual authority supersedes V3 layout/palette; original privacy, queue, finance and reconstruction gates remain.
 
-## V5 launch revision
+## V5 launch revision — latest2026-11-12
 
-| ID | Track | Acceptance | Current state |
-|---|---|---|---|
-| V5-AUDIT | C | real domain/GPU/keys/repo inventory | performed; AS_IS_AUDIT/DOMAIN_MIGRATION |
-| V5-GPU | B/C | real upload→mask→leased CUDA→textured GLB→viewer/download | actual local run in progress; no activation claim |
-| V5-CREDIT | C | atomic debit/idempotency/recovery/retry + scoped input qualification | SQL/domain tests33 passed; provider topup pending |
-| V5-TOSS | C | actual SDK2 test order→confirm→one credit grant | user test keys valid; real provider window under test |
-| V5-DESIGN | A | service copy/gallery/nav/credit UI360/768/1440 | implemented; first15 route/axe audits pass; final regression pending |
-| V5-MARKET | A/C | two-account post/approve/test buy/entitlement/fee | existing platform retained; v5 real transaction pending |
-| V5-DOMAIN | C | Preview first; explicit approval/rollback before switch | no DNS mutations; existing sw-system preserved |
+Historical task notes above remain as history; v5 supersedes prior payment-disable presentation for TEST mode.
+
+| ID         | Acceptance                                                               | State / evidence                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V5-AUDIT   | actual repo/tools/domain inventory                                       | PASS; AS_IS_AUDIT/DOMAIN_MIGRATION                                                                                                                   |
+| V5-GPU     | single-photo upload→SAM2→credit→CUDA→textured GLB→viewer/download/reopen | PASS actual hosted;964287triangles,39MB,489.46s,12994MiB. Other input profiles blocked.                                                              |
+| V5-CREDIT  | atomic debit/recovery/retry, exact qualification, bounded trial          | PASS local60-test suite; Preview2 additional one-credit trials after preserved fixtures                                                              |
+| V5-TOSS    | actual SDK2 TEST approval/replay/refund                                  | PASS actual local topup/refund and hosted market approval/refund; Seoul region fixes provider IP denial                                              |
+| V5-DESIGN  | service copy/assets/nav/credit/confirmation UI and responsive review     | PASS15 Preview route-width/axe audits,9 browser regressions; actual tools/fallback recorded                                                          |
+| V5-MARKET  | two-account publish/approval/TEST buy/GLB/fee/refund                     | PASS actual hosted; fixture1000KRW/100fee, no withdrawable proceeds; listing removed/accounts quarantined after verification                         |
+| V5-DOMAIN  | protected Preview first, preserve existing BE CELEB                      | PASS preservation; DNS replacement still requires approval                                                                                           |
+| V5-RELEASE | static/build/CI, evidence, operations                                    | Local gates pass; source/deployment/CI exact results in reports/RELEASE_EVIDENCE.md. SMTP, multi-photo/scene quality and live commercial gates open. |

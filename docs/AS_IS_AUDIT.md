@@ -1,5 +1,7 @@
 # V5 as-is audit — 2026-11-11
 
+This is the initial audit snapshot, not the current release status. Updated2026-11-12 acceptance results are in reports/RELEASE_EVIDENCE.md.
+
 Baseline: ade84d6, v4 live application9d10a0e. Existing auth/private uploads/SAM2 worker/editor versions and authorization are verified in v4 evidence, not newly claimed v5 passes.
 
 | Feature                      | Actual state                                                            | Evidence / next gate                                |
