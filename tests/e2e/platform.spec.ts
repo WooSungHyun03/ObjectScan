@@ -9,12 +9,12 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
 }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "사진을 3D로",
+    "사진 속 대상을",
   );
   await expect(
-    page.getByRole("link", { name: /Object Mesh 객체만/ }),
+    page.getByRole("link", { name: /원하는 물체만 3D로 만들기/ }),
   ).toBeVisible();
-  await expect(page.locator('canvas[data-model-loaded="true"]')).toBeVisible();
+  await expect(page.locator('img[src*="wave.webp"]')).toBeVisible();
   await page.screenshot({
     path: "artifacts/landing-desktop.png",
     fullPage: true,
@@ -35,7 +35,7 @@ test("landing, pricing, real viewer controls and responsive navigation", async (
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await expect(page.locator('canvas[data-model-loaded="true"]')).toBeVisible();
+  await expect(page.locator('img[src*="wave.webp"]')).toBeVisible();
   await page.screenshot({
     path: "artifacts/landing-mobile.png",
     fullPage: true,

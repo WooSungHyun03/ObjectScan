@@ -1,18 +1,33 @@
+import { customerError } from "./customer-copy";
 export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const r = await fetch(`/api/${path}`, {
-    ...options,
-    headers: {
-      ...(typeof options.body === "string"
-        ? { "Content-Type": "application/json" }
-        : {}),
-      ...options.headers,
-    },
-  });
-  const value = await r.json();
-  if (!r.ok) throw new Error(value.error ?? "요청을 처리하지 못했습니다.");
+  let r: Response;
+  try {
+    r = await fetch(`/api/${path}`, {
+      ...options,
+      headers: {
+        ...(typeof options.body === "string"
+          ? { "Content-Type": "application/json" }
+          : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error(
+      "서비스에 연결하지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.",
+    );
+  }
+  let value;
+  try {
+    value = await r.json();
+  } catch {
+    throw new Error(
+      "서비스 응답을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    );
+  }
+  if (!r.ok) throw new Error(customerError(value.code, value.error));
   return value as T;
 }
 export function post<T>(path: string, value: unknown = {}) {
@@ -24,11 +39,11 @@ export const stateLabels: Record<string, string> = {
   awaiting_mask_review: "마스크 검토",
   queued: "대기 중",
   preflight: "입력 검증",
-  pose_estimation: "카메라 정렬",
+  pose_estimation: "사진 정합",
   segmentation: "물체 분리",
   reconstruction: "3D 복원",
-  meshing: "메시 추출",
-  texturing: "텍스처 베이킹",
+  meshing: "모델 표면 정리",
+  texturing: "표면 이미지 적용",
   validating: "결과 검증",
   completed: "완료",
   failed: "실패",

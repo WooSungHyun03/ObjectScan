@@ -56,7 +56,7 @@ test("browser → selection → queue → actual SAM2 CUDA → validated private
       page.getByText("선택 영역을 저장했습니다.", { exact: true }),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "SAM2 마스크 분석", exact: true })
+      .getByRole("button", { name: "선택 영역 분석", exact: true })
       .click();
     await expect(
       page.getByRole("button", { name: "마스크 승인", exact: true }),

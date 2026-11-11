@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { api, post, date } from "@/lib/client-api";
@@ -30,7 +31,7 @@ export function BillingPanel() {
     [],
   );
   useEffect(() => {
-    void load().catch((e) => setError(e.message));
+    void load().catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
   async function payout(e: FormEvent) {
     e.preventDefault();
@@ -40,7 +41,7 @@ export function BillingPanel() {
       await load();
       setAmount("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -57,7 +58,7 @@ export function BillingPanel() {
       );
       setReason("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -223,7 +224,7 @@ export function SettingsPanel() {
         setMe(v);
         setName(v.name);
       })
-      .catch((e) => setMessage(e.message));
+      .catch((e) => setMessage(customerError(undefined, e.message)));
   }, []);
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -235,7 +236,7 @@ export function SettingsPanel() {
       });
       setMessage("이름을 저장했습니다.");
     } catch (e) {
-      setMessage((e as Error).message);
+      setMessage(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -282,7 +283,7 @@ export function SettingsPanel() {
             if (confirm("계정 및 업로드 데이터 삭제 검토를 요청할까요?"))
               void post("data-deletion")
                 .then(() => setMessage("삭제 검토 요청을 접수했습니다."))
-                .catch((e) => setMessage(e.message));
+                .catch((e) => setMessage(customerError(undefined, e.message)));
           }}
         >
           삭제 검토 요청

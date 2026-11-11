@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -27,7 +28,7 @@ export function Dashboard() {
         if (alive) setProjects(p);
       })
       .catch((e) => {
-        if (alive) setError(e.message);
+        if (alive) setError(customerError(undefined, e.message));
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -46,36 +47,30 @@ export function Dashboard() {
         description="사물 하나부터 공간 전체까지. 사진에서 새로운 가능성을 발견하세요."
       >
         <Button asChild>
-          <Link href="/reconstruct/new">
+          <Link href="/create">
             <Plus size={17} />새 프로젝트
           </Link>
         </Button>
       </PageTitle>
       <div className="workspace-mode-grid">
-        <Link
-          href="/reconstruct/new?mode=object"
-          className="workspace-mode-card"
-        >
+        <Link href="/create/object" className="workspace-mode-card">
           <span>
             <Box size={36} strokeWidth={1.2} />
           </span>
           <div>
-            <small>Object Mesh</small>
-            <h2>객체만 3D로 복원</h2>
+            <small>물체 3D 제작</small>
+            <h2>원하는 물체만 3D로 만들기</h2>
             <p>복잡한 배경 속 원하는 사물만 선택하세요.</p>
           </div>
           <ArrowUpRight size={21} />
         </Link>
-        <Link
-          href="/reconstruct/new?mode=scene"
-          className="workspace-mode-card"
-        >
+        <Link href="/create/scene" className="workspace-mode-card">
           <span>
             <Globe2 size={36} strokeWidth={1.2} />
           </span>
           <div>
-            <small>Full Scene Mesh</small>
-            <h2>장면 전체를 3D로 복원</h2>
+            <small>공간 3D 제작</small>
+            <h2>공간 전체를 3D로 만들기</h2>
             <p>공간의 구조와 질감을 한 번에 담으세요.</p>
           </div>
           <ArrowUpRight size={21} />
@@ -133,7 +128,7 @@ export function Dashboard() {
                   <Globe2 size={62} strokeWidth={0.8} />
                 )}
                 <small>
-                  {p.mode === "object" ? "Object Mesh" : "Full Scene Mesh"}
+                  {p.mode === "object" ? "물체 3D 제작" : "공간 3D 제작"}
                 </small>
               </div>
               <div className="project-info">
@@ -145,7 +140,7 @@ export function Dashboard() {
               </div>
             </Link>
           ))}
-          <Link href="/reconstruct/new" className="project-create">
+          <Link href="/create" className="project-create">
             <Plus size={28} />
             <strong>새로운 사물 발견하기</strong>
             <span>사진에서 시작하세요.</span>
@@ -167,7 +162,7 @@ export function Dashboard() {
               : "책상 위의 소품이나 자주 찾는 공간. 사진을 담아 새로운 차원으로 옮겨보세요."}
           </p>
           <Button asChild variant="outline">
-            <Link href="/reconstruct/new">
+            <Link href="/create">
               <ImagePlus size={16} />
               프로젝트 만들기
             </Link>

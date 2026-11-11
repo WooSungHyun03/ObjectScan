@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import { useEffect, useState } from "react";
 import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
@@ -61,7 +62,7 @@ export function CheckoutButton({
         failUrl: `${location.origin}/payments/fail`,
       });
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }

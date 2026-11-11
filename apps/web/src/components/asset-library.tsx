@@ -1,4 +1,5 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -23,7 +24,7 @@ export function AssetLibrary() {
   useEffect(() => {
     void api<Artifact[]>("assets")
       .then(setAssets)
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(customerError(undefined, e.message)))
       .finally(() => setLoading(false));
   }, []);
   async function download(a: Artifact) {
@@ -31,7 +32,7 @@ export function AssetLibrary() {
       const v = await api<{ url: string }>(`assets/${a.id}/download`);
       location.assign(v.url);
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     }
   }
   async function deleteAsset(id: string) {
@@ -40,7 +41,7 @@ export function AssetLibrary() {
       setAssets(assets.filter((a) => a.id !== id));
       setRemove("");
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     }
   }
   return (

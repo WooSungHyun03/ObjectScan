@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./studio.css";
 import Link from "next/link";
 import { educationMode } from "@/lib/project-purpose";
 export const metadata: Metadata = {
+  icons: { icon: "/favicon.ico", apple: "/apple-touch-icon.png" },
+  manifest: "/manifest.webmanifest",
   title: {
-    default: "ObjectScan — Turn images into 3D.",
+    default: "ObjectScan — 사진으로 시작하는 3D 제작",
     template: "%s · ObjectScan",
   },
-  description:
-    "객체만, 또는 장면 전체를. 사진에서 텍스처 3D 메시까지 이어지는 독립 크리에이티브 워크스페이스.",
+  description: "사진 속 물건과 공간을 3D로 준비하는 한국어 제작 서비스.",
 };
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (

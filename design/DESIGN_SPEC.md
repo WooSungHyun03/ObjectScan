@@ -1,13 +1,9 @@
-# ObjectScan — visual reference specification
+# ObjectScan v3 design specification
 
-Open `objectscan-ui-reference.png` BEFORE building UI.
+Source of truth: OBJECTSCAN_CODEX_MASCOT_REDESIGN_HARNESS.md and actual supplied Mascot assets. The v2 reference is archived and non-authoritative.
 
-Desktop reference canvas includes two coordinated screens:
-- Left: premium marketing landing with dark graphite background, mint accent, editorial headline, furniture 3D object half photoreal/half wireframe, two major routes (`Object Mesh` / `Full Scene Mesh`).
-- Right: authenticated workspace with sidebar, image upload wizard, SAM2 mask review, reconstruction mode, true 3D preview, settings and a start button.
+Ink #12151C; panel #1B202A; border #343B48; foreground #F7F5F0; muted #A6ADBA; cobalt #2454BB; cap red #DA2633. The final blue/red samples are recorded in BRAND_GUIDE. Primary actions use light neutral fill with dark text; cobalt communicates active selection; red is reserved for mascot and destructive states. No mint, neon, gradients, repeated decorative icon tiles or glass.
 
-Design tokens: BG #0D1317, SURFACE #151C21, ELEVATED #1B2529, BORDER #304047, MINT #A9F5CD, FOREGROUND #F6F7F4, MUTED #9BABAE. High typography contrast; rounded-lg to 2xl only where structural; sparing shadows, no neon gradients, no fake metrics, no decorative inert buttons.
+Korean-first typography (Noto Sans KR; optional locally installed Pretendard), restrained six-step scale. Hero: left-aligned service promise + clear action, one transparent waving bear on a quiet right stage; no editing GUI on the landing. Below: object/space choice as two editorial rows, actual labeled example, three steps, education-use pricing, FAQ and legal footer.
 
-Create fully responsive accessible React components; do not use the reference image as flattened page content. On narrow viewports move settings below upload, convert sidebar to a usable sheet. Build image-selection and 3D preview from functional state. Choose authentic sample 3D assets only where properly licensed and label demo content as such; actual user's job renders from real GLB.
-
-Scene mode is distinct: no background removal/mask review step; full scene COLMAP and Gaussian Wrapping path, with appropriate warnings for too few photos. Use precise service copy, e.g. '객체만 3D로 복원' and '장면 전체를 3D로 복원'.
+Authenticated tasks retain compact surfaces and step feedback; editor lives only at /projects/[id]/edit. 360/390,768,1280/1440 layouts,44px touch targets, visible keyboard focus, reduced motion and intrinsic image sizes are required. Internal model identifiers belong only to internal code/operator diagnostics and the separate OSS notice.

@@ -1,0 +1,236 @@
+[
+  {
+    "index": 0,
+    "file": "ChatGPT Image Nov 10, 2026, 01_42_58 PM-1.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1401120,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "fd01edaf6d2eea691f674a904a430054b8c8edbc821e8c6b65695a1e98062754"
+  },
+  {
+    "index": 1,
+    "file": "ChatGPT Image Nov 10, 2026, 01_42_59 PM-2.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1157364,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "df3cd0c1b51a7c7ee3a25277425d9322f4f3016ba1daa2a4e472e10e47842071"
+  },
+  {
+    "index": 2,
+    "file": "ChatGPT Image Nov 10, 2026, 01_43_01 PM-3.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1535161,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "22d8dc4dd7b0c6462f415d93cf11c509f02afe6a615a35d97f8bce1fce5be89c"
+  },
+  {
+    "index": 3,
+    "file": "ChatGPT Image Nov 10, 2026, 01_43_02 PM-4.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1664171,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "de79b1ccef4ff4e3774117bff2eda2310d2c6f38794f1da6e5dad59dd38128c7"
+  },
+  {
+    "index": 4,
+    "file": "ChatGPT Image Nov 10, 2026, 01_43_03 PM-5.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1875293,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "02b12e7f34bdc977e6f60a245cbebcd33037976bd210ab53018170a8df8b13b8"
+  },
+  {
+    "index": 5,
+    "file": "ChatGPT Image Nov 10, 2026, 01_43_04 PM-6.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1808365,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "92a9c5466ec8693786d0901fd60d360456c58ee6339b687d70d6f23e00d7dacc"
+  },
+  {
+    "index": 6,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_02 PM-1.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1419680,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "c8d5dfb713ced6add27f09f28c0ef8f4280ea45e68d54a1bb12faa72121c1b72"
+  },
+  {
+    "index": 7,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_03 PM-2.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1542111,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "5a35aaf0eb6e07f5dbc2c1f7ae1d4ab60cfd5e394db0b5f925684b7de479edb2"
+  },
+  {
+    "index": 8,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_05 PM-3.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1583039,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "5b6c5a30ee74bd77c485779b5cff688819f129f7c4b6fd4a5ac4fca6d8b44c51"
+  },
+  {
+    "index": 9,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_06 PM-4.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1853167,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "36d111809046f09da8f9ff9795d08ec7e237cc540577ca7ffb7bd32eac744599"
+  },
+  {
+    "index": 10,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_08 PM-5.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 1470358,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "ff28af4ab8d9f7da6781040f91eaf6b615b6b13ea8740f353c14e77ec2d0d0b3"
+  },
+  {
+    "index": 11,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_09 PM-6.png",
+    "width": 1254,
+    "height": 1254,
+    "bytes": 2265621,
+    "mode": "RGBA",
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "sha256": "dc382727f3e9513591304b11429e3be32bc06a41c351c2e5d2aef96fedfd1bdc"
+  },
+  {
+    "index": 12,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_11 PM-7.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1970227,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "7ae473dfc465652280e6ce49cfd50c08f7d82a5b85411e26a0564b543db2746e"
+  },
+  {
+    "index": 13,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_13 PM-8.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1910878,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "5f73e40d9e204d41921fbf491569c69d59b7567ae4bcbcd940d42c5a09e3fd2f"
+  },
+  {
+    "index": 14,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_14 PM-9.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1884498,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "3a876bcd370b9d57fb6387b65e77e367f32f0f1970f682621844c3783a05c21c"
+  },
+  {
+    "index": 15,
+    "file": "ChatGPT Image Nov 10, 2026, 02_38_15 PM-10.png",
+    "width": 1672,
+    "height": 941,
+    "bytes": 1934222,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "ae9c0777d90a289b2045f68b2a96cb3fbcefc45c34be8a1997246ef90498cc5b"
+  },
+  {
+    "index": 16,
+    "file": "빨간 모자 곰인형 인사하기-1.png",
+    "width": 1122,
+    "height": 1402,
+    "bytes": 2061917,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "badc02769e65eae53d2dc25efb7e9d0af0d06b4dac2d26df6f2f72469812c838"
+  },
+  {
+    "index": 17,
+    "file": "빨간 모자 쓴 점프 곰돌이-2.png",
+    "width": 1233,
+    "height": 1276,
+    "bytes": 2134225,
+    "mode": "RGB",
+    "alpha_extrema": [
+      255,
+      255
+    ],
+    "sha256": "8aafa0d09ccca481b395edb1e1e6ac332d476fb33d68c0de314b147278010b51"
+  }
+]

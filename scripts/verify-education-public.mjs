@@ -17,6 +17,11 @@ try {
   for (const path of [
     "/",
     "/docs",
+    "/create",
+    "/terms",
+    "/privacy",
+    "/legal/opensource",
+    "/demo/edit",
     "/pricing",
     "/marketplace",
     "/login",
@@ -35,9 +40,7 @@ try {
   const page = await context.newPage();
   await page.goto(origin);
   await page.getByRole("complementary", { name: "운영 목적" }).waitFor();
-  await page
-    .locator('canvas[data-model-loaded="true"]')
-    .waitFor({ timeout: 90000 });
+  await page.locator('img[src*="wave.webp"]').waitFor();
   assert.match(await page.title(), /ObjectScan/);
   await mkdir("artifacts", { recursive: true });
   await page.screenshot({
@@ -55,7 +58,18 @@ try {
   );
   await page.goto(origin + "/docs#research");
   await page.getByRole("heading", { name: "학교 교육·연구용 운영" }).waitFor();
-  await page.getByRole("heading", { name: "연구 모델 출처" }).waitFor();
+  assert.doesNotMatch(
+    await page.locator("main").innerText(),
+    /Pixal3D|SAM2|Gaussian Wrapping|COLMAP/i,
+  );
+  await page.goto(origin + "/legal/opensource");
+  await page
+    .getByRole("heading", { name: "오픈소스 및 콘텐츠 고지" })
+    .waitFor();
+  await page.goto(origin + "/demo");
+  await page
+    .locator('canvas[data-model-loaded="true"]')
+    .waitFor({ timeout: 90000 });
   const health = await context.request.get(origin + "/api/health");
   assert.equal(health.status(), 200);
   const h = await health.json();
@@ -78,9 +92,7 @@ try {
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   await page.getByRole("dialog").waitFor();
   await page.keyboard.press("Escape");
-  await page
-    .locator('canvas[data-model-loaded="true"]')
-    .waitFor({ timeout: 90000 });
+  await page.locator('img[src*="wave.webp"]').waitFor();
   await page.screenshot({
     path: "artifacts/education-public-mobile.png",
     fullPage: true,

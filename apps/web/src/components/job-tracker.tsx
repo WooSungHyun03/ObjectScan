@@ -1,4 +1,5 @@
 "use client";
+import { customerText, customerError } from "@/lib/customer-copy";
 import { useCallback, useEffect, useState } from "react";
 import {
   Activity,
@@ -37,7 +38,7 @@ export function JobTracker({
           t = setTimeout(poll, 4000);
         else if (j.state === "completed") await onComplete?.();
       } catch (e) {
-        if (!stopped) setError((e as Error).message);
+        if (!stopped) setError(customerError(undefined, (e as Error).message));
       }
     }
     void poll();
@@ -55,7 +56,7 @@ export function JobTracker({
       setPollVersion((v) => v + 1);
       setCancel(false);
     } catch (e) {
-      setError((e as Error).message);
+      setError(customerError(undefined, (e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -80,7 +81,7 @@ export function JobTracker({
         <div>
           <small>
             {job.kind === "masks"
-              ? "SAM2 마스크 분석"
+              ? "선택 영역 분석"
               : job.kind === "poses"
                 ? "카메라 정합"
                 : "3D 메시 생성"}
@@ -98,7 +99,7 @@ export function JobTracker({
       {job.error_code && (
         <div className="notice error">
           <AlertCircle size={16} />
-          {job.error_code}
+          {customerError(job.error_code)}
         </div>
       )}
       {error && (
@@ -112,7 +113,7 @@ export function JobTracker({
           {job.events?.map((e) => (
             <li key={e.id}>
               <time>{new Date(e.created_at).toLocaleTimeString("ko-KR")}</time>
-              <span>{e.message}</span>
+              <span>{customerText(e.message)}</span>
               <small>{e.progress}%</small>
             </li>
           ))}
@@ -140,7 +141,11 @@ export function JobTracker({
           variant="ghost"
           size="sm"
           disabled={busy}
-          onClick={() => void load().catch((e) => setError(e.message))}
+          onClick={() =>
+            void load().catch((e) =>
+              setError(customerError(undefined, e.message)),
+            )
+          }
         >
           상태 새로고침
         </Button>

@@ -30,3 +30,17 @@ A deployable build or a frontend preview alone does not satisfy these production
 - [ ] Hosted SMTP delivery (user is configuring directly). Email confirmation remains required.
 
 Reconstruction stays disabled: captured multi-view Pixal workflow not qualified; OAL/GW visual quality failed. The site exposes working project/upload/mask functionality and an explicitly labeled sample viewer. It does not claim that these model generation gates or the full original scope are complete.
+
+## V3 mascot/editor school release
+
+- [x] Supplied mascot inventory/alpha derivatives and Korean brand/token replacement.
+- [x] Customer routes/errors hide model identifiers; separate source/license notice.
+- [x] Local54 Node/DB/mesh +25 Python +7 Chromium checks pass; exact build/type/format pass and0 lint errors.
+- [x] Actual996k-triangle file: display-only LOD, full edited GLB/texture preservation and immutable original.
+- [x] Additional migration12 applied to dedicated hosted project after schema backup.
+- [x] Protected production build7413a6c: actual cloud browser private version save/reopen, original SHA and second-account API/RLS/Storage denial.
+- [x] Protected cloud actual SAM2 CUDA upload/selection/mask/review and360px scene separation; disposable fixtures cleaned.
+- [x] Remote push CI42942754208 green; exact staged deployment promoted/public smoke and public editor transform/download pass.
+- [ ] SMTP external email delivery and reconstruction model quality gates remain open.
+
+This release does not include face-level editing or enable commerce/reconstruction. The authenticated editor requires an existing valid artifact; /demo/edit provides a labeled working local example.

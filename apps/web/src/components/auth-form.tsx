@@ -1,5 +1,7 @@
 "use client";
+import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,8 +30,8 @@ export function AuthForm({
   const router = useRouter(),
     search = useSearchParams();
   const titles = {
-    login: "다시 만나 반가워요.",
-    signup: "새로운 차원을 시작하세요.",
+    login: "로그인하고 작업을 이어가세요.",
+    signup: "내 3D 작업실을 만들어보세요.",
     forgot: "비밀번호를 재설정하세요.",
     reset: "새 비밀번호를 설정하세요.",
   };
@@ -86,7 +88,9 @@ export function AuthForm({
         router.refresh();
       }
     } catch (e) {
-      setError((e as Error).message);
+      setError(
+        customerError((e as { code?: string }).code, (e as Error).message),
+      );
     } finally {
       setBusy(false);
     }
@@ -96,22 +100,26 @@ export function AuthForm({
       <aside className="auth-story">
         <Brand />
         <div>
-          <span className="section-kicker">ObjectScan workspace</span>
+          <span className="section-kicker">나의 3D 작업실</span>
           <h1>
-            사물을 넘어.
+            사진 한 장부터.
             <br />
-            공간을 새롭게.
+            입체적인 작업까지.
           </h1>
           <p>
             사진에 담긴 질감과 형태를
             <br />
             당신만의 3D 에셋으로 이어가세요.
           </p>
-          <div className="auth-cube" aria-hidden="true">
-            <BoxGraphic />
-          </div>
+          <Image
+            className="auth-mascot"
+            src="/brand/mascot/work.webp"
+            width={240}
+            height={240}
+            alt="작업을 준비하는 ObjectScan 곰"
+          />
         </div>
-        <span>당신의 원본은, 당신의 워크스페이스에.</span>
+        <span>사진과 모델은 비공개로 보관합니다.</span>
       </aside>
       <main id="main" className="auth-main">
         <Link href="/" className="auth-home">
@@ -124,7 +132,7 @@ export function AuthForm({
           <h1>{titles[kind]}</h1>
           <p>
             {kind === "login"
-              ? "이메일로 나만의 워크스페이스에 로그인하세요."
+              ? "이메일로 내 작업실에 로그인하세요."
               : kind === "signup"
                 ? "계정을 만들고 첫 번째 프로젝트를 준비하세요."
                 : "안전하게 계정에 다시 접속하세요."}
@@ -133,7 +141,7 @@ export function AuthForm({
             <div className="notice warning">
               <AlertCircle size={16} />
               <span>
-                Supabase 인증 연결을 준비하고 있습니다. 현재 가입과 로그인을
+                인증 서비스 연결을 준비하고 있습니다. 현재 가입과 로그인을
                 사용할 수 없습니다.
               </span>
             </div>
@@ -237,22 +245,5 @@ export function AuthForm({
         </div>
       </main>
     </div>
-  );
-}
-function BoxGraphic() {
-  return (
-    <svg viewBox="0 0 220 220" fill="none">
-      <path
-        d="m110 25 75 43v86l-75 43-75-43V68Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <path
-        d="m35 68 75 44 75-44M110 112v85M110 25v87M35 154l75-42 75 42"
-        stroke="currentColor"
-        strokeWidth=".7"
-        opacity=".5"
-      />
-    </svg>
   );
 }

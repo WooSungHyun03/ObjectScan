@@ -17,12 +17,15 @@ export default function Page() {
         </div>
         <Viewer />
         <div className="demo-footer">
+          <Button asChild variant="outline">
+            <Link href="/demo/edit">예시 모델 편집하기</Link>
+          </Button>
           <p>
             Materials Variants Shoe © 2021 Shopify ·{" "}
             <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
           </p>
           <Button asChild>
-            <Link href="/reconstruct/new">내 사진으로 시작하기</Link>
+            <Link href="/create">내 사진으로 시작하기</Link>
           </Button>
         </div>
       </main>
