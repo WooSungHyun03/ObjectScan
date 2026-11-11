@@ -2,6 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 npx prettier --check apps packages scripts tests
+node scripts/sync-design-system.mjs --check
 npm run lint
 npm run typecheck
 npx supabase migration up --local

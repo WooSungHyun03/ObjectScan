@@ -23,4 +23,7 @@
 - School-only public hosting: use `NEXT_PUBLIC_PROJECT_PURPOSE=education`, keep payments/sales/payouts disabled even if test keys are supplied, and display source/license notices. User instruction supersedes the former commercial hosting gate. Unqualified reconstruction paths stay disabled for measured quality/workflow reasons.
 
 ## V3 mascot redesign (2026-11-11)
+
 User explicitly supersedes the v2 visual reference with supplied bear assets and Korean service UX. Keep the tested Next/Supabase/pull-worker stack and school no-commerce policy. Retain original v2 specs in docs/archive. Editor uses a separate typed-command package with Three rendering and glTF-Transform/meshoptimizer CPU processing; no inference/GPU lock is used for edits. Originals are immutable, versions private and owner-only.
+
+- V4: product-first midnight/teal direction, local public file entry and memory-only auth handoff, self-host Korean font, actual model posters and private Figma/MagicPath design sources. See design/DECISIONS.md; no GPU/payment/ownership policy changed.

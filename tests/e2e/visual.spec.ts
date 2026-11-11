@@ -57,7 +57,9 @@ test("mascot routes, Korean customer copy and 360/390/768/1440 visual coverage",
     );
   }
   await page.goto("/create");
-  await page.getByRole("link", { name: /원하는 물체만 3D로 만들기/ }).click();
+  await page
+    .getByRole("button", { name: /사진 없이 제작 과정 살펴보기/ })
+    .click();
   await expect(page).toHaveURL(/login/);
   await page.goto("/create/scene");
   await expect(page).toHaveURL(/login/);

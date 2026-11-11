@@ -59,11 +59,28 @@ test("verified login, private project, real signed upload, object/scene separati
   });
   if (error) throw error;
   try {
-    await page.goto("/login");
+    await page.goto("/create");
+    const draftImage = await sharp({
+      create: { width: 80, height: 60, channels: 3, background: "#bdac92" },
+    })
+      .jpeg()
+      .toBuffer();
+    await page.locator("input[type=file]").setInputFiles({
+      name: "before-login.jpg",
+      mimeType: "image/jpeg",
+      buffer: draftImage,
+    });
+    await page
+      .getByRole("button", { name: "선택한 사진으로 계속하기" })
+      .click();
+    await expect(page).toHaveURL(/login/);
     await page.getByRole("textbox", { name: "이메일" }).fill(email);
     await page.getByLabel("비밀번호", { exact: true }).fill(password);
     await page.getByRole("button", { name: "로그인", exact: true }).click();
-    await expect(page).toHaveURL(/dashboard/);
+    await expect(page).toHaveURL(/create\/object/);
+    await expect(
+      page.getByText("앞에서 선택한 사진 1장이 준비되어 있습니다."),
+    ).toBeVisible();
     // A disposable order fixture tests review/authorization only. No provider payment is made.
     if (process.env.TEST_EDUCATION_MODE === "true") {
       await page.goto("/billing");
@@ -142,7 +159,7 @@ test("verified login, private project, real signed upload, object/scene separati
       await admin.from("projects").delete().eq("id", fixtureProject);
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.goto("/reconstruct/new?mode=object");
+    await page.goto("/create");
     const image = await sharp({
       create: { width: 80, height: 60, channels: 3, background: "#bdac92" },
     })
@@ -153,6 +170,15 @@ test("verified login, private project, real signed upload, object/scene separati
       mimeType: "image/jpeg",
       buffer: image,
     });
+    await page
+      .getByRole("button", { name: "선택한 사진으로 계속하기" })
+      .click();
+    await expect(
+      page.getByText("앞에서 선택한 사진 1장이 준비되어 있습니다."),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "선택한 사진 업로드", exact: true })
+      .click();
     await expect(page.getByText(/업로드 1장/)).toBeVisible();
     await expect(page.getByText("fixture.jpg", { exact: true })).toBeVisible();
     await page.screenshot({

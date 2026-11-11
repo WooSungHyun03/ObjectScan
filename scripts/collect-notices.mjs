@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 const names = [
   "three",
+  "@fontsource-variable/noto-sans-kr",
   "@react-three/fiber",
   "@react-three/drei",
   "three-mesh-bvh",
@@ -19,7 +20,7 @@ const names = [
   "zod",
 ];
 let text =
-  "ObjectScan third-party software notices\nGenerated from installed package LICENSE files; original terms apply.\n";
+  "ObjectScan third-party software notices\nGenerated from installed package licenses or documented upstream fallback; original terms apply.\n";
 for (const name of names) {
   const dir = join("node_modules", name),
     file = readdirSync(dir).find((f) => /^licen[sc]e(?:\.|$)/i.test(f));

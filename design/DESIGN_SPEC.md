@@ -1,9 +1,7 @@
-# ObjectScan v3 design specification
+# ObjectScan v4 design specification
 
-Source of truth: OBJECTSCAN_CODEX_MASCOT_REDESIGN_HARNESS.md and actual supplied Mascot assets. The v2 reference is archived and non-authoritative.
+ObjectScan_Design_Harness_v4_Codex.md supersedes previous visual references. Use design-system/objectscan/MASTER.md and page overrides. Semantic source is apps/web/src/lib/design-tokens/tokens.json; generated CSS and master must pass scripts/sync-design-system.mjs --check.
 
-Ink #12151C; panel #1B202A; border #343B48; foreground #F7F5F0; muted #A6ADBA; cobalt #2454BB; cap red #DA2633. The final blue/red samples are recorded in BRAND_GUIDE. Primary actions use light neutral fill with dark text; cobalt communicates active selection; red is reserved for mascot and destructive states. No mint, neon, gradients, repeated decorative icon tiles or glass.
+Product-first midnight/teal Korean service, supplied plush mascot as a guide, actual attributed GLB render as product evidence. No Meshy visual/copy/assets copied, no fake results/listings/prices and no unnecessary neon/gradients. Keep functional routes, private original storage, real job states and server permissions. Self-host Noto Sans KR Variable, control radius10/panel20, visible focus,44px controls and reduced-motion support.
 
-Korean-first typography (Noto Sans KR; optional locally installed Pretendard), restrained six-step scale. Hero: left-aligned service promise + clear action, one transparent waving bear on a quiet right stage; no editing GUI on the landing. Below: object/space choice as two editorial rows, actual labeled example, three steps, education-use pricing, FAQ and legal footer.
-
-Authenticated tasks retain compact surfaces and step feedback; editor lives only at /projects/[id]/edit. 360/390,768,1280/1440 layouts,44px touch targets, visible keyboard focus, reduced motion and intrinsic image sizes are required. Internal model identifiers belong only to internal code/operator diagnostics and the separate OSS notice.
+Desktop1440/1280, tablet768 and mobile390/360 visual/a11y checks are release gates. Landing remains spacious; authenticated workflow/editor use purposeful density. Tool records and exact evidence: docs/design/TOOL_USAGE.md and IMPLEMENTATION_STATUS.md.

@@ -43,8 +43,8 @@ export function Dashboard() {
   return (
     <>
       <PageTitle
-        title="무엇을 3D로 만들어볼까요?"
-        description="사물 하나부터 공간 전체까지. 사진에서 새로운 가능성을 발견하세요."
+        title="내 프로젝트"
+        description="사진 준비부터 결과 확인까지, 내 작업을 한곳에서 이어가세요."
       >
         <Button asChild>
           <Link href="/create">

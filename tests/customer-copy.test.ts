@@ -27,6 +27,7 @@ test("customer TSX surfaces contain no algorithm names; required notices isolate
   for (const f of [
     ...walk("apps/web/src/app"),
     ...walk("apps/web/src/components"),
+    ...walk("apps/web/src/features"),
   ].filter(
     (f) =>
       f.endsWith(".tsx") &&

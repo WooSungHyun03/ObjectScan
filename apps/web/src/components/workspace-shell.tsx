@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { putDraft } from "@/features/create/upload-draft";
 import { educationMode } from "@/lib/project-purpose";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -21,7 +22,7 @@ import { Button } from "./ui/button";
 import { NavigationSheet } from "./ui/sheet";
 import { browserClient } from "@/lib/supabase/client";
 const links = [
-  { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
+  { href: "/dashboard", label: "내 프로젝트", icon: LayoutDashboard },
   { href: "/create", label: "새로 만들기", icon: Plus },
   { href: "/assets", label: "내 에셋", icon: Box },
   { href: "/marketplace", label: "에셋 마켓", icon: Store },
@@ -52,7 +53,7 @@ export function WorkspaceShell({
       <div className="workspace-switch">
         <span>O</span>
         <div>
-          개인 워크스페이스<small>Personal workspace</small>
+          개인 워크스페이스<small>나만의 3D 작업실</small>
         </div>
         <ChevronRight size={14} />
       </div>
@@ -107,6 +108,7 @@ export function WorkspaceShell({
               void browserClient()
                 .auth.signOut()
                 .then(() => {
+                  putDraft([]);
                   router.push("/");
                   router.refresh();
                 })
@@ -141,7 +143,7 @@ export function WorkspaceShell({
           <ChevronRight size={13} />
           <strong>{title}</strong>
           <div className="workspace-header-right">
-            <span className="test-label">사전 출시</span>
+            <span className="test-label">교육·연구용</span>
             <Link href="/docs">
               도움말 <ArrowUpRight size={13} />
             </Link>

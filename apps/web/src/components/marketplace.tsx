@@ -2,6 +2,10 @@
 import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import Link from "next/link";
+import Image from "next/image";
+import { productPreview } from "@/lib/brand/product-preview";
+import { AssetCard, type Listing } from "@/features/marketplace/asset-card";
+export type { Listing } from "@/features/marketplace/asset-card";
 import { useEffect, useState } from "react";
 import {
   Search,
@@ -14,18 +18,6 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/client-api";
 import { Button } from "./ui/button";
-export type Listing = {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  price: number;
-  currency: string;
-  license: string;
-  preview_url?: string;
-  public_preview_path?: string;
-  seller_badge?: string;
-};
 export function Marketplace() {
   const [listings, setListings] = useState<Listing[]>([]),
     [query, setQuery] = useState(""),
@@ -66,11 +58,11 @@ export function Marketplace() {
     <>
       <div className="market-hero">
         <div>
-          <span className="section-kicker">3D Asset Marketplace</span>
+          <span className="section-kicker">3D 에셋 마켓</span>
           <h1>
-            다음 창작의 재료를
+            다음 작업에 어울리는
             <br />
-            발견하세요.
+            3D를 찾아보세요.
           </h1>
           <p>사물부터 공간까지. 크리에이터가 만든 3D 에셋을 만나보세요.</p>
         </div>
@@ -130,6 +122,30 @@ export function Marketplace() {
             : "권리 동의와 운영자 검토를 거친 에셋만 게시됩니다. 결제 제공사 연결 전에는 구매가 비활성화됩니다."}
         </span>
       </div>
+      {!query && category === "all" && (
+        <section className="market-sample" aria-label="판매하지 않는 공개 예시">
+          <Image
+            src={productPreview.render}
+            alt="질감이 포함된 운동화 공개 예시 모델"
+            width={1000}
+            height={700}
+            sizes="(max-width:767px) 90vw, 480px"
+          />
+          <div>
+            <span className="section-kicker">예시 먼저 둘러보기</span>
+            <h2>돌려보고, 직접 다듬어보세요.</h2>
+            <p>
+              공개된 예시 모델로 보기와 편집을 먼저 체험하세요. 판매 중인
+              에셋이나 실제 제작 결과가 아닙니다.
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/demo/edit">
+                예시 모델 편집하기 <ArrowUpRight aria-hidden="true" size={16} />
+              </Link>
+            </Button>
+          </div>
+        </section>
+      )}
       {error && (
         <div className="notice error" role="alert">
           <AlertCircle size={17} />
@@ -145,29 +161,7 @@ export function Marketplace() {
       ) : listings.length ? (
         <div className="project-grid">
           {listings.map((l) => (
-            <Link
-              className="project-card listing-card"
-              key={l.id}
-              href={`/marketplace/${l.id}`}
-            >
-              <div
-                className={`project-cover ${l.category === "scenes" ? "scene" : "object"}`}
-              >
-                {l.category === "scenes" ? (
-                  <Globe2 size={63} strokeWidth={0.8} />
-                ) : (
-                  <Box size={63} strokeWidth={0.8} />
-                )}
-                <span className="status-badge">GLB</span>
-              </div>
-              <div className="project-info">
-                <h3>{l.title}</h3>
-                <p>{l.category} · 크리에이터 에셋</p>
-                <strong className="listing-price">
-                  ₩{Number(l.price).toLocaleString()}
-                </strong>
-              </div>
-            </Link>
+            <AssetCard key={l.id} listing={l} educational={educationMode()} />
           ))}
         </div>
       ) : (

@@ -1,4 +1,5 @@
 "use client";
+import { DraftPhotos } from "@/features/create/draft-photos";
 import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -256,23 +257,21 @@ export function ReconstructionWizard({
   return (
     <>
       <PageTitle
-        title="새로운 차원의 시작."
-        description="사진을 담고, 복원할 대상을 선택하세요."
+        title="사진으로 3D 제작하기"
+        description="사진 업로드부터 대상 확인까지, 순서대로 준비하세요."
       />
+      {!initialProject && <DraftPhotos busy={busy} onUpload={upload} />}
       <div className="mode-toggle" aria-label="복원 방식">
         <Link
           className={mode === "object" ? "active" : ""}
-          href="/reconstruct/new?mode=object"
+          href="/create/object"
         >
           <Box size={19} />
           <span>
             물체 3D 제작<small>객체만 3D로 복원</small>
           </span>
         </Link>
-        <Link
-          className={mode === "scene" ? "active" : ""}
-          href="/reconstruct/new?mode=scene"
-        >
+        <Link className={mode === "scene" ? "active" : ""} href="/create/scene">
           <Globe2 size={19} />
           <span>
             공간 3D 제작<small>장면 전체를 3D로 복원</small>
