@@ -62,6 +62,8 @@ const messages: Record<string, string> = {
     "현재 진행 중인 작업을 완료하거나 취소한 뒤 다시 시도해 주세요.",
   TURNTABLE_NOT_VALIDATED:
     "대상을 고정하고 카메라를 움직여 촬영한 사진을 사용해 주세요.",
+  PROCESSOR_ERROR:
+    "결제사 연결을 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.",
   PAYMENTS_DISABLED: "현재 결제를 운영하지 않습니다.",
   NONCOMMERCIAL_ONLY:
     "학교 교육·연구용 서비스에서는 결제·판매·정산을 운영하지 않습니다.",

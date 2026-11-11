@@ -19,10 +19,17 @@ type PricingData = {
 export function Pricing() {
   const [data, S] = useState<PricingData | null>(null),
     [mode, M] = useState("object"),
+    [singlePhoto, setSinglePhoto] = useState<boolean | null>(null),
     [error, E] = useState("");
   useEffect(() => {
-    void api<PricingData>("pricing")
-      .then(S)
+    void Promise.all([
+      api<PricingData>("pricing"),
+      api<{ capabilities: { single_photo: boolean } }>("health"),
+    ])
+      .then(([pricing, health]) => {
+        S(pricing);
+        setSinglePhoto(health.capabilities.single_photo);
+      })
       .catch((e) => E(customerError(undefined, e.message)));
   }, []);
   return (
@@ -68,6 +75,13 @@ export function Pricing() {
           </article>
         ))}
       </section>
+      <p className="notice" role="status">
+        {singlePhoto === null
+          ? "지원되는 제작 방식을 확인하고 있습니다…"
+          : singlePhoto
+            ? "현재 사물 사진 1장으로 3D를 만들 수 있습니다. 여러 사진과 공간 전체 제작은 준비 중입니다."
+            : "3D 제작 지원을 준비하고 있습니다. 지원되지 않는 사진 구성에는 크레딧을 차감하지 않습니다."}
+      </p>
       <div className="pricing-mode-switch">
         {[
           { id: "object", name: "객체만 만들기", Icon: Box },
@@ -91,7 +105,7 @@ export function Pricing() {
       )}
       <div className="pricing-table">
         <table>
-          <caption>사진 수별 제작 차감량</caption>
+          <caption>사진 수별 제작 차감량 · 지원되는 사진 구성에만 적용</caption>
           <thead>
             <tr>
               <th>사진 수</th>

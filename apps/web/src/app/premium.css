@@ -1195,3 +1195,34 @@ textarea {
     font-size: 28px;
   }
 }
+
+.payment-result-page {
+  min-height: calc(100svh - 80px);
+  display: grid;
+  place-items: center;
+  padding: clamp(24px, 6vw, 64px) 20px;
+}
+.payment-result-panel {
+  width: min(100%, 520px);
+  padding: clamp(24px, 5vw, 48px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  overflow-wrap: anywhere;
+}
+.payment-result-panel > svg {
+  color: var(--color-accent);
+  margin-bottom: 24px;
+}
+.payment-result-panel h1 {
+  margin-bottom: 20px;
+}
+.payment-result-panel p {
+  margin-bottom: 16px;
+}
+.payment-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 28px 0;
+}
