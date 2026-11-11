@@ -1,0 +1,5 @@
+# V4 decisions
+
+Retain existing stack/APIs/queue/editor rather than replacing working behavior with a design demo. Use native CSS semantic tokens with existing Radix components and existing Lucide family. Feature modules own marketing, creation handoff and marketplace cards; domain/network/GLB processing boundaries remain separate. Native Figma specs and CSS map to one token source; sync script detects documentation/code drift.
+
+Premium midnight/teal supersedes v3's cobalt/neutral CTA constraint. Mascot red is an accent, model content is primary. Use actual attributed model posters instead of image generation because the user requires faithful mascot and real results; generated marketing imagery would blur that distinction. No initial homepage WebGL; user opts into the existing real viewer/editor. Self-host Korean variable font instead of render-time Google requests. Figma code capture is development-only and activates only with an explicit capture hash. No production third-party capture script loads.

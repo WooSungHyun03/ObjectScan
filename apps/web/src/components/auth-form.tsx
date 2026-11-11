@@ -101,11 +101,11 @@ export function AuthForm({
         <Brand />
         <div>
           <span className="section-kicker">나의 3D 작업실</span>
-          <h1>
+          <h2>
             사진 한 장부터.
             <br />
             입체적인 작업까지.
-          </h1>
+          </h2>
           <p>
             사진에 담긴 질감과 형태를
             <br />
@@ -167,6 +167,7 @@ export function AuthForm({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   autoComplete="name"
+                  name="name"
                   maxLength={80}
                 />
               </label>
@@ -182,6 +183,8 @@ export function AuthForm({
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
+                    name="email"
+                    spellCheck={false}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -195,6 +198,7 @@ export function AuthForm({
                   <input
                     required
                     type="password"
+                    name="password"
                     minLength={8}
                     maxLength={128}
                     value={password}

@@ -60,3 +60,7 @@ Historical v2 design (superseded by mascot v3): graphite #0D1317, panels #151C21
 ## V3 mascot/user-UX/editor loop
 
 Follow docs/IMPLEMENTATION_PLAN.md for task IDs/owners/dependencies/evidence. V3 assets/brand/copy/editor/version implementations pass local unit, DB and browser checks. Remote CI, hosted editor/SAM2, exact staged promotion and credential-free public checks pass; exact evidence is recorded in docs/EVIDENCE/V3_RELEASE.md. Existing generation and SMTP gates are unchanged by this redesign.
+
+## V4 premium redesign
+
+V4-RESEARCH/TOOLS/SYSTEM/FLOWS/QA/RELEASE are tracked with owner, priority, dependency, evidence and blocker in design/IMPLEMENTATION_STATUS.md. V4 visual authority supersedes V3 layout/palette; original privacy, queue, finance and reconstruction gates remain.

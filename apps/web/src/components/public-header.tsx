@@ -6,10 +6,10 @@ import { NavigationSheet } from "./ui/sheet";
 function Links() {
   return (
     <>
-      <Link href="/#product">서비스 소개</Link>
-      <Link href="/create">제작하기</Link>
-      <Link href="/marketplace">3D 에셋</Link>
-      <Link href="/pricing">이용 안내</Link>
+      <Link href="/docs">이용 방법</Link>
+      <Link href="/create">3D 제작</Link>
+      <Link href="/marketplace">3D 에셋 마켓</Link>
+      <Link href="/pricing">요금</Link>
     </>
   );
 }
@@ -23,8 +23,8 @@ export function PublicHeader() {
       <div className="header-account">
         <Link href="/login">로그인</Link>
         <Button asChild size="sm">
-          <Link href="/signup">
-            시작하기 <ArrowUpRight size={15} />
+          <Link href="/create">
+            3D 모델 만들기 <ArrowUpRight size={15} />
           </Link>
         </Button>
       </div>
@@ -44,7 +44,7 @@ export function PublicHeader() {
         <nav className="mobile-public-nav">
           <Links />
           <Link href="/login">로그인</Link>
-          <Link href="/signup">시작하기</Link>
+          <Link href="/create">3D 모델 만들기</Link>
         </nav>
       </NavigationSheet>
     </header>

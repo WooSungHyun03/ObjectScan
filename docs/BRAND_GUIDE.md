@@ -1,3 +1,5 @@
+> Historical v3 record. Current v4 palette and layout authority: ../design-system/objectscan/MASTER.md and design/DESIGN_SPEC.md.
+
 # Brand v3
 
 The plush bear is the visual anchor: beige fur, saturated cobalt felt coat, red felt hat/glossy boots, wooden toggles. Existing alpha-transparent renders preserve those materials; UI does not imitate fur or add glow.

@@ -1,6 +1,6 @@
-# ObjectScan v2 engineering instructions
+# ObjectScan v4 engineering instructions
 
-Read OBJECTSCAN_CODEX_MASCOT_REDESIGN_HARNESS.md, CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The v3 mascot brief supersedes the archived mint reference. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
+Read ObjectScan_Design_Harness_v4_Codex.md, CODEX_MASTER_PROMPT.md, design/DESIGN_SPEC.md and docs/TASKS.md before changes. The v4 product-first premium direction supersedes v3 layout/color constraints; use design-system/objectscan/MASTER.md. Preserve the supplied mascot and actual functionality. The independent Next.js/Supabase/Vercel stack supersedes all prior Sites code. No Sites/D1/R2/platform authentication dependencies are permitted.
 
 ## Scope and interfaces
 - A: apps/web design, accessible UI, auth pages, dual reconstruction wizard, viewer.

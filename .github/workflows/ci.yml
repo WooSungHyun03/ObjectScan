@@ -20,6 +20,7 @@ jobs:
           npx supabase status -o json > /tmp/objectscan-status.json
           node scripts/configure-local.mjs /tmp/objectscan-status.json
       - run: npx prettier --check apps packages scripts tests
+      - run: node scripts/sync-design-system.mjs --check
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

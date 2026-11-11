@@ -23,6 +23,7 @@
     "doctor": "node scripts/doctor.mjs"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.0",
     "@playwright/test": "^1.56.0",
     "@types/node": "^22.0.0",
