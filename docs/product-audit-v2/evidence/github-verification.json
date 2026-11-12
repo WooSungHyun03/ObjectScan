@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-11-12 KST",
+  "team_open": 17,
+  "owner_local_open": 10,
+  "obsolete_closed_not_planned": 4,
+  "old_research_epic2": "CLOSED_NOT_PLANNED",
+  "new_issue_count": 8,
+  "prior_ticket_count_reused": 23,
+  "team_milestone": 1,
+  "A_days": 7.5,
+  "B_days": 8,
+  "buffer_percent": 22.5
+}

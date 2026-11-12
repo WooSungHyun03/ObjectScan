@@ -1,0 +1,219 @@
+{
+  "OS-01": {
+    "number": 8,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/8",
+    "title": "[OS-01] 현재 지원 범위·실패 이유·차감 안내를 생성 전에 표시",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-02": {
+    "number": 9,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/9",
+    "title": "[OS-02] 가입·복구 링크 오류와 메일 대기의 복구 UI",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-03": {
+    "number": 10,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/10",
+    "title": "[OS-03] 통신 단절 뒤 작업 polling 재개와 중복 클릭 방지",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-04": {
+    "number": 11,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/11",
+    "title": "[OS-04] 구매 당시 이용 조건과 legacy 누락값 조회 UI",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-06": {
+    "number": 13,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/13",
+    "title": "[OS-06] 기존 편집 정보로 원본·버전 비교와 JSON 내보내기",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-07": {
+    "number": 14,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/14",
+    "title": "[OS-07] 기존 sharp 선명도 경고·중복 안내·사진 순서 정리",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-08": {
+    "number": 15,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/15",
+    "title": "[OS-08] 마스크 실패·재선택·이전 단계 복귀의 안내와 접근성",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-09": {
+    "number": 16,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/16",
+    "title": "[OS-09] 실제 모델에서 만든 썸네일 확인·마켓 카드 표시",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-10": {
+    "number": 17,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/17",
+    "title": "[OS-10] TEST 결제 응답 유실·중복 복귀의 상태 복구 UI",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-11": {
+    "number": 18,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/18",
+    "title": "[OS-11] 삭제 확인·중복 클릭 차단·권리 보존 오류 안내",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-12": {
+    "number": 19,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/19",
+    "title": "[OS-12] 키·DB 없는 공통 UI fixture 시작점",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-17": {
+    "number": 24,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/24",
+    "title": "[OS-17] 외부 GLB 로컬 편집에서 개인 저장·게시로 이어가기",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-18": {
+    "number": 25,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/25",
+    "title": "[OS-18] 마켓 라이선스·가격 필터와 URL 검색 상태",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-19": {
+    "number": 32,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/32",
+    "title": "[OS-19] 결과 뷰어 앞·뒤·좌·우 시점과 재맞춤",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-20": {
+    "number": 33,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/33",
+    "title": "[OS-20] 편집 동작 이력·삭제 확인·저장 오류 복구",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-21": {
+    "number": 34,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/34",
+    "title": "[OS-21] 구매 내역의 한국어 상태와 에셋 재다운로드 연결",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-22": {
+    "number": 35,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/35",
+    "title": "[OS-22] 팀원 fixture 통합 회귀와 Owner 인계 리포트",
+    "state": "OPEN",
+    "scope": "TEAM"
+  },
+  "OS-05": {
+    "number": 12,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/12",
+    "title": "[OS-05] 기존 추론 운영 smoke·취소·오류 안내 확인",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-01": {
+    "number": 26,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/26",
+    "title": "[OWN-01] SMTP·인증 콜백 연결과 외부 메일 확인",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-02": {
+    "number": 27,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/27",
+    "title": "[OWN-02] 모델·에셋 권리와 TEST 요금·보관 정책 확정",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-03": {
+    "number": 28,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/28",
+    "title": "[OWN-03] Toss TEST 서버 복귀·webhook·환불 실연동",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-04": {
+    "number": 29,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/29",
+    "title": "[OWN-04] 실행 환경·DB 검증·Preview 배포와 운영 승인",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-05": {
+    "number": 30,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/30",
+    "title": "[OWN-05] be-celeb.org ObjectScan 전환·메일 보존·복구",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-06": {
+    "number": 36,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/36",
+    "title": "[OWN-06] 구매 라이선스·버전 불변 snapshot 서버·DB 연동",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-07": {
+    "number": 37,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/37",
+    "title": "[OWN-07] 삭제·보관 hold·storage cleanup 서버 정합성",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-08": {
+    "number": 38,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/38",
+    "title": "[OWN-08] poster 저장·검증·공개 미리보기 API 연결",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OWN-09": {
+    "number": 39,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/39",
+    "title": "[OWN-09] 외부 GLB private 수입 등록·게시 서버 연결",
+    "state": "OPEN",
+    "scope": "OWNER-LOCAL"
+  },
+  "OS-13": {
+    "number": 20,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/20",
+    "title": "[OS-13] obsolete: model research excluded / 구현 대상 아님",
+    "state": "CLOSED_NOT_PLANNED",
+    "scope": "OBSOLETE"
+  },
+  "OS-14": {
+    "number": 21,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/21",
+    "title": "[OS-14] obsolete: model research excluded / 구현 대상 아님",
+    "state": "CLOSED_NOT_PLANNED",
+    "scope": "OBSOLETE"
+  },
+  "OS-15": {
+    "number": 22,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/22",
+    "title": "[OS-15] obsolete: model research excluded / 구현 대상 아님",
+    "state": "CLOSED_NOT_PLANNED",
+    "scope": "OBSOLETE"
+  },
+  "OS-16": {
+    "number": 23,
+    "url": "https://github.com/WooSungHyun03/ObjectScan/issues/23",
+    "title": "[OS-16] obsolete: model research excluded / 구현 대상 아님",
+    "state": "CLOSED_NOT_PLANNED",
+    "scope": "OBSOLETE"
+  }
+}

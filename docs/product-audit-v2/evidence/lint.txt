@@ -1,0 +1,49 @@
+
+> objectscan@0.1.0 lint
+> eslint apps packages scripts tests --no-error-on-unmatched-pattern
+
+
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2/apps/web/src/components/project-detail.tsx
+   36:10  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2/apps/web/src/components/project-detail.tsx:36:10
+  34 |   );
+  35 |   useEffect(() => {
+> 36 |     void load().catch((e) => setError(customerError(undefined, e.message)));
+     |          ^^^^ Avoid calling setState() directly within an effect
+  37 |   }, [load]);
+  38 |   useEffect(() => {
+  39 |     const a = p?.artifacts[0];  react-hooks/set-state-in-effect
+  180:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2/apps/web/src/components/reconstruction-wizard.tsx
+   59:9   warning  'router' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  105:10  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2/apps/web/src/components/reconstruction-wizard.tsx:105:10
+  103 |   }, [pid]);
+  104 |   useEffect(() => {
+> 105 |     void load().catch((e) => setError(customerError(undefined, e.message)));
+      |          ^^^^ Avoid calling setState() directly within an effect
+  106 |     void api<Health>("health")
+  107 |       .then(setHealth)
+  108 |       .catch((e) => setError(customerError(undefined, e.message)));  react-hooks/set-state-in-effect
+  469:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+  569:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+  606:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+  708:31  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @next/next/no-img-element
+
+✖ 8 problems (0 errors, 8 warnings)
+

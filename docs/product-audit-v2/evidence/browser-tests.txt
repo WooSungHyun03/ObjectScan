@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:2057490) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/auth-email.spec.ts:38:1 › signup requires email confirmation; recovery email changes only the disposable fixture password (2.0s)
+  ✓  2 [chromium] › tests/e2e/design-v4.spec.ts:4:1 › v5 public design: real preview states, anonymous upload entry, responsive and axe audit (8.7s)
+  ✓  3 [chromium] › tests/e2e/editor.spec.ts:24:1 › editor transforms, undo/redo, simplify and real GLB download roundtrip (6.0s)
+  ✓  4 [chromium] › tests/e2e/editor.spec.ts:90:1 › private source stays immutable; actual saved versions reopen and deny another identity (5.2s)
+  ✓  5 [chromium] › tests/e2e/editor.spec.ts:256:1 › optional actual large artifact shows display LOD but downloads full edited geometry (10.8s)
+  ✓  6 [chromium] › tests/e2e/payment-result.spec.ts:4:1 › payment callback never trusts URL success and retries the same order after a provider error (2.5s)
+  ✓  7 [chromium] › tests/e2e/platform.spec.ts:7:1 › landing, pricing, real viewer controls and responsive navigation (2.5s)
+  ✓  8 [chromium] › tests/e2e/platform.spec.ts:44:1 › verified login, private project, real signed upload, object/scene separation and logout (5.8s)
+  ✓  9 [chromium] › tests/e2e/visual.spec.ts:5:1 › mascot routes, Korean customer copy and 360/390/768/1440 visual coverage (2.5s)
+
+  9 passed (46.8s)

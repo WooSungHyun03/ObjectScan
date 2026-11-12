@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-11-12 KST",
+  "verification": "public browser, no generation/paid account",
+  "pages": [
+    {
+      "id": "meshy",
+      "status": 200,
+      "url": "https://www.meshy.ai/ko",
+      "title": "AI 3D 모델 생성기: 텍스트와 이미지로 3D 만들기 | Meshy"
+    },
+    {
+      "id": "meshy-workspace",
+      "status": 200,
+      "url": "https://www.meshy.ai/ko/workspace",
+      "title": "작업 공간"
+    },
+    {
+      "id": "tripo",
+      "status": 200,
+      "url": "https://www.tripo3d.ai/ko",
+      "title": "Tripo AI 3D 모델 생성기 | 몇 초 만에 텍스트와 이미지를 3D 모델로 변환"
+    },
+    {
+      "id": "polycam",
+      "status": 200,
+      "url": "https://poly.cam/",
+      "title": "Polycam — AI 3D Scanning, Floor Plans & Reality Capture for Teams"
+    },
+    {
+      "id": "kiri",
+      "status": 200,
+      "url": "https://www.kiriengine.app/",
+      "title": "KIRI Engine: 3D Scanner App for iPhone, Android, and Web"
+    }
+  ]
+}

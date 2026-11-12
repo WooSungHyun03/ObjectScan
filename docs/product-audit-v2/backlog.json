@@ -1,0 +1,379 @@
+{
+  "source": "e411f87",
+  "app_source": "debc1f7",
+  "team": [
+    {
+      "id": "OS-01",
+      "title": "현재 지원 범위·실패 이유·차감 안내를 생성 전에 표시",
+      "priority": "P0",
+      "member": "A",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "apps/web/src/features/create/generation-checkout.tsx",
+        "apps/web/src/lib/customer-copy.ts"
+      ]
+    },
+    {
+      "id": "OS-02",
+      "title": "가입·복구 링크 오류와 메일 대기의 복구 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 1,
+      "dependencies": [],
+      "owner": [
+        "OWN-01"
+      ],
+      "files": [
+        "apps/web/src/components/auth-form.tsx",
+        "apps/web/src/app/auth",
+        "tests/e2e/auth-email.spec.ts"
+      ]
+    },
+    {
+      "id": "OS-03",
+      "title": "통신 단절 뒤 작업 polling 재개와 중복 클릭 방지",
+      "priority": "P0",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/job-tracker.tsx",
+        "apps/web/src/features/create/generation-checkout.tsx",
+        "apps/web/src/lib/client-api.ts"
+      ]
+    },
+    {
+      "id": "OS-04",
+      "title": "구매 당시 이용 조건과 legacy 누락값 조회 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [
+        "OWN-06"
+      ],
+      "files": [
+        "apps/web/src/components/account-panels.tsx",
+        "apps/web/src/components/listing-detail.tsx",
+        "apps/web/src/features/marketplace/presentation.ts"
+      ]
+    },
+    {
+      "id": "OS-06",
+      "title": "기존 편집 정보로 원본·버전 비교와 JSON 내보내기",
+      "priority": "P1",
+      "member": "A",
+      "days": 1,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/editor/use-mesh-editor.ts",
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "packages/mesh-editor/src/contracts.ts"
+      ]
+    },
+    {
+      "id": "OS-07",
+      "title": "기존 sharp 선명도 경고·중복 안내·사진 순서 정리",
+      "priority": "P1",
+      "member": "B",
+      "days": 1.5,
+      "dependencies": [
+        "OS-01"
+      ],
+      "owner": [
+        "OWN-04"
+      ],
+      "files": [
+        "apps/web/src/features/create",
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "tests/files.test.ts"
+      ]
+    },
+    {
+      "id": "OS-08",
+      "title": "마스크 실패·재선택·이전 단계 복귀의 안내와 접근성",
+      "priority": "P1",
+      "member": "B",
+      "days": 1,
+      "dependencies": [
+        "OS-01"
+      ],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "apps/web/src/lib/customer-copy.ts"
+      ]
+    },
+    {
+      "id": "OS-09",
+      "title": "실제 모델에서 만든 썸네일 확인·마켓 카드 표시",
+      "priority": "P1",
+      "member": "A",
+      "days": 1,
+      "dependencies": [
+        "OS-19"
+      ],
+      "owner": [
+        "OWN-08"
+      ],
+      "files": [
+        "apps/web/src/features/marketplace/asset-card.tsx",
+        "apps/web/src/components/publish-form.tsx",
+        "apps/web/src/components/model-viewer.tsx"
+      ]
+    },
+    {
+      "id": "OS-10",
+      "title": "TEST 결제 응답 유실·중복 복귀의 상태 복구 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 1,
+      "dependencies": [
+        "OS-01"
+      ],
+      "owner": [
+        "OWN-03"
+      ],
+      "files": [
+        "apps/web/src/components/payment-result.tsx",
+        "apps/web/src/components/checkout-button.tsx",
+        "apps/web/src/features/billing/checkout-panel.tsx",
+        "tests/e2e/payment-result.spec.ts"
+      ]
+    },
+    {
+      "id": "OS-11",
+      "title": "삭제 확인·중복 클릭 차단·권리 보존 오류 안내",
+      "priority": "P1",
+      "member": "A",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [
+        "OWN-07"
+      ],
+      "files": [
+        "apps/web/src/components/asset-library.tsx",
+        "apps/web/src/components/account-panels.tsx"
+      ]
+    },
+    {
+      "id": "OS-12",
+      "title": "키·DB 없는 공통 UI fixture 시작점",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "tests/e2e",
+        "tests",
+        "scripts",
+        "docs/product-audit-v2"
+      ]
+    },
+    {
+      "id": "OS-17",
+      "title": "외부 GLB 로컬 편집에서 개인 저장·게시로 이어가기",
+      "priority": "P1",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-06"
+      ],
+      "owner": [
+        "OWN-09"
+      ],
+      "files": [
+        "apps/web/src/components/editor/use-mesh-editor.ts",
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "packages/mesh-editor/src"
+      ]
+    },
+    {
+      "id": "OS-18",
+      "title": "마켓 라이선스·가격 필터와 URL 검색 상태",
+      "priority": "P1",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/marketplace.tsx",
+        "apps/web/src/features/marketplace/asset-card.tsx"
+      ]
+    },
+    {
+      "id": "OS-19",
+      "title": "결과 뷰어 앞·뒤·좌·우 시점과 재맞춤",
+      "priority": "P1",
+      "member": "B",
+      "days": 1,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/model-viewer.tsx",
+        "apps/web/src/components/viewer.tsx"
+      ]
+    },
+    {
+      "id": "OS-20",
+      "title": "편집 동작 이력·삭제 확인·저장 오류 복구",
+      "priority": "P1",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": [
+        "OS-06"
+      ],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "apps/web/src/components/editor/inspector-panel.tsx",
+        "apps/web/src/components/editor/use-mesh-editor.ts"
+      ]
+    },
+    {
+      "id": "OS-21",
+      "title": "구매 내역의 한국어 상태와 에셋 재다운로드 연결",
+      "priority": "P1",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/account-panels.tsx",
+        "apps/web/src/components/asset-library.tsx",
+        "apps/web/src/features/marketplace/presentation.ts"
+      ]
+    },
+    {
+      "id": "OS-22",
+      "title": "팀원 fixture 통합 회귀와 Owner 인계 리포트",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [
+        "OS-01",
+        "OS-02",
+        "OS-03",
+        "OS-04",
+        "OS-06",
+        "OS-07",
+        "OS-08",
+        "OS-09",
+        "OS-10",
+        "OS-11",
+        "OS-12",
+        "OS-17",
+        "OS-18",
+        "OS-19",
+        "OS-20",
+        "OS-21"
+      ],
+      "owner": [],
+      "files": [
+        "tests/e2e",
+        "tests",
+        "scripts",
+        "docs/product-audit-v2"
+      ]
+    }
+  ],
+  "owner": [
+    {
+      "id": "OS-05",
+      "title": "기존 추론 운영 smoke·취소·오류 안내 확인",
+      "days": 0.5,
+      "dependencies": []
+    },
+    {
+      "id": "OWN-01",
+      "title": "SMTP·인증 콜백 연결과 외부 메일 확인",
+      "days": 0.5,
+      "dependencies": [
+        "OS-02"
+      ]
+    },
+    {
+      "id": "OWN-02",
+      "title": "모델·에셋 권리와 TEST 요금·보관 정책 확정",
+      "days": 0.5,
+      "dependencies": []
+    },
+    {
+      "id": "OWN-03",
+      "title": "Toss TEST 서버 복귀·webhook·환불 실연동",
+      "days": 0.5,
+      "dependencies": [
+        "OS-10"
+      ]
+    },
+    {
+      "id": "OWN-04",
+      "title": "실행 환경·DB 검증·Preview 배포와 운영 승인",
+      "days": 1,
+      "dependencies": [
+        "OS-22",
+        "OS-05",
+        "OWN-01",
+        "OWN-02",
+        "OWN-03",
+        "OWN-06"
+      ]
+    },
+    {
+      "id": "OWN-05",
+      "title": "be-celeb.org ObjectScan 전환·메일 보존·복구",
+      "days": 1,
+      "dependencies": [
+        "OWN-04"
+      ]
+    },
+    {
+      "id": "OWN-06",
+      "title": "구매 라이선스·버전 불변 snapshot 서버·DB 연동",
+      "days": 1.5,
+      "dependencies": [
+        "OS-04"
+      ]
+    },
+    {
+      "id": "OWN-07",
+      "title": "삭제·보관 hold·storage cleanup 서버 정합성",
+      "days": 1.5,
+      "dependencies": [
+        "OS-11",
+        "OWN-06"
+      ]
+    },
+    {
+      "id": "OWN-08",
+      "title": "poster 저장·검증·공개 미리보기 API 연결",
+      "days": 1,
+      "dependencies": [
+        "OS-09"
+      ]
+    },
+    {
+      "id": "OWN-09",
+      "title": "외부 GLB private 수입 등록·게시 서버 연결",
+      "days": 2,
+      "dependencies": [
+        "OS-17",
+        "OWN-06"
+      ]
+    }
+  ],
+  "obsolete": [
+    "OS-13",
+    "OS-14",
+    "OS-15",
+    "OS-16"
+  ]
+}
