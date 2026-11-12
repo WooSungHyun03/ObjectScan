@@ -10,3 +10,5 @@
 - Vercel MCP 계정 조회는 ObjectScan을 못 찾았지만 기존 인증된 CLI는 정확한 team/project를 조회했다. `npx --yes vercel@59.25.4` 사용.
 - 로컬 QA3010 PID1345517은 기존 프로세스이므로 임의 종료하지 않는다. ObjectScan 관리 도구가 새로 만든3000 서버만 별도 PID/프로세스 그룹으로 관리한다.
 - Cloudflare 내장 브라우저 로그인 대기. 서비스 인증 값은 문서/Git에 기록하지 않는다.
+
+후속2026-11-12: apex/www의 Vercel 프로젝트 연결을 ObjectScan으로 이전했다. 앞선 Cloudflare 로그인 대기 기록은 전환 전 상태다. DOMAIN_MIGRATION.md의 실제 실행 결과가 우선한다.

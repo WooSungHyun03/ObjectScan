@@ -95,7 +95,7 @@
 
 - Worker 사용자 서비스 실행·자동 시작·linger 확인. drain 후 중지/시작/재시작과 관리 도구의 로컬 웹 시작·중지 검증. 기존 3010 서버 보존. 새 GPU 추론 전체 흐름 검증은 아직 별도다.
 - 주문 라이선스·원본 snapshot migration22는 로컬 테스트 후 hosted에도 적용했다. schema/data 비공개 백업과 적용 후 컬럼 조회·health200을 확인했다. API/UI 연결과 실제 새 구매 검증 전이므로 OWN-06 전체 완료가 아니다.
-- Cloudflare 로그인 필요. 도메인 이전·최신 Preview 전체 검증·SMTP 외부 발송·이번 회차 실제 TEST 결제는 미완료다. 이전 테스트 성과를 이번 회차 통과로 재사용하지 않는다.
+- be-celeb.org/www의 Vercel 연결을 ObjectScan으로 이전하고 HTTPS 랜딩·www308을 확인했다. DNS·메일은 변경하지 않았다. 최신 Preview 전체 검증·SMTP 외부 발송·이번 회차 실제 TEST 결제는 미완료다. 이전 테스트 성과를 이번 회차 통과로 재사용하지 않는다.
 - 새 관리 CLI `scripts/objectscanctl`은 Worker와 로컬 웹을 구분한다. 공개 사이트 점검 모드는 아직 구현되지 않았다.
 
 ## 2주 순서와 충돌 방지

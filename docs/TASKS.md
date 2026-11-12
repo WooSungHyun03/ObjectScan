@@ -91,3 +91,7 @@ Current user explicitly authorizes main push and be-celeb.org replacement; histo
 | HANDOFF-MAIN | one self-contained A/B/Owner handoff; tested integration on main    | docs/TEAM_HANDOFF.md:17 Team+10 Owner tickets, inline AC/tests/prompts; A7.5/B8,22.5% buffer. Push confirmation is remote SHA, not this table                                    |
 
 Owner evidence: docs/owner-ops/EVIDENCE_INDEX.md. Full production launch remains incomplete; do not infer fresh SMTP/PG/GPU or DNS verification from this checkpoint.
+
+## Owner domain cutover — 2026-11-12
+
+OWN-05 routing: be-celeb.org moved from sw-system to objectscan; www308 to apex; HTTPS200/title/browser verified. DNS/mail/data unchanged. Existing Production served; fresh main deployment and actual auth/PG/GPU flow remain separate gates. Evidence: docs/owner-ops/DOMAIN_MIGRATION.md. Earlier Cloudflare-login blocking assumption is corrected: existing DNS already reaches Vercel.

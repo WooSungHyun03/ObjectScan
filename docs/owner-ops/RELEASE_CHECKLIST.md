@@ -14,7 +14,8 @@
 - [ ] 외부 GLB/private ingress·poster 실연동
 - [ ] 삭제·보관·cleanup 정책 통합
 - [ ] 정확 SHA Preview 전체 회귀
-- [ ] Cloudflare 인증 후 DNS/alias 전환·HTTPS/www/callback
+- [x] Vercel domain 연결 이전·HTTPS/www308·브라우저 ObjectScan 확인(DNS 수정 불필요)
+- [ ] 최종 도메인에서 외부 인증 callback 전체 흐름
 - [ ] 공개 서비스 점검 모드
 
 미체크 항목은 완료 또는 운영 활성화로 보고하지 않는다.
