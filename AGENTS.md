@@ -30,3 +30,9 @@ npm run typecheck; npm run lint; npm test; npm run build; npm run test:e2e. Pyth
 - Original assets are immutable. Edits are typed commands and new private versions. No arbitrary scripts, external glTF references, paid entitlement changes or fake GPU completion.
 - V5 supersedes the prior school-only presentation and payment-disable preference: implement an isolated Toss TEST commerce environment. Never enable live billing/payouts, unqualified generation, or overwrite existing BE CELEB DNS/deployment. Preserve required license notices; commercial rights remain a separate release gate.
 - Loop: discover → plan → implement → static/integration/browser verify → screenshot critique → fix → integrate. Existing public deployment stays unchanged until new UI/editor passes its gates.
+
+## Owner launch instructions (2026-11-12; current user request)
+- The user explicitly requires pushing verified current work to main. Integrate safely without force push; earlier main restrictions do not block this authorized integration.
+- The user approved replacing be-celeb.org with ObjectScan. Back up routing, preserve mail/data, verify Preview and rollback first; request only necessary personal authentication.
+- Team A/B ownership is defined in docs/TEAM_HANDOFF.md and supersedes old fixed A/B/C functional tracks. Owner-only keys, DB, GPU and deployment work stays local.
+- Current worker is a user systemd unit, not the absent system-wide unit. Never infer inactivity from system scope alone.

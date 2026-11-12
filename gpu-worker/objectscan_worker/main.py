@@ -3,6 +3,7 @@
 import fcntl
 import json
 import os
+import signal
 import threading
 import time
 from pathlib import Path
@@ -31,6 +32,7 @@ class Worker:
         self.storage = os.environ["OBJECTSCAN_STORAGE_ORIGIN"]
         self.root = Path(os.environ.get("OBJECTSCAN_WORK_ROOT", "./work")).resolve()
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.shutdown = threading.Event()
         headers = {"Authorization": "Bearer " + os.environ["OBJECTSCAN_WORKER_TOKEN"]}
         bypass = os.environ.get("OBJECTSCAN_VERCEL_BYPASS_SECRET")
         if bypass:
@@ -112,6 +114,8 @@ class Worker:
 
         def tick():
             nonlocal offset, stage
+            if self.shutdown.is_set():
+                return False
             if lost.is_set():
                 return False
             events = work / "stage-events.jsonl"
@@ -264,7 +268,12 @@ class Worker:
         except JobStopped:
             # run_stage has already killed the process group. A lost/expired lease must not be released blindly.
             try:
-                self.api("stop-ack", {**token, "gpu_stopped": True})
+                if self.shutdown.is_set():
+                    # Children have stopped. Existing finalization preserves cancellation
+                    # and refunds failed generation exactly once; a lost lease stays fenced.
+                    self.api("failure", {**token, "error_code": "WORKER_ERROR", "retryable": False})
+                else:
+                    self.api("stop-ack", {**token, "gpu_stopped": True})
             except httpx.HTTPError:
                 pass
         except Exception as error:
@@ -281,19 +290,37 @@ class Worker:
     def run(self):
         with (self.root / "worker.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            while True:
+            while not self.shutdown.is_set():
                 try:
+                    if (self.root / "drain.request").exists():
+                        self.write_state("drained")
+                        self.shutdown.wait(1)
+                        continue
+                    self.write_state("polling")
                     self.api("heartbeat-idle", self.identity)
+                    if (self.root / "drain.request").exists():
+                        continue
                     job = self.api("claim", self.identity).get("job")
                     if job:
+                        self.write_state("running")
                         self.job(job)
                 except (httpx.HTTPError, ValueError):
                     print("Worker API unavailable; retrying safely", flush=True)
-                time.sleep(5)
+                self.shutdown.wait(5)
+            self.write_state("stopped")
+
+    def write_state(self, state):
+        target = self.root / "worker-state.json"
+        temporary = target.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"pid": os.getpid(), "state": state, "at": time.time()}))
+        temporary.replace(target)
 
 
 def main():
-    Worker().run()
+    worker = Worker()
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        signal.signal(sig, lambda *_: worker.shutdown.set())
+    worker.run()
 
 
 if __name__ == "__main__":

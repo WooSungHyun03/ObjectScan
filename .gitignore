@@ -28,4 +28,4 @@ weights/
 *.tsbuildinfo
 
 # Isolated local production build for v5 QA
-apps/web/.next-v5/
+apps/web/.next-*/

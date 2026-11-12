@@ -1,3 +1,4 @@
+import json
 import sys
 import time
 from pathlib import Path
@@ -474,3 +475,50 @@ def test_generation_submission_excludes_local_execution_metadata():
     report = {"quality": {"real_gpu": True}, "execution_profile": "naf_fp16", "local_path": "/private/diagnostic"}
     assert generation_result(report, "owner/project/mesh.glb") == {"quality": {"real_gpu": True}, "artifact_path": "owner/project/mesh.glb"}
     assert generation_result(report, "mesh.glb", "preview.glb")["preview_path"] == "preview.glb"
+
+
+def test_drained_worker_does_not_claim_or_contact_api(tmp_path):
+    import threading
+    from objectscan_worker.main import Worker
+    worker = Worker.__new__(Worker)
+    worker.root = tmp_path
+    worker.shutdown = threading.Event()
+    worker.identity = {"worker_id": "fixture", "models": []}
+    calls = []
+    worker.api = lambda *args: calls.append(args)
+    (tmp_path / "drain.request").touch()
+    thread = threading.Thread(target=worker.run)
+    thread.start()
+    try:
+        deadline = time.monotonic() + 3
+        while not (tmp_path / "worker-state.json").exists() and time.monotonic() < deadline:
+            time.sleep(.01)
+        assert json.loads((tmp_path / "worker-state.json").read_text())["state"] == "drained"
+        assert calls == []
+    finally:
+        worker.shutdown.set()
+        thread.join(3)
+    assert not thread.is_alive()
+    assert json.loads((tmp_path / "worker-state.json").read_text())["state"] == "stopped"
+
+
+def test_worker_stop_during_idle_does_not_claim_again(tmp_path):
+    import threading
+    from objectscan_worker.main import Worker
+    worker = Worker.__new__(Worker)
+    worker.root = tmp_path
+    worker.shutdown = threading.Event()
+    worker.identity = {"worker_id": "fixture", "models": []}
+    calls = []
+    def api(op, data):
+        calls.append(op)
+        if op == "claim":
+            worker.shutdown.set()
+            return {"job": None}
+        return {}
+    worker.api = api
+    worker.run()
+    assert calls == ["heartbeat-idle", "claim"]
+    state = json.loads((tmp_path / "worker-state.json").read_text())
+    assert state["state"] == "stopped"
+    assert "token" not in state

@@ -436,6 +436,43 @@ integration(
         "insert into orders(id,buyer_id,kind,listing_id,amount,fee,idempotency_key) values($1,$2,'marketplace',$3,1000,100,$4)",
         [order, ids[1], listing, randomUUID()],
       );
+      const snapshot = (
+        await db.query("select license_snapshot from orders where id=$1", [
+          order,
+        ])
+      ).rows[0].license_snapshot;
+      expect(snapshot).toMatchObject({
+        schema_version: 1,
+        artifact_id: asset,
+        source_version: "original",
+        source_storage_path: "test-only/no-real-mesh",
+        listing_title: "test",
+      });
+      await db.query(
+        "update marketplace_listings set title='changed after order',license='cc-by-4.0' where id=$1",
+        [listing],
+      );
+      expect(
+        (
+          await db.query("select license_snapshot from orders where id=$1", [
+            order,
+          ])
+        ).rows[0].license_snapshot,
+      ).toEqual(snapshot);
+      await expect(
+        db.query("update orders set amount=999 where id=$1", [order]),
+      ).rejects.toThrow("ORDER_TERMS_IMMUTABLE");
+      await expect(
+        db.query("update orders set license_snapshot='{}' where id=$1", [
+          order,
+        ]),
+      ).rejects.toThrow("ORDER_TERMS_IMMUTABLE");
+      await expect(
+        db.query(
+          "update artifacts set storage_path='replacement.glb' where id=$1",
+          [asset],
+        ),
+      ).rejects.toThrow("ARTIFACT_SOURCE_IMMUTABLE");
       await db.query("select settle_payment($1,$2,1000,true)", [
         order,
         "test-market-" + order,
@@ -444,6 +481,14 @@ integration(
         order,
         "test-market-" + order,
       ]);
+      expect(
+        (
+          await db.query(
+            "select license_snapshot from asset_purchases where order_id=$1",
+            [order],
+          )
+        ).rows[0].license_snapshot,
+      ).toEqual(snapshot);
       expect(
         (
           await db.query(
