@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-11-12T00:39:40.589Z",
+  "mode": "PUBLIC_DNS_READ_ONLY",
+  "records": [
+    {
+      "host": "be-celeb.org",
+      "type": "A",
+      "status": "queried",
+      "answers": [
+        "64.29.17.65",
+        "216.198.79.65"
+      ]
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "AAAA",
+      "status": "queried",
+      "answers": []
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "CNAME",
+      "status": "queried",
+      "answers": []
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "MX",
+      "status": "queried",
+      "answers": [
+        "65 route3.mx.cloudflare.net.",
+        "57 route1.mx.cloudflare.net.",
+        "42 route2.mx.cloudflare.net."
+      ]
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "TXT",
+      "status": "queried",
+      "answers": [
+        "\"v=spf1 include:_spf.mx.cloudflare.net ~all\""
+      ]
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "CAA",
+      "status": "queried",
+      "answers": []
+    },
+    {
+      "host": "be-celeb.org",
+      "type": "NS",
+      "status": "queried",
+      "answers": [
+        "buck.ns.cloudflare.com.",
+        "ligia.ns.cloudflare.com."
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "A",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com.",
+        "64.29.17.1",
+        "216.198.79.1"
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "AAAA",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com."
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "CNAME",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com."
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "MX",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com."
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "TXT",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com."
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "CAA",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com.",
+        "0 issue \"letsencrypt.org\"",
+        "0 issue \"pki.goog\"",
+        "0 issue \"sectigo.com\"",
+        "0 issue \"globalsign.com\""
+      ]
+    },
+    {
+      "host": "www.be-celeb.org",
+      "type": "NS",
+      "status": "queried",
+      "answers": [
+        "8533f02441d85400.vercel-dns-017.com."
+      ]
+    }
+  ],
+  "limitations": "No account auth, record IDs, proxy flags, full zone, private redirects or alias ownership. Before cutover OWNER must back up Cloudflare zone and exact Vercel alias. No records modified."
+}

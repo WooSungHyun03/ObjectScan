@@ -1,0 +1,9 @@
+
+ RUN  v4.1.12 /home/m4ml/Desktop/ObjectScan/ObjectScan-v2
+
+
+ Test Files  3 passed (3)
+      Tests  32 passed (32)
+   Start at  09:39:40
+   Duration  894ms (transform 143ms, setup 0ms, import 324ms, tests 639ms, environment 0ms)
+

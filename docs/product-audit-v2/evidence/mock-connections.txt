@@ -1,0 +1,9 @@
+
+Running 1 test using 1 worker
+
+(node:2099317) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+AUDIT PASS: actual local login; MOCK project output/publish/search/report/order/provider/download/delete; no GPU/PG execution
+  ✓  1 [chromium] › docs/product-audit-v2/owner-local-connections.spec.ts:7:1 › v6 audit: publish/search/report/order/callback/download/delete UI connections with explicit fixtures (3.3s)
+
+  1 passed (3.8s)

@@ -1,0 +1,1 @@
+PASS:31 unique IDs/Issues;17TEAM+10OWNER+4obsolete;A7.5/B8;22.5%buffer;dependencyDAG;Ready A/B;AC/prompts/paths/links;no protected Team write path;no key patterns in JSON
