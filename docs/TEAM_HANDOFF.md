@@ -94,7 +94,7 @@
 ## Owner 현재 진행 상태
 
 - Worker 사용자 서비스 실행·자동 시작·linger 확인. drain 후 중지/시작/재시작과 관리 도구의 로컬 웹 시작·중지 검증. 기존 3010 서버 보존. 새 GPU 추론 전체 흐름 검증은 아직 별도다.
-- 주문 라이선스·원본 snapshot migration22는 로컬에만 적용. hosted schema/data 비공개 백업 확보. 운영 DB 적용과 API/UI 연결 전이므로 OWN-06 완료가 아니다.
+- 주문 라이선스·원본 snapshot migration22는 로컬 테스트 후 hosted에도 적용했다. schema/data 비공개 백업과 적용 후 컬럼 조회·health200을 확인했다. API/UI 연결과 실제 새 구매 검증 전이므로 OWN-06 전체 완료가 아니다.
 - Cloudflare 로그인 필요. 도메인 이전·최신 Preview 전체 검증·SMTP 외부 발송·이번 회차 실제 TEST 결제는 미완료다. 이전 테스트 성과를 이번 회차 통과로 재사용하지 않는다.
 - 새 관리 CLI `scripts/objectscanctl`은 Worker와 로컬 웹을 구분한다. 공개 사이트 점검 모드는 아직 구현되지 않았다.
 
@@ -1114,13 +1114,13 @@ AC와 관련 unit/browser회귀가 통과하고 다른팀원 리뷰가 끝나야
 
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
-GPUinactive상태에서의원인확인·기존설정백업·대기작업확인·로컬대상고정후기존단일입력추론1회선택. source/checkpoint/precision을변경하지않고입력→mask→기존추론→GLB/UV→download를확인.실패는기존오류코드와복구로만처리.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+실행 중인 user systemd Worker의 운영상태 확인·기존설정백업·대기작업확인·로컬대상고정후기존단일입력추론1회선택. source/checkpoint/precision을변경하지않고입력→mask→기존추론→GLB/UV→download를확인.실패는기존오류코드와복구로만처리.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
-Worker/GPU접속또는서비스재기동권한이부족할때만요청.모델실행대상·시간창이운영에영향을주면실행직전확인.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+Worker/GPU접속또는서비스재기동권한이부족할때만요청.대기 작업과 현재 사용자를 확인하고 기존 운영 검증 범위에서 직접 수행한다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1140,7 +1140,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OS-05.md 전체를읽고 OWNER-LOCAL 작업만수행하라. GPUinactive상태에서의원인확인·기존설정백업·대기작업확인·로컬대상고정후기존단일입력추론1회선택. source/checkpoint/precision을변경하지않고입력→mask→기존추론→GLB/UV→download를확인.실패는기존오류코드와복구로만처리. 선행 없음(기존 대상 read-only 확인부터 시작)와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 Worker/GPU접속또는서비스재기동권한이부족할때만요청.모델실행대상·시간창이운영에영향을주면실행직전확인. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OS-05.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 실행 중인 user systemd Worker의 운영상태 확인·기존설정백업·대기작업확인·로컬대상고정후기존단일입력추론1회선택. source/checkpoint/precision을변경하지않고입력→mask→기존추론→GLB/UV→download를확인.실패는기존오류코드와복구로만처리. 선행 없음(기존 대상 read-only 확인부터 시작)와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 Worker/GPU접속또는서비스재기동권한이부족할때만요청.대기 작업과 현재 사용자를 확인하고 기존 운영 검증 범위에서 직접 수행한다. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-01 — SMTP·인증 콜백 연결과 외부 메일 확인
@@ -1154,12 +1154,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 현재설정존재여부를값없이확인하고localhostMailpit회귀를실행.사용자SMTP설정후redirect allowlist와외부가입/복구확인.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 SMTP대시보드로그인/2FA와본인이수신한메일의인증단계.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1179,7 +1179,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-01.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재설정존재여부를값없이확인하고localhostMailpit회귀를실행.사용자SMTP설정후redirect allowlist와외부가입/복구확인. 선행 OS-02와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 SMTP대시보드로그인/2FA와본인이수신한메일의인증단계. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-01.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재설정존재여부를값없이확인하고localhostMailpit회귀를실행.사용자SMTP설정후redirect allowlist와외부가입/복구확인. 선행 OS-02와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 SMTP대시보드로그인/2FA와본인이수신한메일의인증단계. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-02 — 모델·에셋 권리와 TEST 요금·보관 정책 확정
@@ -1193,12 +1193,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 기존LICENSE/source/checkpoint목록과운영설정을로컬에서비교하고미확정권리/가격/수수료/보관기간표작성.이미정한도메인교체결정은재질문하지않음.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 권리확인결과와운영정책의본인승인.필요시권리자허락은본인이확보.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1218,7 +1218,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-02.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존LICENSE/source/checkpoint목록과운영설정을로컬에서비교하고미확정권리/가격/수수료/보관기간표작성.이미정한도메인교체결정은재질문하지않음. 선행 없음와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 권리확인결과와운영정책의본인승인.필요시권리자허락은본인이확보. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-02.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존LICENSE/source/checkpoint목록과운영설정을로컬에서비교하고미확정권리/가격/수수료/보관기간표작성.이미정한도메인교체결정은재질문하지않음. 선행 없음와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 권리확인결과와운영정책의본인승인.필요시권리자허락은본인이확보. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-03 — Toss TEST 서버 복귀·webhook·환불 실연동
@@ -1232,12 +1232,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 기존키존재와모드만확인하고localproviderfixture회귀.별도Preview의현재SHA/지역/반환URL확인후새TEST주문인증·callback·requery·중복·환불·권한회수검증.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 카드사/간편결제TEST인증또는PG대시보드로그인·2FA.키는로컬보안파일에본인입력.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1257,7 +1257,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-03.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존키존재와모드만확인하고localproviderfixture회귀.별도Preview의현재SHA/지역/반환URL확인후새TEST주문인증·callback·requery·중복·환불·권한회수검증. 선행 OS-10와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 카드사/간편결제TEST인증또는PG대시보드로그인·2FA.키는로컬보안파일에본인입력. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-03.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존키존재와모드만확인하고localproviderfixture회귀.별도Preview의현재SHA/지역/반환URL확인후새TEST주문인증·callback·requery·중복·환불·권한회수검증. 선행 OS-10와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 카드사/간편결제TEST인증또는PG대시보드로그인·2FA.키는로컬보안파일에본인입력. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-04 — 실행 환경·DB 검증·Preview 배포와 운영 승인
@@ -1271,12 +1271,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 현재env이름존재·로컬schema21개·GPU/worker/웹상태를read-only확인.키없는harness와Ownerlocal실연동증거를구분하고정확한SHA로별도Preview준비. DBbackup후연동migration검증. OS-07의키없는sharp진단helper를기존upload normalized응답에optional필드로연결하되DB저장/새알고리즘없이검증한다. 테스트전operatingresource변경없음.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 Supabase/Vercel로그인·2FA또는실제배포반영직전실행확인.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1296,7 +1296,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-04.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재env이름존재·로컬schema21개·GPU/worker/웹상태를read-only확인.키없는harness와Ownerlocal실연동증거를구분하고정확한SHA로별도Preview준비. DBbackup후연동migration검증. OS-07의키없는sharp진단helper를기존upload normalized응답에optional필드로연결하되DB저장/새알고리즘없이검증한다. 테스트전operatingresource변경없음. 선행 OS-22, OS-05, OWN-01, OWN-02, OWN-03, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 Supabase/Vercel로그인·2FA또는실제배포반영직전실행확인. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-04.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재env이름존재·로컬schema21개·GPU/worker/웹상태를read-only확인.키없는harness와Ownerlocal실연동증거를구분하고정확한SHA로별도Preview준비. DBbackup후연동migration검증. OS-07의키없는sharp진단helper를기존upload normalized응답에optional필드로연결하되DB저장/새알고리즘없이검증한다. 테스트전operatingresource변경없음. 선행 OS-22, OS-05, OWN-01, OWN-02, OWN-03, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 Supabase/Vercel로그인·2FA또는실제배포반영직전실행확인. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-05 — be-celeb.org ObjectScan 전환·메일 보존·복구
@@ -1310,12 +1310,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 교체결정은완료.현재apex/www/MX/TXT/CAA/프록시/SSL/기존alias를privatebackup. Vercel의현재권장레코드를조회해apex/www웹라우팅변경안만작성.기존데이터와메일레코드보존.새Preview의auth/upload/TEST/download검증후전환절차와5분검증·rollback체크작성.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
-Cloudflare/Vercel로그인·2FA와실제전환시각의최종실행확인만.도메인사용여부다시묻지않음.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+필요한 Cloudflare/Vercel 로그인·2FA만. 도메인 사용·교체 승인을 다시 묻지 않는다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1335,7 +1335,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-05.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 교체결정은완료.현재apex/www/MX/TXT/CAA/프록시/SSL/기존alias를privatebackup. Vercel의현재권장레코드를조회해apex/www웹라우팅변경안만작성.기존데이터와메일레코드보존.새Preview의auth/upload/TEST/download검증후전환절차와5분검증·rollback체크작성. 선행 OWN-04와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 Cloudflare/Vercel로그인·2FA와실제전환시각의최종실행확인만.도메인사용여부다시묻지않음. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-05.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 교체결정은완료.현재apex/www/MX/TXT/CAA/프록시/SSL/기존alias를privatebackup. Vercel의현재권장레코드를조회해apex/www웹라우팅변경안만작성.기존데이터와메일레코드보존.새Preview의auth/upload/TEST/download검증후전환절차와5분검증·rollback체크작성. 선행 OWN-04와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 필요한 Cloudflare/Vercel 로그인·2FA만. 도메인 사용·교체 승인을 다시 묻지 않는다. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-06 — 구매 라이선스·버전 불변 snapshot 서버·DB 연동
@@ -1349,12 +1349,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 현재orders/asset_purchases/schema를검토하고로컬전용DB에서additive snapshot migration·transaction·RLS/중복정산테스트. legacy는unknown. typedfixture를OS-04와맞춰선택값을노출.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 운영DBmigration반영직전본인확인/접속인증만.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1374,7 +1374,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-06.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재orders/asset_purchases/schema를검토하고로컬전용DB에서additive snapshot migration·transaction·RLS/중복정산테스트. legacy는unknown. typedfixture를OS-04와맞춰선택값을노출. 선행 OS-04와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 운영DBmigration반영직전본인확인/접속인증만. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-06.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재orders/asset_purchases/schema를검토하고로컬전용DB에서additive snapshot migration·transaction·RLS/중복정산테스트. legacy는unknown. typedfixture를OS-04와맞춰선택값을노출. 선행 OS-04와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 운영DBmigration반영직전본인확인/접속인증만. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-07 — 삭제·보관 hold·storage cleanup 서버 정합성
@@ -1388,12 +1388,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 현재DELETE assets/data-deletion/maintenance보존조건검토.로컬고정fixture로pending/paid/refunded/유효권한/실패storage삭제재시도계약구현준비와schema계획작성.승인후원장보존hold/정리manifest별도구현.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
 보관정책확정과원격삭제활성화직전확인만.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1413,7 +1413,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-07.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재DELETE assets/data-deletion/maintenance보존조건검토.로컬고정fixture로pending/paid/refunded/유효권한/실패storage삭제재시도계약구현준비와schema계획작성.승인후원장보존hold/정리manifest별도구현. 선행 OS-11, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 보관정책확정과원격삭제활성화직전확인만. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-07.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 현재DELETE assets/data-deletion/maintenance보존조건검토.로컬고정fixture로pending/paid/refunded/유효권한/실패storage삭제재시도계약구현준비와schema계획작성.승인후원장보존hold/정리manifest별도구현. 선행 OS-11, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 보관정책확정과원격삭제활성화직전확인만. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-08 — poster 저장·검증·공개 미리보기 API 연결
@@ -1427,12 +1427,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 별도poster field/metadata필요성검토하고기존previewGLB와분리. MIME/magicbytes/decode1600px2MB재인코딩,소유권·moderation후공개,private원본미노출API/로컬migration준비.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
-원격storage정책/migration반영직전확인만.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+인증 권한이 없을 때 필요한 로그인·2FA만.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1452,7 +1452,7 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-08.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 별도poster field/metadata필요성검토하고기존previewGLB와분리. MIME/magicbytes/decode1600px2MB재인코딩,소유권·moderation후공개,private원본미노출API/로컬migration준비. 선행 OS-09와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 원격storage정책/migration반영직전확인만. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-08.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 별도poster field/metadata필요성검토하고기존previewGLB와분리. MIME/magicbytes/decode1600px2MB재인코딩,소유권·moderation후공개,private원본미노출API/로컬migration준비. 선행 OS-09와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 인증 권한이 없을 때 필요한 로그인·2FA만. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```
 
 ### OWN-09 — 외부 GLB private 수입 등록·게시 서버 연결
@@ -1466,12 +1466,12 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### 이 컴퓨터에서 Codex가 자동 처리할 절차
 
 기존64MiBGLBvalidator·privatebucket·프로젝트/아티팩트FK를검토하고provenance=import의명시적등록계약·권한·quota·idempotency·원본불변·moderation을로컬DB로검증.생성job성공을위조하지않고필요schema만additive.
-먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경안/diff/백업위치/rollback준비→실운영반영확인순서. 이감사는전용스크립트·정적검사·기존localtest까지실행하고기능구현/운영반영은시작하지않는다.
+먼저 `node docs/product-audit-v2/owner-local-preflight.mjs /home/m4ml/Desktop/ObjectScan/ObjectScan-v2`로값없는read-only검사. 대상환경/프로젝트/branch/SHA확인→로컬fixture·dry-run계약검증→변경diff·백업·rollback준비→승인된Owner-local실행→사후검증 순서다. 현재 사용자는 실제 운영 작업을 요청했으므로 계획에서 멈추지 않는다.
 
 #### 사용자만 수행할 외부 단계
 
-실제DB/storage반영직전확인만.
-이미승인된도메인교체여부는재질문하지않는다. 다만실제운영변경은V6의별도실행확인게이트를따른다.
+인증 권한이 없을 때 필요한 로그인·2FA만.
+도메인 교체와 요청된 Owner-local 실행은 이미 승인됐다. 백업·검증 후 직접 수행하고 로그인·2FA 등 본인만 가능한 단계에서 요청한다.
 
 #### 키 없는 예제·팀 계약
 
@@ -1491,5 +1491,5 @@ private backup에는권한600, DB는정책확인된dump, DNS/alias는변경전�
 #### Owner-local Codex 실행 프롬프트
 
 ```text
-/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-09.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존64MiBGLBvalidator·privatebucket·프로젝트/아티팩트FK를검토하고provenance=import의명시적등록계약·권한·quota·idempotency·원본불변·moderation을로컬DB로검증.생성job성공을위조하지않고필요schema만additive. 선행 OS-17, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 실제운영리소스변경은별도실행확인후다. 사용자에게필요한것은 실제DB/storage반영직전확인만. 비밀값을출력하지말고실제/모의/대기를구분하라.
+/home/m4ml/Desktop/ObjectScan/ObjectScan-v2에서 docs/product-audit-v2/tickets/OWN-09.md 전체를읽고 OWNER-LOCAL 작업만수행하라. 기존64MiBGLBvalidator·privatebucket·프로젝트/아티팩트FK를검토하고provenance=import의명시적등록계약·권한·quota·idempotency·원본불변·moderation을로컬DB로검증.생성job성공을위조하지않고필요schema만additive. 선행 OS-17, OWN-06와현재SHA/설정을확인하고안전한read-only검사·로컬테스트·설정예제·backup/diff/rollback준비는직접하라. Team기능구현이나모델연구로넘어가지말라. 승인된 Owner-local 변경은 백업·검증 후 직접 수행한다. 본인 인증만 요청한다. 사용자에게필요한것은 인증 권한이 없을 때 필요한 로그인·2FA만. 비밀값을출력하지말고실제/모의/대기를구분하라.
 ```

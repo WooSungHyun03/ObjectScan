@@ -271,7 +271,10 @@ class Worker:
                 if self.shutdown.is_set():
                     # Children have stopped. Existing finalization preserves cancellation
                     # and refunds failed generation exactly once; a lost lease stays fenced.
-                    self.api("failure", {**token, "error_code": "WORKER_ERROR", "retryable": False})
+                    self.api(
+                        "failure",
+                        {**token, "error_code": "WORKER_ERROR", "retryable": False},
+                    )
                 else:
                     self.api("stop-ack", {**token, "gpu_stopped": True})
             except httpx.HTTPError:
@@ -312,7 +315,9 @@ class Worker:
     def write_state(self, state):
         target = self.root / "worker-state.json"
         temporary = target.with_suffix(".tmp")
-        temporary.write_text(json.dumps({"pid": os.getpid(), "state": state, "at": time.time()}))
+        temporary.write_text(
+            json.dumps({"pid": os.getpid(), "state": state, "at": time.time()})
+        )
         temporary.replace(target)
 
 

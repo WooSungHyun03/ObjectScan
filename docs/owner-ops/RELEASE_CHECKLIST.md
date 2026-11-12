@@ -6,7 +6,8 @@
 - [x] Worker idle drain 중지·시작·재시작과 로컬 웹 관리 확인
 - [x] hosted schema/data private backup
 - [x] snapshot migration 로컬 적용 및 DB 회귀
-- [ ] hosted migration 적용·API 연동
+- [x] hosted migration22 추가 적용·컬럼 조회·health 확인
+- [ ] snapshot API/UI·실구매 연동
 - [ ] 외부 SMTP 신규 가입·복구
 - [ ] 이번 변경 기준 실제 TEST 결제·환불
 - [ ] 새 실제 GPU 생성·취소·다운로드

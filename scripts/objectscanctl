@@ -2,85 +2,271 @@
 """Operate only the verified ObjectScan user service and explicitly managed local web.
 Never kills arbitrary Node/Python/CUDA processes. Vercel is an independent service.
 """
-import argparse,json,os,shlex,signal,subprocess,sys,time,urllib.request
-from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]
-STATE=Path.home()/'.local/state/objectscan';STATE.mkdir(parents=True,exist_ok=True,mode=0o700)
-UNIT='objectscan-worker.service'
-def run(args,check=True,cwd=ROOT):return subprocess.run(args,cwd=cwd,check=check,text=True,capture_output=True)
-def properties():
- r=run(['systemctl','--user','show',UNIT,'-p','LoadState','-p','ActiveState','-p','MainPID','-p','FragmentPath'],False)
- return dict(l.split('=',1)for l in r.stdout.splitlines()if'='in l)
-def env():
- p=Path.home()/'.config/objectscan/worker.env'
- if not p.exists():raise RuntimeError('Worker environment not installed')
- return {k:shlex.split(v)[0]if v else''for l in p.read_text().splitlines()if'='in l and not l.startswith('#')for k,v in[l.split('=',1)]}
-def worker_root():return Path(env()['OBJECTSCAN_WORK_ROOT']).resolve()
-def unit_checked():
- p=properties()
- if p.get('LoadState')!='loaded':raise RuntimeError('ObjectScan user unit is not installed')
- unit=Path(p['FragmentPath']).read_text()
- if f'WorkingDirectory={ROOT}'not in unit or str(ROOT/'gpu-worker/.venv/bin/objectscan-worker')not in unit:raise RuntimeError('Unit belongs to a different checkout')
- return p
 
-def worker(action,timeout):
- p=unit_checked();root=worker_root();marker=root/'drain.request';root.mkdir(parents=True,exist_ok=True)
- if action=='start':
-  marker.unlink(missing_ok=True);run(['systemctl','--user','start',UNIT]);print('worker:',properties().get('ActiveState'));return
- if action=='stop':
-  if p.get('ActiveState')!='active':print('worker: already stopped');return
-  marker.touch(mode=0o600);deadline=time.monotonic()+timeout
-  while time.monotonic()<deadline:
-   try:s=json.loads((root/'worker-state.json').read_text())
-   except(FileNotFoundError,json.JSONDecodeError):s={}
-   if s.get('state')=='drained'and str(s.get('pid'))==p['MainPID']and time.time()-s.get('at',0)<10:
-    run(['systemctl','--user','stop',UNIT]);marker.unlink(missing_ok=True);print('worker: stopped after drain');return
-   time.sleep(.5)
-  raise RuntimeError('Drain requested; still running or old worker lacks drain support. No forced stop performed. Retry status; use start worker to undo drain.')
- if action=='restart':worker('stop',timeout);worker('start',timeout)
+import argparse
+import json
+import os
+import shlex
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+STATE = Path.home() / ".local/state/objectscan"
+STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
+UNIT = "objectscan-worker.service"
+
+
+def run(args, check=True, cwd=ROOT):
+    return subprocess.run(args, cwd=cwd, check=check, text=True, capture_output=True)
+
+
+def properties():
+    r = run(
+        [
+            "systemctl",
+            "--user",
+            "show",
+            UNIT,
+            "-p",
+            "LoadState",
+            "-p",
+            "ActiveState",
+            "-p",
+            "MainPID",
+            "-p",
+            "FragmentPath",
+        ],
+        False,
+    )
+    return dict(l.split("=", 1) for l in r.stdout.splitlines() if "=" in l)
+
+
+def env():
+    p = Path.home() / ".config/objectscan/worker.env"
+    if not p.exists():
+        raise RuntimeError("Worker environment not installed")
+    return {
+        k: shlex.split(v)[0] if v else ""
+        for l in p.read_text().splitlines()
+        if "=" in l and not l.startswith("#")
+        for k, v in [l.split("=", 1)]
+    }
+
+
+def worker_root():
+    return Path(env()["OBJECTSCAN_WORK_ROOT"]).resolve()
+
+
+def unit_checked():
+    p = properties()
+    if p.get("LoadState") != "loaded":
+        raise RuntimeError("ObjectScan user unit is not installed")
+    unit = Path(p["FragmentPath"]).read_text()
+    if (
+        f"WorkingDirectory={ROOT}" not in unit
+        or str(ROOT / "gpu-worker/.venv/bin/objectscan-worker") not in unit
+    ):
+        raise RuntimeError("Unit belongs to a different checkout")
+    return p
+
+
+def worker(action, timeout):
+    p = unit_checked()
+    root = worker_root()
+    marker = root / "drain.request"
+    root.mkdir(parents=True, exist_ok=True)
+    if action == "start":
+        marker.unlink(missing_ok=True)
+        run(["systemctl", "--user", "start", UNIT])
+        print("worker:", properties().get("ActiveState"))
+        return
+    if action == "stop":
+        if p.get("ActiveState") != "active":
+            print("worker: already stopped")
+            return
+        marker.touch(mode=0o600)
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                s = json.loads((root / "worker-state.json").read_text())
+            except (FileNotFoundError, json.JSONDecodeError):
+                s = {}
+            if (
+                s.get("state") == "drained"
+                and str(s.get("pid")) == p["MainPID"]
+                and time.time() - s.get("at", 0) < 10
+            ):
+                run(["systemctl", "--user", "stop", UNIT])
+                marker.unlink(missing_ok=True)
+                print("worker: stopped after drain")
+                return
+            time.sleep(0.5)
+        raise RuntimeError(
+            "Drain requested; still running or old worker lacks drain support. No forced stop performed. Retry status; use start worker to undo drain."
+        )
+    if action == "restart":
+        worker("stop", timeout)
+        worker("start", timeout)
+
 
 def web(action):
- meta=STATE/'web.json'
- if action=='start':
-  if meta.exists():
-   try:
-    info=json.loads(meta.read_text());pid=info['pid'];os.kill(pid,0)
-    if info['root']!=str(ROOT)or Path(f'/proc/{pid}/cwd').resolve()!=ROOT/'apps/web'or b'next'not in Path(f'/proc/{pid}/cmdline').read_bytes():raise RuntimeError('Managed process identity changed; refusing to reuse')
-    print('web: managed process already running');return
-   except(ProcessLookupError,KeyError):pass
-  log=(STATE/'web.log').open('ab');child=subprocess.Popen([sys.executable,str(ROOT/'scripts/objectscan-web-launch.py')],cwd=ROOT,start_new_session=True,stdout=log,stderr=subprocess.STDOUT)
-  meta.write_text(json.dumps({'pid':child.pid,'root':str(ROOT)}));print('web: starting managed local server at http://127.0.0.1:3000');return
- if not meta.exists():print('web: no managed process; existing unmanaged Next servers preserved');return
- info=json.loads(meta.read_text());pid=info['pid']
- try:
-  cwd=Path(f'/proc/{pid}/cwd').resolve();cmd=Path(f'/proc/{pid}/cmdline').read_bytes()
-  if info['root']!=str(ROOT)or cwd!=ROOT/'apps/web'or b'next' not in cmd:raise RuntimeError('Managed process identity changed; refusing to stop')
-  os.killpg(pid,signal.SIGTERM)
- except FileNotFoundError:pass
- meta.unlink(missing_ok=True);print('web: managed process stopped')
+    meta = STATE / "web.json"
+    if action == "start":
+        if meta.exists():
+            try:
+                info = json.loads(meta.read_text())
+                pid = info["pid"]
+                os.kill(pid, 0)
+                if (
+                    info["root"] != str(ROOT)
+                    or Path(f"/proc/{pid}/cwd").resolve() != ROOT / "apps/web"
+                    or b"next" not in Path(f"/proc/{pid}/cmdline").read_bytes()
+                ):
+                    raise RuntimeError(
+                        "Managed process identity changed; refusing to reuse"
+                    )
+                print("web: managed process already running")
+                return
+            except (ProcessLookupError, KeyError):
+                pass
+        log = (STATE / "web.log").open("ab")
+        child = subprocess.Popen(
+            [sys.executable, str(ROOT / "scripts/objectscan-web-launch.py")],
+            cwd=ROOT,
+            start_new_session=True,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+        )
+        meta.write_text(json.dumps({"pid": child.pid, "root": str(ROOT)}))
+        print("web: starting managed local server at http://127.0.0.1:3000")
+        return
+    if not meta.exists():
+        print("web: no managed process; existing unmanaged Next servers preserved")
+        return
+    info = json.loads(meta.read_text())
+    pid = info["pid"]
+    try:
+        cwd = Path(f"/proc/{pid}/cwd").resolve()
+        cmd = Path(f"/proc/{pid}/cmdline").read_bytes()
+        if info["root"] != str(ROOT) or cwd != ROOT / "apps/web" or b"next" not in cmd:
+            raise RuntimeError("Managed process identity changed; refusing to stop")
+        os.killpg(pid, signal.SIGTERM)
+    except FileNotFoundError:
+        pass
+    meta.unlink(missing_ok=True)
+    print("web: managed process stopped")
+
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('action',choices=['status','start','stop','restart','logs','doctor','enable','disable']);p.add_argument('target',nargs='?',default='all',choices=['all','worker','web','db','public']);p.add_argument('--timeout',type=int,default=60);a=p.parse_args()
- if a.action in['status','doctor']:
-  info={'repo':str(ROOT),'worker_user_service':properties(),'worker_enabled':run(['systemctl','--user','is-enabled',UNIT],False).stdout.strip(),'linger':run(['loginctl','show-user',str(os.getuid()),'-p','Linger'],False).stdout.strip(),'managed_web':(STATE/'web.json').exists(),'local_db':'explicit target db; existing Docker stack preserved','public':'Vercel is not managed by systemd; stopping worker does not stop public website'}
-  try:
-   e=env();info['worker_api']=e['OBJECTSCAN_API_URL'];root=worker_root();info['drain_requested']=(root/'drain.request').exists();info['worker_state']=json.loads((root/'worker-state.json').read_text())if(root/'worker-state.json').exists()else'old process: state not yet available'
-  except(Exception):info['worker_configuration']='unavailable'
-  print(json.dumps(info,indent=2));return
- if a.target=='public':raise RuntimeError('Public Vercel deployment is independent. No public mutation is performed by local start/stop.')
- if a.action=='logs':print(run(['journalctl','--user','-u',UNIT,'-n','50','--no-pager'],False).stdout);return
- if a.action in['enable','disable']:
-  if a.target!='worker':raise RuntimeError('Autostart applies only to verified user worker unit')
-  unit_checked();run(['systemctl','--user',a.action,UNIT]);print('worker autostart:',a.action);return
- if a.target=='db':
-  if not(ROOT/'supabase/config.toml').exists():raise RuntimeError('ObjectScan Supabase config missing')
-  if a.action=='restart':raise RuntimeError('Use stop db then start db explicitly; no reset command is provided')
-  run(['npx','--yes','supabase@3.0.0',a.action,'--workdir',str(ROOT)]);print('ObjectScan local Supabase:',a.action,'completed; credentials suppressed');return
- targets=['worker','web']if a.target=='all'else[a.target]
- for t in targets:
-  if t=='worker':worker(a.action,a.timeout)
-  elif a.action=='restart':web('stop');web('start')
-  else:web(a.action)
-if __name__=='__main__':
- try:main()
- except(Exception)as e:print('ObjectScan operation refused:',str(e),file=sys.stderr);sys.exit(1)
+    p = argparse.ArgumentParser()
+    p.add_argument(
+        "action",
+        choices=[
+            "status",
+            "start",
+            "stop",
+            "restart",
+            "logs",
+            "doctor",
+            "enable",
+            "disable",
+        ],
+    )
+    p.add_argument(
+        "target",
+        nargs="?",
+        default="all",
+        choices=["all", "worker", "web", "db", "public"],
+    )
+    p.add_argument("--timeout", type=int, default=60)
+    a = p.parse_args()
+    if a.action in ["status", "doctor"]:
+        info = {
+            "repo": str(ROOT),
+            "worker_user_service": properties(),
+            "worker_enabled": run(
+                ["systemctl", "--user", "is-enabled", UNIT], False
+            ).stdout.strip(),
+            "linger": run(
+                ["loginctl", "show-user", str(os.getuid()), "-p", "Linger"], False
+            ).stdout.strip(),
+            "managed_web": (STATE / "web.json").exists(),
+            "local_db": "explicit target db; existing Docker stack preserved",
+            "public": "Vercel is not managed by systemd; stopping worker does not stop public website",
+        }
+        try:
+            e = env()
+            info["worker_api"] = e["OBJECTSCAN_API_URL"]
+            root = worker_root()
+            info["drain_requested"] = (root / "drain.request").exists()
+            info["worker_state"] = (
+                json.loads((root / "worker-state.json").read_text())
+                if (root / "worker-state.json").exists()
+                else "old process: state not yet available"
+            )
+        except (
+            OSError,
+            ValueError,
+            KeyError,
+            RuntimeError,
+            subprocess.SubprocessError,
+        ):
+            info["worker_configuration"] = "unavailable"
+        print(json.dumps(info, indent=2))
+        return
+    if a.target == "public":
+        raise RuntimeError(
+            "Public Vercel deployment is independent. No public mutation is performed by local start/stop."
+        )
+    if a.action == "logs":
+        print(
+            run(
+                ["journalctl", "--user", "-u", UNIT, "-n", "50", "--no-pager"], False
+            ).stdout
+        )
+        return
+    if a.action in ["enable", "disable"]:
+        if a.target != "worker":
+            raise RuntimeError("Autostart applies only to verified user worker unit")
+        unit_checked()
+        run(["systemctl", "--user", a.action, UNIT])
+        print("worker autostart:", a.action)
+        return
+    if a.target == "db":
+        if not (ROOT / "supabase/config.toml").exists():
+            raise RuntimeError("ObjectScan Supabase config missing")
+        if a.action == "restart":
+            raise RuntimeError(
+                "Use stop db then start db explicitly; no reset command is provided"
+            )
+        run(["npx", "--yes", "supabase@3.0.0", a.action, "--workdir", str(ROOT)])
+        print(
+            "ObjectScan local Supabase:", a.action, "completed; credentials suppressed"
+        )
+        return
+    targets = ["worker", "web"] if a.target == "all" else [a.target]
+    for t in targets:
+        if t == "worker":
+            worker(a.action, a.timeout)
+        elif a.action == "restart":
+            web("stop")
+            web("start")
+        else:
+            web(a.action)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        RuntimeError,
+        subprocess.SubprocessError,
+    ) as e:
+        print("ObjectScan operation refused:", str(e), file=sys.stderr)
+        sys.exit(1)

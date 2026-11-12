@@ -80,15 +80,14 @@ Historical task notes above remain as history; v5 supersedes prior payment-disab
 | V5-DOMAIN  | protected Preview first, preserve existing BE CELEB                      | PASS preservation; DNS replacement still requires approval                                                                                           |
 | V5-RELEASE | static/build/CI, evidence, operations                                    | Local gates pass; source/deployment/CI exact results in reports/RELEASE_EVIDENCE.md. SMTP, multi-photo/scene quality and live commercial gates open. |
 
-
 ## Owner operations checkpoint — 2026-11-12
 
 Current user explicitly authorizes main push and be-celeb.org replacement; historical V5 domain approval notes above are superseded. Domain transition itself remains unexecuted pending Cloudflare authentication and release gates.
 
-| ID | Acceptance | Current state |
-|---|---|---|
-| OWNER-CTL | verified user-scope unit; safe idle drain; only managed web stopped | Worker start/stop/restart and web start/stop verified; 32 Python tests pass including foreign-unit/PID refusal and credential suppression; public maintenance pending |
-| OWN-06 | immutable order rights/source snapshot | migration22 local only; 60 Node/DB tests pass with new snapshot assertions; hosted deployment/API integration pending |
-| HANDOFF-MAIN | one self-contained A/B/Owner handoff; tested integration on main | docs/TEAM_HANDOFF.md:17 Team+10 Owner tickets, inline AC/tests/prompts; A7.5/B8,22.5% buffer. Push confirmation is remote SHA, not this table |
+| ID           | Acceptance                                                          | Current state                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OWNER-CTL    | verified user-scope unit; safe idle drain; only managed web stopped | Worker start/stop/restart and web start/stop verified; 32 Python tests pass including foreign-unit/PID refusal and credential suppression; public maintenance pending            |
+| OWN-06       | immutable order rights/source snapshot                              | migration22 local tests pass and hosted additive apply/column reads/health200 verified; 60 Node/DB tests pass with snapshot assertions; API/UI and fresh actual purchase pending |
+| HANDOFF-MAIN | one self-contained A/B/Owner handoff; tested integration on main    | docs/TEAM_HANDOFF.md:17 Team+10 Owner tickets, inline AC/tests/prompts; A7.5/B8,22.5% buffer. Push confirmation is remote SHA, not this table                                    |
 
 Owner evidence: docs/owner-ops/EVIDENCE_INDEX.md. Full production launch remains incomplete; do not infer fresh SMTP/PG/GPU or DNS verification from this checkpoint.
