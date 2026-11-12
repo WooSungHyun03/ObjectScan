@@ -37,3 +37,5 @@ Public school build: https://objectscan-six.vercel.app. UI source remains indepe
 ## 팀 전달 및 운영
 
 담당자별 티켓·공수·착수 순서·완료 조건·독립 Codex 프롬프트는 [단일 팀 전달 문서](docs/TEAM_HANDOFF.md)에 모았습니다. A는 OS-01, B는 OS-12부터 시작합니다. 실제 운영 작업과 검증·미완료 항목은 [Owner 실행 증거](docs/owner-ops/EVIDENCE_INDEX.md)를 확인하세요. 현재 통합 기준은 main입니다.
+
+담당자에게는 자신의 문서 하나만 전달하세요: [A 전용](docs/delivery/MEMBER_A.md), [B 전용](docs/delivery/MEMBER_B.md), [Owner-local 전용](docs/delivery/OWNER_LOCAL.md). 각 문서에 바이브코딩 시작·재개 프롬프트와 해당 담당 티켓 전체를 포함했습니다.

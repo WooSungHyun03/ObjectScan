@@ -2,6 +2,16 @@
 
 작성: 2026-11-12. 이 파일 하나에 담당표, 착수 순서, 의존성, 완료 기준, 개별 Codex 실행 프롬프트를 모두 담았다. 티켓은 구현 완료 목록이 아니라 남은 개발 범위다.
 
+## 담당자에게 전달할 파일
+
+바이브코딩으로 실행할 때는 각 담당자에게 아래 **자신의 문서 하나만** 전달한다. 각 파일에 시작 프롬프트·티켓 본문·AC·테스트·중단 후 재개 양식을 모두 포함했다.
+
+- [팀원 A 전용 — 7개·7.5인일](delivery/MEMBER_A.md)
+- [팀원 B 전용 — 10개·8인일](delivery/MEMBER_B.md)
+- [Owner-local 전용 — 10개·기존 추정10인일](delivery/OWNER_LOCAL.md)
+
+이 합본은 전체 일정 비교용이며 각 담당자에게 모두 수행하라고 전달하지 않는다.
+
 ## 이번 전달의 우선 규칙
 
 - 통합 기준은 **GitHub main**이다. 이전 감사 문서의 `main은 최신앱이 아니다` 문장은 이번 main 통합 이후 적용하지 않는다. 시작할 때 `git fetch origin`과 `git log -1 origin/main`으로 실제 SHA를 확인한다.
@@ -22,74 +32,47 @@
 
 ### 팀원 A — 7.5인일
 
-| 티켓 | 내용 | 인일 | Team 선행 | Owner 실연동 |
-| ---- | ---- | ---: | --------- | ------------ |
-
-|[OS-01](https://github.com/WooSungHyun03/ObjectScan/issues/8)|현재 지원 범위·실패 이유·차감 안내를 생성 전에 표시|0.5|없음|없음|
-
-|[OS-03](https://github.com/WooSungHyun03/ObjectScan/issues/10)|통신 단절 뒤 작업 polling 재개와 중복 클릭 방지|1.5|OS-01|없음|
-
-|[OS-06](https://github.com/WooSungHyun03/ObjectScan/issues/13)|기존 편집 정보로 원본·버전 비교와 JSON 내보내기|1|없음|없음|
-
-|[OS-09](https://github.com/WooSungHyun03/ObjectScan/issues/16)|실제 모델에서 만든 썸네일 확인·마켓 카드 표시|1|OS-19|OWN-08|
-
-|[OS-11](https://github.com/WooSungHyun03/ObjectScan/issues/18)|삭제 확인·중복 클릭 차단·권리 보존 오류 안내|0.5|없음|OWN-07|
-
-|[OS-17](https://github.com/WooSungHyun03/ObjectScan/issues/24)|외부 GLB 로컬 편집에서 개인 저장·게시로 이어가기|1.5|OS-06|OWN-09|
-
-|[OS-20](https://github.com/WooSungHyun03/ObjectScan/issues/33)|편집 동작 이력·삭제 확인·저장 오류 복구|1.5|OS-06|없음|
+| 티켓                                                           | 내용                                                | 인일 | Team 선행 | Owner 실연동 |
+| -------------------------------------------------------------- | --------------------------------------------------- | ---: | --------- | ------------ |
+| [OS-01](https://github.com/WooSungHyun03/ObjectScan/issues/8)  | 현재 지원 범위·실패 이유·차감 안내를 생성 전에 표시 |  0.5 | 없음      | 없음         |
+| [OS-03](https://github.com/WooSungHyun03/ObjectScan/issues/10) | 통신 단절 뒤 작업 polling 재개와 중복 클릭 방지     |  1.5 | OS-01     | 없음         |
+| [OS-06](https://github.com/WooSungHyun03/ObjectScan/issues/13) | 기존 편집 정보로 원본·버전 비교와 JSON 내보내기     |    1 | 없음      | 없음         |
+| [OS-09](https://github.com/WooSungHyun03/ObjectScan/issues/16) | 실제 모델에서 만든 썸네일 확인·마켓 카드 표시       |    1 | OS-19     | OWN-08       |
+| [OS-11](https://github.com/WooSungHyun03/ObjectScan/issues/18) | 삭제 확인·중복 클릭 차단·권리 보존 오류 안내        |  0.5 | 없음      | OWN-07       |
+| [OS-17](https://github.com/WooSungHyun03/ObjectScan/issues/24) | 외부 GLB 로컬 편집에서 개인 저장·게시로 이어가기    |  1.5 | OS-06     | OWN-09       |
+| [OS-20](https://github.com/WooSungHyun03/ObjectScan/issues/33) | 편집 동작 이력·삭제 확인·저장 오류 복구             |  1.5 | OS-06     | 없음         |
 
 ### 팀원 B — 8인일
 
-| 티켓 | 내용 | 인일 | Team 선행 | Owner 실연동 |
-| ---- | ---- | ---: | --------- | ------------ |
-
-|[OS-02](https://github.com/WooSungHyun03/ObjectScan/issues/9)|가입·복구 링크 오류와 메일 대기의 복구 UI|1|없음|OWN-01|
-
-|[OS-04](https://github.com/WooSungHyun03/ObjectScan/issues/11)|구매 당시 이용 조건과 legacy 누락값 조회 UI|0.5|없음|OWN-06|
-
-|[OS-07](https://github.com/WooSungHyun03/ObjectScan/issues/14)|기존 sharp 선명도 경고·중복 안내·사진 순서 정리|1.5|OS-01|OWN-04|
-
-|[OS-08](https://github.com/WooSungHyun03/ObjectScan/issues/15)|마스크 실패·재선택·이전 단계 복귀의 안내와 접근성|1|OS-01|없음|
-
-|[OS-10](https://github.com/WooSungHyun03/ObjectScan/issues/17)|TEST 결제 응답 유실·중복 복귀의 상태 복구 UI|1|OS-01|OWN-03|
-
-|[OS-12](https://github.com/WooSungHyun03/ObjectScan/issues/19)|키·DB 없는 공통 UI fixture 시작점|0.5|없음|없음|
-
-|[OS-18](https://github.com/WooSungHyun03/ObjectScan/issues/25)|마켓 라이선스·가격 필터와 URL 검색 상태|0.5|없음|없음|
-
-|[OS-19](https://github.com/WooSungHyun03/ObjectScan/issues/32)|결과 뷰어 앞·뒤·좌·우 시점과 재맞춤|1|없음|없음|
-
-|[OS-21](https://github.com/WooSungHyun03/ObjectScan/issues/34)|구매 내역의 한국어 상태와 에셋 재다운로드 연결|0.5|없음|없음|
-
-|[OS-22](https://github.com/WooSungHyun03/ObjectScan/issues/35)|팀원 fixture 통합 회귀와 Owner 인계 리포트|0.5|OS-01, OS-02, OS-03, OS-04, OS-06, OS-07, OS-08, OS-09, OS-10, OS-11, OS-12, OS-17, OS-18, OS-19, OS-20, OS-21|없음|
+| 티켓                                                           | 내용                                              | 인일 | Team 선행                                                                                                      | Owner 실연동 |
+| -------------------------------------------------------------- | ------------------------------------------------- | ---: | -------------------------------------------------------------------------------------------------------------- | ------------ |
+| [OS-02](https://github.com/WooSungHyun03/ObjectScan/issues/9)  | 가입·복구 링크 오류와 메일 대기의 복구 UI         |    1 | 없음                                                                                                           | OWN-01       |
+| [OS-04](https://github.com/WooSungHyun03/ObjectScan/issues/11) | 구매 당시 이용 조건과 legacy 누락값 조회 UI       |  0.5 | 없음                                                                                                           | OWN-06       |
+| [OS-07](https://github.com/WooSungHyun03/ObjectScan/issues/14) | 기존 sharp 선명도 경고·중복 안내·사진 순서 정리   |  1.5 | OS-01                                                                                                          | OWN-04       |
+| [OS-08](https://github.com/WooSungHyun03/ObjectScan/issues/15) | 마스크 실패·재선택·이전 단계 복귀의 안내와 접근성 |    1 | OS-01                                                                                                          | 없음         |
+| [OS-10](https://github.com/WooSungHyun03/ObjectScan/issues/17) | TEST 결제 응답 유실·중복 복귀의 상태 복구 UI      |    1 | OS-01                                                                                                          | OWN-03       |
+| [OS-12](https://github.com/WooSungHyun03/ObjectScan/issues/19) | 키·DB 없는 공통 UI fixture 시작점                 |  0.5 | 없음                                                                                                           | 없음         |
+| [OS-18](https://github.com/WooSungHyun03/ObjectScan/issues/25) | 마켓 라이선스·가격 필터와 URL 검색 상태           |  0.5 | 없음                                                                                                           | 없음         |
+| [OS-19](https://github.com/WooSungHyun03/ObjectScan/issues/32) | 결과 뷰어 앞·뒤·좌·우 시점과 재맞춤               |    1 | 없음                                                                                                           | 없음         |
+| [OS-21](https://github.com/WooSungHyun03/ObjectScan/issues/34) | 구매 내역의 한국어 상태와 에셋 재다운로드 연결    |  0.5 | 없음                                                                                                           | 없음         |
+| [OS-22](https://github.com/WooSungHyun03/ObjectScan/issues/35) | 팀원 fixture 통합 회귀와 Owner 인계 리포트        |  0.5 | OS-01, OS-02, OS-03, OS-04, OS-06, OS-07, OS-08, OS-09, OS-10, OS-11, OS-12, OS-17, OS-18, OS-19, OS-20, OS-21 | 없음         |
 
 ### Owner-local — 별도 약 10인일
 
 팀15.5인일에 포함하지 않는다. 외부 인증 대기는 별도다. Team 선행은 실연동 시점의 의존성으로, mock 착수를 막지 않는다.
 
-| 티켓 | 내용 | 인일 | 연결·선행 |
-| ---- | ---- | ---: | --------- |
-
-|[OS-05](https://github.com/WooSungHyun03/ObjectScan/issues/12)|기존 추론 운영 smoke·취소·오류 안내 확인|0.5|없음|
-
-|[OWN-01](https://github.com/WooSungHyun03/ObjectScan/issues/26)|SMTP·인증 콜백 연결과 외부 메일 확인|0.5|OS-02|
-
-|[OWN-02](https://github.com/WooSungHyun03/ObjectScan/issues/27)|모델·에셋 권리와 TEST 요금·보관 정책 확정|0.5|없음|
-
-|[OWN-03](https://github.com/WooSungHyun03/ObjectScan/issues/28)|Toss TEST 서버 복귀·webhook·환불 실연동|0.5|OS-10|
-
-|[OWN-04](https://github.com/WooSungHyun03/ObjectScan/issues/29)|실행 환경·DB 검증·Preview 배포와 운영 승인|1|OS-22, OS-05, OWN-01, OWN-02, OWN-03, OWN-06|
-
-|[OWN-05](https://github.com/WooSungHyun03/ObjectScan/issues/30)|be-celeb.org ObjectScan 전환·메일 보존·복구|1|OWN-04|
-
-|[OWN-06](https://github.com/WooSungHyun03/ObjectScan/issues/36)|구매 라이선스·버전 불변 snapshot 서버·DB 연동|1.5|OS-04|
-
-|[OWN-07](https://github.com/WooSungHyun03/ObjectScan/issues/37)|삭제·보관 hold·storage cleanup 서버 정합성|1.5|OS-11, OWN-06|
-
-|[OWN-08](https://github.com/WooSungHyun03/ObjectScan/issues/38)|poster 저장·검증·공개 미리보기 API 연결|1|OS-09|
-
-|[OWN-09](https://github.com/WooSungHyun03/ObjectScan/issues/39)|외부 GLB private 수입 등록·게시 서버 연결|2|OS-17, OWN-06|
+| 티켓                                                            | 내용                                          | 인일 | 연결·선행                                    |
+| --------------------------------------------------------------- | --------------------------------------------- | ---: | -------------------------------------------- |
+| [OS-05](https://github.com/WooSungHyun03/ObjectScan/issues/12)  | 기존 추론 운영 smoke·취소·오류 안내 확인      |  0.5 | 없음                                         |
+| [OWN-01](https://github.com/WooSungHyun03/ObjectScan/issues/26) | SMTP·인증 콜백 연결과 외부 메일 확인          |  0.5 | OS-02                                        |
+| [OWN-02](https://github.com/WooSungHyun03/ObjectScan/issues/27) | 모델·에셋 권리와 TEST 요금·보관 정책 확정     |  0.5 | 없음                                         |
+| [OWN-03](https://github.com/WooSungHyun03/ObjectScan/issues/28) | Toss TEST 서버 복귀·webhook·환불 실연동       |  0.5 | OS-10                                        |
+| [OWN-04](https://github.com/WooSungHyun03/ObjectScan/issues/29) | 실행 환경·DB 검증·Preview 배포와 운영 승인    |    1 | OS-22, OS-05, OWN-01, OWN-02, OWN-03, OWN-06 |
+| [OWN-05](https://github.com/WooSungHyun03/ObjectScan/issues/30) | be-celeb.org ObjectScan 전환·메일 보존·복구   |    1 | OWN-04                                       |
+| [OWN-06](https://github.com/WooSungHyun03/ObjectScan/issues/36) | 구매 라이선스·버전 불변 snapshot 서버·DB 연동 |  1.5 | OS-04                                        |
+| [OWN-07](https://github.com/WooSungHyun03/ObjectScan/issues/37) | 삭제·보관 hold·storage cleanup 서버 정합성    |  1.5 | OS-11, OWN-06                                |
+| [OWN-08](https://github.com/WooSungHyun03/ObjectScan/issues/38) | poster 저장·검증·공개 미리보기 API 연결       |    1 | OS-09                                        |
+| [OWN-09](https://github.com/WooSungHyun03/ObjectScan/issues/39) | 외부 GLB private 수입 등록·게시 서버 연결     |    2 | OS-17, OWN-06                                |
 
 ## Owner 현재 진행 상태
 

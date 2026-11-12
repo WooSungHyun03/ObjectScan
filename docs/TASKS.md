@@ -95,3 +95,7 @@ Owner evidence: docs/owner-ops/EVIDENCE_INDEX.md. Full production launch remains
 ## Owner domain cutover — 2026-11-12
 
 OWN-05 routing: be-celeb.org moved from sw-system to objectscan; www308 to apex; HTTPS200/title/browser verified. DNS/mail/data unchanged. Existing Production served; fresh main deployment and actual auth/PG/GPU flow remain separate gates. Evidence: docs/owner-ops/DOMAIN_MIGRATION.md. Earlier Cloudflare-login blocking assumption is corrected: existing DNS already reaches Vercel.
+
+## Per-person vibe-coding handoff — 2026-11-12
+
+DOC-HANDOFF: docs/delivery/MEMBER_A.md (7 tickets/7.5d), MEMBER_B.md (10/8d), OWNER_LOCAL.md (10/original10d). Each includes kickoff/resume prompts, full assigned ticket scope/AC/tests, dependencies, evidence and stop conditions. Owner document marks completed routing/migration/worker work to prevent duplicate execution. Documentation only; no application changes. Structural validation and Markdown formatting checked before main push.
