@@ -6,7 +6,14 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   timeout: 30000,
-  use: { baseURL: "http://127.0.0.1:4317", trace: "retain-on-failure" },
+  use: {
+    baseURL: "http://127.0.0.1:4317",
+    trace: "retain-on-failure",
+    // Software WebGL, same as playwright.config.ts, so the 3D viewer renders headless.
+    launchOptions: {
+      args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+    },
+  },
   projects: Object.entries(viewports).map(([name, [width, height]]) => ({
     name,
     use: { ...devices["Desktop Chrome"], viewport: { width, height } },

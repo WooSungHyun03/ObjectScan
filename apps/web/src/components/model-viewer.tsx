@@ -1,5 +1,5 @@
 "use client";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   Bounds,
   Center,
@@ -7,6 +7,7 @@ import {
   useGLTF,
   Grid,
   ContactShadows,
+  useBounds,
 } from "@react-three/drei";
 import {
   Suspense,
@@ -14,6 +15,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useId,
   Component,
 } from "react";
 import * as THREE from "three";
@@ -26,9 +28,17 @@ import {
   Expand,
   Layers,
   Eye,
+  Scan,
 } from "lucide-react";
 import { Button } from "./ui/button";
+import {
+  viewDirection,
+  viewLabels,
+  type ViewPreset,
+} from "@/features/viewer/view-presets";
 const DEMO = "/demo/shoe.glb";
+const MODEL_YAW = 0.2;
+type ViewCommand = ViewPreset | "fit";
 class ViewerBoundary extends Component<
   { children: React.ReactNode },
   { error: boolean }
@@ -56,11 +66,15 @@ function Mesh({
   wire,
   texture,
   split,
+  onReady,
+  viewRef,
 }: {
   url: string;
   wire: boolean;
   texture: boolean;
   split: boolean;
+  onReady: (ready: boolean) => void;
+  viewRef: React.MutableRefObject<((v: ViewCommand) => void) | null>;
 }) {
   const gltf = useGLTF(url);
   const { gl } = useThree();
@@ -70,13 +84,15 @@ function Mesh({
     frame = requestAnimationFrame(() => {
       frame = requestAnimationFrame(() => {
         gl.domElement.dataset.modelLoaded = "true";
+        onReady(true);
       });
     });
     return () => {
       cancelAnimationFrame(frame);
       delete gl.domElement.dataset.modelLoaded;
+      onReady(false);
     };
-  }, [gltf, gl]);
+  }, [gltf, gl, onReady]);
   const model = useMemo(() => {
     const root = gltf.scene.clone(true);
     root.traverse((o) => {
@@ -140,13 +156,57 @@ function Mesh({
   return (
     <Bounds fit clip observe margin={1.35}>
       <Center position={[0, 0.08, 0]}>
-        <group rotation={[0, 0.2, 0]} scale={modelScale}>
+        <group rotation={[0, MODEL_YAW, 0]} scale={modelScale}>
           <primitive object={model} />
           {wireModel && <primitive object={wireModel} />}
         </group>
       </Center>
+      <ViewTools viewRef={viewRef} />
     </Bounds>
   );
+}
+// Moves only the camera/orbit target via drei Bounds; geometry is never touched.
+function ViewTools({
+  viewRef,
+}: {
+  viewRef: React.MutableRefObject<((v: ViewCommand) => void) | null>;
+}) {
+  const bounds = useBounds(),
+    last = useRef("");
+  useEffect(() => {
+    viewRef.current = (v) => {
+      if (v === "fit") return void bounds.refresh().clip().fit();
+      const { center, distance } = bounds.refresh().getSize(),
+        [x, y, z] = viewDirection(v, MODEL_YAW);
+      bounds
+        .moveTo([
+          center.x + x * distance,
+          center.y + y * distance,
+          center.z + z * distance,
+        ])
+        .lookAt({ target: center, up: [0, 1, 0] });
+    };
+    return () => {
+      viewRef.current = null;
+    };
+  }, [bounds, viewRef]);
+  useFrame(({ gl, camera, controls }) => {
+    // Diagnostic/test hook like data-model-loaded: camera direction and distance.
+    const target =
+      (controls as unknown as { target?: THREE.Vector3 } | null)?.target ??
+      new THREE.Vector3();
+    const d = camera.position.clone().sub(target),
+      dist = d.length(),
+      value = `${d
+        .normalize()
+        .toArray()
+        .map((n) => n.toFixed(2))
+        .join(",")}|${dist.toFixed(2)}`;
+    if (value === last.current) return;
+    last.current = value;
+    gl.domElement.dataset.camera = value;
+  });
+  return null;
 }
 function CameraTools({
   captureRef,
@@ -183,9 +243,12 @@ export function ModelViewer({
     [grid, setGrid] = useState(true),
     [light, setLight] = useState(3),
     [background, setBackground] = useState(false),
-    [reset, setReset] = useState(0);
+    [reset, setReset] = useState(0),
+    [ready, setReady] = useState(false);
   const capture = useRef<(() => void) | null>(null),
-    container = useRef<HTMLDivElement>(null);
+    view = useRef<((v: ViewCommand) => void) | null>(null),
+    container = useRef<HTMLDivElement>(null),
+    axisNote = useId();
   return (
     <div
       ref={container}
@@ -229,7 +292,14 @@ export function ModelViewer({
               intensity={2.4}
               color="#a6bcE6"
             />
-            <Mesh url={url} wire={wire} texture={texture} split={hero} />
+            <Mesh
+              url={url}
+              wire={wire}
+              texture={texture}
+              split={hero}
+              onReady={setReady}
+              viewRef={view}
+            />
             {grid && (
               <Grid
                 position={[0, -0.55, 0]}
@@ -265,6 +335,34 @@ export function ModelViewer({
       {hero && <div className="scan-ring" aria-hidden="true" />}
       {showControls && (
         <div className="viewer-toolbar">
+          <div
+            role="group"
+            aria-label="보기 방향"
+            aria-describedby={axisNote}
+            className="contents"
+          >
+            {(Object.keys(viewLabels) as ViewPreset[]).map((v) => (
+              <Button
+                key={v}
+                size="sm"
+                variant="ghost"
+                disabled={!ready}
+                aria-label={`${viewLabels[v]}에서 보기`}
+                onClick={() => view.current?.(v)}
+              >
+                {viewLabels[v]}
+              </Button>
+            ))}
+            <Button
+              size="icon"
+              variant="ghost"
+              disabled={!ready}
+              aria-label="화면 맞춤"
+              onClick={() => view.current?.("fit")}
+            >
+              <Scan size={16} />
+            </Button>
+          </div>
           <Button
             size="icon"
             variant="ghost"
@@ -312,6 +410,7 @@ export function ModelViewer({
             size="icon"
             variant="ghost"
             aria-label="미리보기 스크린샷"
+            disabled={!ready}
             onClick={() => capture.current?.()}
           >
             <Camera size={16} />
@@ -338,7 +437,11 @@ export function ModelViewer({
           </label>
         </div>
       )}
-      <span className="viewer-hint">드래그하여 회전 · 스크롤하여 확대</span>
+      <span id={axisNote} className="viewer-hint">
+        드래그하여 회전 · 스크롤하여 확대
+        {showControls &&
+          " · 방향 버튼은 파일 좌표축 기준(실제 정면과 다를 수 있음)"}
+      </span>
     </div>
   );
 }

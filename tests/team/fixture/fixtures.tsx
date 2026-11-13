@@ -6,6 +6,7 @@ import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
 import { AuthForm } from "@/components/auth-form";
 import { BillingPanel } from "@/components/account-panels";
+import { ModelViewer } from "@/components/model-viewer";
 import { setAuthFixture } from "../adapters/supabase-client";
 import type { FixtureRoutes } from "./api";
 
@@ -147,5 +148,25 @@ export const fixtures: Record<string, Fixture> = {
           : { json: billing },
     },
     render: () => <BillingPanel />,
+  },
+  // OS-19: demo GLB (public sample) with view presets and fit.
+  "viewer-model": {
+    title: "결과 뷰어: 방향 보기와 화면 맞춤",
+    routes: {},
+    render: () => (
+      <main id="main" style={{ height: "80vh", padding: 16 }}>
+        <ModelViewer demo={false} />
+      </main>
+    ),
+  },
+  // OS-19: unreadable file → error state, tools stay disabled.
+  "viewer-broken": {
+    title: "결과 뷰어: 불러오기 실패",
+    routes: {},
+    render: () => (
+      <main id="main" style={{ height: "80vh", padding: 16 }}>
+        <ModelViewer url="/demo/fixture-missing.glb" demo={false} />
+      </main>
+    ),
   },
 };

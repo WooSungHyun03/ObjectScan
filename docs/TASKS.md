@@ -111,3 +111,7 @@ OS-02 (TEAM_PASS, OWNER_PENDING OWN-01): unconfirmed signup/login enters a waiti
 ## Team B — OS-04 purchase-time terms UI — 2026-11-13
 
 OS-04 (TEAM_PASS, OWNER_PENDING OWN-06): billing orders show "주문 시점 이용 조건" for marketplace orders via `orderTermsView` (recorded snapshot → title/license/version/hash/time; missing/invalid → "기록 확인 중", never the current listing license); billing load failure shows only the error and "다시 불러오기". The billing API does not yet return `license_snapshot`; whitelist contract in `contracts/billing-order-terms.md`. MOCK only.
+
+## Team B — OS-19 viewer presets — 2026-11-13
+
+OS-19 (TEAM_PASS, no Owner dependency): ModelViewer adds a "보기 방향" group (앞/뒤/왼쪽/오른쪽 + 화면 맞춤) using drei `useBounds` (moveTo/lookAt/fit) inside the existing Bounds, no new renderer, no geometry change. Directions follow the file's +Z axis with the display yaw (`features/viewer/view-presets.ts`, unit test cross-checked with three.js); visible note says it is the file axis, not a detected front. Tools and screenshot are disabled until the model is loaded and stay disabled on load failure. Canvas `data-camera` exposes direction|distance for tests. MOCK fixture uses the public demo GLB.
