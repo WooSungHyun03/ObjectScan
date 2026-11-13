@@ -5,6 +5,7 @@ import type { Job } from "@objectscan/shared";
 import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
 import { AuthForm } from "@/components/auth-form";
+import { BillingPanel } from "@/components/account-panels";
 import { setAuthFixture } from "../adapters/supabase-client";
 import type { FixtureRoutes } from "./api";
 
@@ -17,6 +18,37 @@ export type Fixture = {
 };
 
 const t = "2026-11-12T03:00:00.000Z";
+const billing = {
+  ledger: [],
+  balance: { available: 0, reserved: 0 },
+  payouts: [],
+  payments_mode: "test",
+  orders: [
+    {
+      id: "11111111-0000-4000-8000-000000000001",
+      kind: "marketplace",
+      amount: 12000,
+      status: "paid",
+      created_at: t,
+      // OWN-06 contract shape; server-only fields must not be sent to the client.
+      license_snapshot: {
+        schema_version: 1,
+        license_code: "cc-by-4.0",
+        license_label: "CC BY 4.0",
+        listing_title: "원목 의자",
+        source_version: "original",
+        source_sha256: "9f2c4e7a1b3d5f60718293a4b5c6d7e8",
+        captured_at: t,
+      },
+    },
+    { id: "22222222-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "paid", created_at: t },
+    { id: "33333333-0000-4000-8000-000000000003", kind: "credits", amount: 5000, status: "paid", created_at: t },
+  ],
+};
+const walletRoutes: FixtureRoutes = {
+  "GET wallet": () => ({ json: { balance: 3, trial_available: false } }),
+  "GET pricing": () => ({ json: { packages: [] } }),
+};
 const job = (over: Partial<Job>): Job => ({
   id: "fixture-job",
   project_id: "fixture-project",
@@ -97,5 +129,23 @@ export const fixtures: Record<string, Fixture> = {
     routes: {},
     setup: () => setAuthFixture({ signInWithPassword: () => ({ data: {}, error: null }) }),
     render: () => <AuthForm kind="login" configured />,
+  },
+  // OS-04: recorded snapshot, legacy order without snapshot, non-market order.
+  "billing-terms": {
+    title: "구매 내역: 주문 시점 이용 조건",
+    routes: { ...walletRoutes, "GET billing": () => ({ json: billing }) },
+    render: () => <BillingPanel />,
+  },
+  // OS-04: billing lookup fails once, then the retry loads.
+  "billing-error": {
+    title: "구매 내역: 조회 실패 후 재시도",
+    routes: {
+      ...walletRoutes,
+      "GET billing": ({ call }) =>
+        call === 1
+          ? { status: 404, json: { code: "NOT_FOUND", error: "order 22222222 of user other@x.test" } }
+          : { json: billing },
+    },
+    render: () => <BillingPanel />,
   },
 };

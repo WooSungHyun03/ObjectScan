@@ -20,5 +20,7 @@ export default defineConfig({
       { find: "@", replacement: at("../../apps/web/src") },
     ],
   },
+  // Components read NEXT_PUBLIC_* at build time; the shell has no env at all.
+  define: { "process.env": "{}" },
   server: { host: "127.0.0.1", port: 4317, strictPort: true },
 });

@@ -6,13 +6,52 @@ import { api, post, date } from "@/lib/client-api";
 import { Button } from "./ui/button";
 import { PageTitle } from "./page-title";
 import { CreditWallet } from "@/features/billing/credit-wallet";
+import { orderTermsView } from "@/features/billing/order-terms";
 type Entry = {
   id: string;
   kind: string;
   amount: number;
   created_at: string;
   status?: string;
+  license_snapshot?: unknown;
 };
+function OrderTerms({ order }: { order: Entry }) {
+  const v = orderTermsView(order.kind, order.license_snapshot);
+  if (v.state === "none") return null;
+  return (
+    <details className="order-terms mb-3 border-l-2 border-[var(--border)] pl-3 text-sm">
+      <summary>주문 시점 이용 조건</summary>
+      {v.state === "unknown" ? (
+        <p>
+          이 주문의 구매 당시 이용 조건 기록을 확인하고 있습니다. 현재 판매
+          조건은 이 주문에 적용된 조건과 다를 수 있습니다.
+        </p>
+      ) : (
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 [&_dt]:text-[var(--muted)]">
+          {v.title && (
+            <>
+              <dt>에셋</dt>
+              <dd>{v.title}</dd>
+            </>
+          )}
+          <dt>이용 조건</dt>
+          <dd>{v.license}</dd>
+          <dt>파일 버전</dt>
+          <dd>
+            {v.version}
+            {v.hash && <> · 확인값 {v.hash}</>}
+          </dd>
+          {v.capturedAt && (
+            <>
+              <dt>기록 시점</dt>
+              <dd>{date(v.capturedAt)}</dd>
+            </>
+          )}
+        </dl>
+      )}
+    </details>
+  );
+}
 export function BillingPanel() {
   const [data, setData] = useState<{
       ledger: Entry[];
@@ -22,18 +61,28 @@ export function BillingPanel() {
       payments_mode: string;
     } | null>(null),
     [error, setError] = useState(""),
+    [loadError, setLoadError] = useState(""),
     [amount, setAmount] = useState(""),
     [busy, setBusy] = useState(false);
   const [refundOrder, setRefundOrder] = useState(""),
     [reason, setReason] = useState(""),
     [message, setMessage] = useState("");
   const load = useCallback(
-    () => api<NonNullable<typeof data>>("billing").then(setData),
+    () =>
+      api<NonNullable<typeof data>>("billing").then((d) => {
+        setData(d);
+        setLoadError("");
+      }),
     [],
   );
+  const reload = useCallback(
+    () =>
+      load().catch((e) => setLoadError(customerError(undefined, e.message))),
+    [load],
+  );
   useEffect(() => {
-    void load().catch((e) => setError(customerError(undefined, e.message)));
-  }, [load]);
+    void reload();
+  }, [reload]);
   async function payout(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -74,6 +123,20 @@ export function BillingPanel() {
         <div className="notice">
           결제·판매·정산을 운영하지 않으며 이용 금액을 청구하지 않습니다.
         </div>
+      </>
+    );
+  // A failed load shows only the error and a retry, never stale or partial data.
+  if (!data && loadError)
+    return (
+      <>
+        <PageTitle
+          title="크레딧과 결제 내역"
+          description="사용량별 주문과 판매 내역을 확인하세요."
+        />
+        <p role="alert" className="notice error">
+          {loadError}
+        </p>
+        <Button onClick={() => void reload()}>다시 불러오기</Button>
       </>
     );
   return (
@@ -141,15 +204,18 @@ export function BillingPanel() {
         <h2>주문과 환불 검토</h2>
         {data?.orders.length ? (
           data.orders.map((o) => (
-            <p key={o.id}>
-              {date(o.created_at)} · {o.id.slice(0, 8)} ·{" "}
-              {o.kind === "credits"
-                ? "크레딧 충전"
-                : o.kind === "generation"
-                  ? "3D 생성"
-                  : "에셋 구매"}{" "}
-              · ₩{Number(o.amount).toLocaleString()} · {o.status}
-            </p>
+            <div key={o.id}>
+              <p>
+                {date(o.created_at)} · {o.id.slice(0, 8)} ·{" "}
+                {o.kind === "credits"
+                  ? "크레딧 충전"
+                  : o.kind === "generation"
+                    ? "3D 생성"
+                    : "에셋 구매"}{" "}
+                · ₩{Number(o.amount).toLocaleString()} · {o.status}
+              </p>
+              <OrderTerms order={o} />
+            </div>
           ))
         ) : (
           <p>주문이 없습니다.</p>
