@@ -103,3 +103,7 @@ DOC-HANDOFF: docs/delivery/MEMBER_A.md (7 tickets/7.5d), MEMBER_B.md (10/8d), OW
 ## Team B — OS-12 fixture shell — 2026-11-13
 
 OS-12 (TEAM_PASS, SERVICE_PENDING): key-free Vite shell `tests/team/vite.config.ts` renders real `JobTracker`/`PaymentResult` with next/* adapters and a fetch-level fixture API; `npx playwright test --config playwright.team.config.ts --grep OS-12` 9/9 at 360/768/1440 with axe and keyboard; `node scripts/team-report.mjs OS-12` writes `output/playwright/OS-12/REPORT.md`. MOCK only. Found real a11y bug: `.job-tracker` text contrast 3.07–4.48:1 in globals.css (excluded with a `shortcut:` in the spec until the owner fixes it).
+
+## Team B — OS-02 auth recovery UI — 2026-11-13
+
+OS-02 (TEAM_PASS, OWNER_PENDING OWN-01): unconfirmed signup/login enters a waiting state (no workspace navigation) with a 60s deadline-based resend via `auth.resend`; callback failure for `/reset-password` now redirects to `/forgot-password?error=link_expired`, and login shows `?error=confirmation_failed`; reset with a missing/expired session shows a new-link action; forgot email is remembered on this device and cleared after a successful reset; `safeNext` helper replaces the duplicated next-path check (unit test). MOCK auth adapter only (`tests/team/adapters/supabase-client.ts`). Owner: real SMTP delivery, Supabase redirect allow-list and server-side resend limits remain OWN-01.

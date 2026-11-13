@@ -4,12 +4,15 @@ import type { ReactNode } from "react";
 import type { Job } from "@objectscan/shared";
 import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
+import { AuthForm } from "@/components/auth-form";
+import { setAuthFixture } from "../adapters/supabase-client";
 import type { FixtureRoutes } from "./api";
 
 export type Fixture = {
   title: string;
   routes: FixtureRoutes;
   render: () => ReactNode;
+  setup?: () => void; // e.g. script non-fetch adapters such as the auth client
   search?: string; // query string the fixture page expects
 };
 
@@ -55,5 +58,44 @@ export const fixtures: Record<string, Fixture> = {
           : { json: { status: "paid" } },
     },
     render: () => <PaymentResult />,
+  },
+  // OS-02: signup without session → waiting state with resend cooldown.
+  "signup-unconfirmed": {
+    title: "가입: 이메일 확인 대기",
+    routes: {},
+    setup: () =>
+      setAuthFixture({
+        signUp: () => ({ data: { session: null, user: { id: "fixture-user" } }, error: null }),
+        resend: () => ({ data: {}, error: null }),
+      }),
+    render: () => <AuthForm kind="signup" configured />,
+  },
+  // OS-02: opening an expired recovery link, then saving a password.
+  "reset-expired": {
+    title: "비밀번호 재설정: 만료된 링크",
+    routes: {},
+    setup: () =>
+      setAuthFixture({
+        updateUser: () => ({
+          error: { name: "AuthSessionMissingError", message: "Auth session missing!" },
+        }),
+      }),
+    render: () => <AuthForm kind="reset" configured />,
+  },
+  // OS-02: forgot page after the callback rejected an expired link.
+  "forgot-link-expired": {
+    title: "재설정 요청: 링크 만료 후 복귀",
+    search: "?error=link_expired",
+    routes: {},
+    setup: () => setAuthFixture({ resetPasswordForEmail: () => ({ data: {}, error: null }) }),
+    render: () => <AuthForm kind="forgot" configured />,
+  },
+  // OS-02: login with an external next URL must stay internal.
+  "login-next": {
+    title: "로그인: 복귀 경로 검사",
+    search: "?next=https://evil.test/steal",
+    routes: {},
+    setup: () => setAuthFixture({ signInWithPassword: () => ({ data: {}, error: null }) }),
+    render: () => <AuthForm kind="login" configured />,
   },
 };

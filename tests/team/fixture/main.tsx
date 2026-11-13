@@ -25,6 +25,7 @@ if (!fixture) {
   );
 } else {
   installFixtureApi(fixture.routes);
+  fixture.setup?.();
   document.title = `MOCK · ${fixture.title}`;
   root.render(fixture.render());
 }

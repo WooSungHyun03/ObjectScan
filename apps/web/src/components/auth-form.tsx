@@ -2,7 +2,7 @@
 import { customerError } from "@/lib/customer-copy";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowRight,
@@ -12,8 +12,45 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { browserClient } from "@/lib/supabase/client";
+import { safeNext } from "@/lib/safe-next";
 import { Brand } from "./brand";
 import { Button } from "./ui/button";
+const RESEND_SECONDS = 60;
+const RECOVERY_EMAIL_KEY = "objectscan.recoveryEmail";
+const linkErrors: Record<string, string> = {
+  confirmation_failed:
+    "확인 링크가 만료되었거나 이미 사용되었습니다. 로그인해 보시고, 확인이 안 됐다면 확인 메일을 다시 받아 주세요.",
+  link_expired:
+    "재설정 링크가 만료되었거나 이미 사용되었습니다. 새 링크를 받아 주세요.",
+};
+// Auth errors meaning the email link/session is no longer usable.
+const expiredSession = (e: { code?: string; name?: string }) =>
+  e.name === "AuthSessionMissingError" ||
+  [
+    "session_not_found",
+    "session_expired",
+    "otp_expired",
+    "flow_state_expired",
+  ].includes(e.code ?? "");
+const storage = {
+  get: () => {
+    try {
+      return localStorage.getItem(RECOVERY_EMAIL_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  },
+  set: (v: string) => {
+    try {
+      localStorage.setItem(RECOVERY_EMAIL_KEY, v);
+    } catch {}
+  },
+  clear: () => {
+    try {
+      localStorage.removeItem(RECOVERY_EMAIL_KEY);
+    } catch {}
+  },
+};
 export function AuthForm({
   kind,
   configured,
@@ -26,9 +63,53 @@ export function AuthForm({
     [password, setPassword] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [message, setMessage] = useState("");
+    [message, setMessage] = useState(""),
+    [waiting, setWaiting] = useState(false),
+    [resendAt, setResendAt] = useState(0),
+    [now, setNow] = useState(0),
+    [linkExpired, setLinkExpired] = useState(false);
   const router = useRouter(),
-    search = useSearchParams();
+    search = useSearchParams(),
+    linkError = linkErrors[search.get("error") ?? ""] ?? "";
+  useEffect(() => {
+    // Keep the email typed before an expired recovery link sent the user back.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount (no SSR mismatch)
+    if (kind === "forgot") setEmail((v) => v || storage.get());
+  }, [kind]);
+  // Deadline-based so throttled background tabs still show the right time.
+  const cooldown = Math.max(0, Math.ceil((resendAt - now) / 1000));
+  useEffect(() => {
+    if (!resendAt) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [resendAt]);
+  const startCooldown = () => {
+    const t = Date.now();
+    setNow(t);
+    setResendAt(t + RESEND_SECONDS * 1000);
+  };
+  async function resend() {
+    setError("");
+    try {
+      const { error } = await browserClient().auth.resend({
+        type: "signup",
+        email,
+        options: {
+          emailRedirectTo: `${location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+      if (error) throw error;
+      setMessage(
+        "확인 메일을 다시 보냈습니다. 받은편지함과 스팸함을 확인하세요.",
+      );
+    } catch (e) {
+      setError(
+        customerError((e as { code?: string }).code, (e as Error).message),
+      );
+    } finally {
+      startCooldown();
+    }
+  }
   const titles = {
     login: "로그인하고 작업을 이어가세요.",
     signup: "내 3D 작업실을 만들어보세요.",
@@ -40,16 +121,10 @@ export function AuthForm({
     setBusy(true);
     setError("");
     setMessage("");
+    setLinkExpired(false);
     try {
       const client = browserClient(),
-        raw = search.get("next") ?? "/dashboard",
-        next =
-          raw.startsWith("/") &&
-          !raw.startsWith("//") &&
-          !raw.includes("\\") &&
-          !/[\x00-\x1f]/.test(raw)
-            ? raw
-            : "/dashboard";
+        next = safeNext(search.get("next"));
       if (kind === "signup") {
         const { data, error } = await client.auth.signUp({
           email,
@@ -63,7 +138,11 @@ export function AuthForm({
         if (data.session) {
           router.push("/dashboard");
           router.refresh();
-        } else setMessage("이메일의 확인 링크를 열어 가입을 완료하세요.");
+        } else {
+          setWaiting(true);
+          startCooldown();
+          setMessage("이메일의 확인 링크를 열어 가입을 완료하세요.");
+        }
       } else if (kind === "login") {
         const { error } = await client.auth.signInWithPassword({
           email,
@@ -73,6 +152,7 @@ export function AuthForm({
         router.push(next);
         router.refresh();
       } else if (kind === "forgot") {
+        storage.set(email);
         const { error } = await client.auth.resetPasswordForEmail(email, {
           redirectTo: `${location.origin}/auth/callback?next=/reset-password`,
         });
@@ -83,14 +163,20 @@ export function AuthForm({
       } else {
         const { error } = await client.auth.updateUser({ password });
         if (error) throw error;
+        storage.clear();
         setMessage("새 비밀번호를 저장했습니다.");
         router.push("/dashboard");
         router.refresh();
       }
     } catch (e) {
-      setError(
-        customerError((e as { code?: string }).code, (e as Error).message),
-      );
+      const err = e as { code?: string; name?: string; message?: string };
+      if (kind === "login" && err.code === "email_not_confirmed") {
+        setWaiting(true);
+        setError(customerError(err.code));
+      } else if (kind === "reset" && expiredSession(err)) {
+        setLinkExpired(true);
+        setError(linkErrors.link_expired);
+      } else setError(customerError(err.code, err.message));
     } finally {
       setBusy(false);
     }
@@ -146,17 +232,44 @@ export function AuthForm({
               </span>
             </div>
           )}
-          {error && (
+          {(error || linkError) && (
             <div role="alert" className="notice error">
               <AlertCircle size={16} />
-              {error}
+              <span>{error || linkError}</span>
             </div>
+          )}
+          {linkExpired && (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/forgot-password">새 재설정 링크 받기</Link>
+            </Button>
           )}
           {message && (
             <div role="status" className="notice success">
               <CheckCircle2 size={16} />
               {message}
             </div>
+          )}
+          {waiting && (
+            <div className="notice warning">
+              <Mail size={16} />
+              <span>
+                확인을 마치기 전에는 작업실을 사용할 수 없습니다.{" "}
+                {cooldown > 0
+                  ? `${cooldown}초 후 확인 메일을 다시 받을 수 있습니다.`
+                  : "메일이 오지 않았다면 다시 받아 보세요."}
+              </span>
+            </div>
+          )}
+          {waiting && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={cooldown > 0 || !email}
+              onClick={() => void resend()}
+            >
+              확인 메일 다시 받기
+            </Button>
           )}
           <form onSubmit={submit}>
             {kind === "signup" && (
