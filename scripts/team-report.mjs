@@ -17,7 +17,7 @@ const redact = (s) =>
     .replace(/([?&](token|sig|signature|X-Amz-[\w-]+)=)[^&\s]+/gi, "$1[REDACTED]")
     .replace(/(sk|pk|sb)_(live|test|secret)_\w+/gi, "[KEY]");
 const sha = execSync("git rev-parse --short HEAD").toString().trim();
-const dirty = execSync("git status --porcelain").toString().trim() ? " (uncommitted changes)" : "";
+const dirty = execSync("git status --porcelain --untracked-files=no").toString().trim() ? " (uncommitted changes)" : "";
 const exit = run.status ?? 1;
 const dir = `output/playwright/${ticket}`;
 mkdirSync(dir, { recursive: true });
