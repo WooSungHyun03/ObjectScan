@@ -99,3 +99,7 @@ OWN-05 routing: be-celeb.org moved from sw-system to objectscan; www308 to apex;
 ## Per-person vibe-coding handoff — 2026-11-12
 
 DOC-HANDOFF: docs/delivery/MEMBER_A.md (7 tickets/7.5d), MEMBER_B.md (10/8d), OWNER_LOCAL.md (10/original10d). Each includes kickoff/resume prompts, full assigned ticket scope/AC/tests, dependencies, evidence and stop conditions. Owner document marks completed routing/migration/worker work to prevent duplicate execution. Documentation only; no application changes. Structural validation and Markdown formatting checked before main push.
+
+## Team B — OS-12 fixture shell — 2026-11-13
+
+OS-12 (TEAM_PASS, SERVICE_PENDING): key-free Vite shell `tests/team/vite.config.ts` renders real `JobTracker`/`PaymentResult` with next/* adapters and a fetch-level fixture API; `npx playwright test --config playwright.team.config.ts --grep OS-12` 9/9 at 360/768/1440 with axe and keyboard; `node scripts/team-report.mjs OS-12` writes `output/playwright/OS-12/REPORT.md`. MOCK only. Found real a11y bug: `.job-tracker` text contrast 3.07–4.48:1 in globals.css (excluded with a `shortcut:` in the spec until the owner fixes it).
