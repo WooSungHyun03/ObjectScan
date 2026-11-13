@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PublicHeader } from "@/components/public-header";
 import { Marketplace } from "@/components/marketplace";
 export default function Page() {
@@ -5,7 +6,10 @@ export default function Page() {
     <>
       <PublicHeader />
       <main id="main" className="public-page">
-        <Marketplace />
+        {/* useSearchParams restores filters from the URL. */}
+        <Suspense fallback={<p>에셋 목록 준비 중…</p>}>
+          <Marketplace />
+        </Suspense>
       </main>
     </>
   );

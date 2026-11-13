@@ -115,3 +115,7 @@ OS-04 (TEAM_PASS, OWNER_PENDING OWN-06): billing orders show "주문 시점 이�
 ## Team B — OS-19 viewer presets — 2026-11-13
 
 OS-19 (TEAM_PASS, no Owner dependency): ModelViewer adds a "보기 방향" group (앞/뒤/왼쪽/오른쪽 + 화면 맞춤) using drei `useBounds` (moveTo/lookAt/fit) inside the existing Bounds, no new renderer, no geometry change. Directions follow the file's +Z axis with the display yaw (`features/viewer/view-presets.ts`, unit test cross-checked with three.js); visible note says it is the file axis, not a detected front. Tools and screenshot are disabled until the model is loaded and stay disabled on load failure. Canvas `data-camera` exposes direction|distance for tests. MOCK fixture uses the public demo GLB.
+
+## Team B — OS-18 market filters and URL state — 2026-11-13
+
+OS-18 (TEAM_PASS, no Owner dependency): marketplace adds license and price-band filters over the already-loaded list (`features/marketplace/filters.ts`, unit test; "불러온 N개 중 M개" note), keeps q/category/sort/license/price in the URL via `history.replaceState` so Back from a detail restores them, validates URL values against allow-lists, and separates a load error (alert + "다시 불러오기", inputs kept) from loading and empty states; "조건 초기화" keeps the search text. Selects got explicit aria-labels. Found real a11y bug: `.project-info p` card text 4.12:1 (excluded with a `shortcut:` in the spec). No format filter (GLB only). MOCK listings.

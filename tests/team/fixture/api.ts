@@ -5,6 +5,7 @@ export type FixtureRoute = (req: {
   method: string;
   body: unknown;
   call: number;
+  query: URLSearchParams;
 }) => FixtureReply;
 export type FixtureRoutes = Record<string, FixtureRoute>; // key: "METHOD path"
 
@@ -24,7 +25,7 @@ export function installFixtureApi(routes: FixtureRoutes) {
     counts[key] = (counts[key] ?? 0) + 1;
     // Unknown routes fail loudly so a fixture never silently "passes".
     const reply = route
-      ? route({ method, body, call: counts[key] })
+      ? route({ method, body, call: counts[key], query: url.searchParams })
       : { status: 404, json: { code: "FIXTURE_ROUTE_MISSING", error: key } };
     return new Response(JSON.stringify(reply.json), {
       status: reply.status ?? 200,

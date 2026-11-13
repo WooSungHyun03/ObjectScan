@@ -7,7 +7,11 @@ import { createRoot } from "react-dom/client";
 import { installFixtureApi } from "./api";
 import { fixtures } from "./fixtures";
 
-const id = new URLSearchParams(location.search).get("fixture") ?? "";
+// `?fixture=<id>` or `/fixture/<id>` (the path form survives pages that rewrite their query).
+const id =
+  new URLSearchParams(location.search).get("fixture") ??
+  location.pathname.match(/^\/fixture\/([\w-]+)/)?.[1] ??
+  "";
 const fixture = fixtures[id];
 const root = createRoot(document.getElementById("root")!);
 if (!fixture) {

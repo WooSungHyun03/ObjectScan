@@ -7,6 +7,17 @@ import { productPreview } from "@/lib/brand/product-preview";
 import { AssetCard, type Listing } from "@/features/marketplace/asset-card";
 export type { Listing } from "@/features/marketplace/asset-card";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  applyLocalFilters,
+  defaults,
+  filtersQuery,
+  hasLocalFilters,
+  priceBands,
+  readFilters,
+  type MarketFilters,
+} from "@/features/marketplace/filters";
+import { licenseLabels } from "@/features/marketplace/presentation";
 import {
   Search,
   Store,
@@ -19,12 +30,25 @@ import {
 import { api } from "@/lib/client-api";
 import { Button } from "./ui/button";
 export function Marketplace() {
-  const [listings, setListings] = useState<Listing[]>([]),
-    [query, setQuery] = useState(""),
-    [category, setCategory] = useState("all"),
-    [sort, setSort] = useState("recent"),
+  const search = useSearchParams(),
+    [f, setF] = useState<MarketFilters>(() => readFilters(search)),
+    [listings, setListings] = useState<Listing[]>([]),
+    [attempt, setAttempt] = useState(0),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
+  const { q: query, category, sort } = f,
+    educational = educationMode(),
+    shown = applyLocalFilters(listings, f);
+  // replaceState keeps one history entry, so Back from a detail page restores this URL.
+  function update(next: Partial<MarketFilters>) {
+    const value = { ...f, ...next };
+    setF(value);
+    window.history.replaceState(
+      null,
+      "",
+      `${location.pathname}${filtersQuery(value)}`,
+    );
+  }
   useEffect(() => {
     let alive = true;
     const controller = new AbortController(),
@@ -53,7 +77,7 @@ export function Marketplace() {
       clearTimeout(t);
       controller.abort();
     };
-  }, [query, category, sort]);
+  }, [query, category, sort, attempt]);
   return (
     <>
       <div className="market-hero">
@@ -78,16 +102,51 @@ export function Marketplace() {
             value={query}
             placeholder="에셋 검색"
             aria-label="에셋 검색"
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => update({ q: e.target.value })}
           />
         </label>
         <label className="sort-control">
           <span className="sr-only">정렬</span>
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <select
+            aria-label="정렬"
+            value={sort}
+            onChange={(e) => update({ sort: e.target.value })}
+          >
             <option value="recent">최신 등록순</option>
             <option value="price">낮은 가격순</option>
           </select>
         </label>
+        <label className="sort-control">
+          <span className="sr-only">이용 조건</span>
+          <select
+            aria-label="이용 조건"
+            value={f.license}
+            onChange={(e) => update({ license: e.target.value })}
+          >
+            <option value="all">모든 이용 조건</option>
+            {Object.entries(licenseLabels).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </label>
+        {!educational && (
+          <label className="sort-control">
+            <span className="sr-only">가격</span>
+            <select
+              aria-label="가격"
+              value={f.price}
+              onChange={(e) => update({ price: e.target.value })}
+            >
+              {Object.entries(priceBands).map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       <div className="category-tabs" aria-label="에셋 카테고리">
         {[
@@ -102,7 +161,7 @@ export function Marketplace() {
             key={c.id}
             className={category === c.id ? "active" : ""}
             aria-pressed={category === c.id}
-            onClick={() => setCategory(c.id)}
+            onClick={() => update({ category: c.id })}
           >
             {c.label}
           </button>
@@ -115,7 +174,7 @@ export function Marketplace() {
           권한을 확인한 뒤 다운로드할 수 있습니다.
         </span>
       </div>
-      {!query && category === "all" && (
+      {!query && category === "all" && !hasLocalFilters(f) && (
         <section className="market-sample" aria-label="판매하지 않는 공개 예시">
           <Image
             src={productPreview.render}
@@ -139,23 +198,50 @@ export function Marketplace() {
           </div>
         </section>
       )}
-      {error && (
-        <div className="notice error" role="alert">
-          <AlertCircle size={17} />
-          {error}
-        </div>
+      {hasLocalFilters(f) && !loading && !error && (
+        <p className="muted my-3" role="status">
+          불러온 에셋 {listings.length}개 중 {shown.length}개를 표시합니다.
+        </p>
       )}
-      {loading ? (
+      {error ? (
+        <div className="empty-state">
+          <div className="notice error" role="alert">
+            <AlertCircle size={17} />
+            {error}
+          </div>
+          <Button
+            variant="outline"
+            disabled={loading}
+            onClick={() => setAttempt((a) => a + 1)}
+          >
+            {loading ? "다시 불러오는 중…" : "다시 불러오기"}
+          </Button>
+        </div>
+      ) : loading ? (
         <div className="project-grid">
           {[0, 1, 2].map((i) => (
             <div key={i} className="project-skeleton" />
           ))}
         </div>
-      ) : listings.length ? (
+      ) : shown.length ? (
         <div className="project-grid">
-          {listings.map((l) => (
-            <AssetCard key={l.id} listing={l} educational={educationMode()} />
+          {shown.map((l) => (
+            <AssetCard key={l.id} listing={l} educational={educational} />
           ))}
+        </div>
+      ) : listings.length || category !== "all" ? (
+        <div className="empty-state">
+          <span>
+            <Store size={31} strokeWidth={1.2} />
+          </span>
+          <h2>조건에 맞는 에셋이 없습니다.</h2>
+          <p>검색어는 그대로 두고 카테고리와 필터를 초기화할 수 있어요.</p>
+          <Button
+            variant="outline"
+            onClick={() => update({ ...defaults, q: query, sort })}
+          >
+            조건 초기화
+          </Button>
         </div>
       ) : (
         <div className="empty-state">

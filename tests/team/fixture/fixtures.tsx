@@ -7,8 +7,10 @@ import { PaymentResult } from "@/components/payment-result";
 import { AuthForm } from "@/components/auth-form";
 import { BillingPanel } from "@/components/account-panels";
 import { ModelViewer } from "@/components/model-viewer";
+import { Marketplace } from "@/components/marketplace";
+import type { Listing } from "@/features/marketplace/asset-card";
 import { setAuthFixture } from "../adapters/supabase-client";
-import type { FixtureRoutes } from "./api";
+import type { FixtureRoute, FixtureRoutes } from "./api";
 
 export type Fixture = {
   title: string;
@@ -45,6 +47,22 @@ const billing = {
     { id: "22222222-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "paid", created_at: t },
     { id: "33333333-0000-4000-8000-000000000003", kind: "credits", amount: 5000, status: "paid", created_at: t },
   ],
+};
+const listing = (id: string, title: string, category: string, price: number, license: string): Listing => ({
+  id, title, category, price, license, description: "", currency: "KRW", test_mode: true,
+});
+const listings = [
+  listing("l-free", "무료 화분", "decor", 0, "cc0-1.0"),
+  listing("l-chair", "원목 의자", "furniture", 8000, "standard"),
+  listing("l-lamp", "탁상 조명", "decor", 10000, "standard"),
+  listing("l-room", "작은 거실", "scenes", 25000, "cc-by-4.0"),
+];
+// Mimics the existing API: search + category on the server, sort by price.
+const listingsRoute: FixtureRoute = ({ query }) => {
+  const q = query.get("search") ?? "", c = query.get("category") ?? "all";
+  const out = listings.filter((l) => l.title.includes(q) && (c === "all" || l.category === c));
+  if (query.get("sort") === "price") out.sort((a, b) => a.price - b.price);
+  return { json: out };
 };
 const walletRoutes: FixtureRoutes = {
   "GET wallet": () => ({ json: { balance: 3, trial_available: false } }),
@@ -166,6 +184,29 @@ export const fixtures: Record<string, Fixture> = {
     render: () => (
       <main id="main" style={{ height: "80vh", padding: 16 }}>
         <ModelViewer url="/demo/fixture-missing.glb" demo={false} />
+      </main>
+    ),
+  },
+  // OS-18: market list with local license/price filters and URL state.
+  "market-list": {
+    title: "마켓: 라이선스·가격 필터",
+    routes: { "GET listings": listingsRoute },
+    render: () => (
+      <main id="main" className="public-page">
+        <Marketplace />
+      </main>
+    ),
+  },
+  // OS-18: the first list request fails, the retry succeeds.
+  "market-error": {
+    title: "마켓: 목록 실패 후 재시도",
+    routes: {
+      "GET listings": (req) =>
+        req.call === 1 ? { status: 503, json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" } } : listingsRoute(req),
+    },
+    render: () => (
+      <main id="main" className="public-page">
+        <Marketplace />
       </main>
     ),
   },
