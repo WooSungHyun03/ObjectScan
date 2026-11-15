@@ -33,7 +33,7 @@ SERVICE gate for every ticket: **SERVICE_PENDING** (Owner-only).
 
 Contrast below 4.5:1, named per spec through `checkPage(..., { contrastExclude | contrastOnly })` in `tests/team/check.ts`:
 `.job-tracker` text (3.07–4.48), `.project-info p` (4.12), `.workspace-notice` (4.49), wizard muted text: step nav, footer counter, preview summary, upload hints, `.upload-guidance`, `.inline-empty small` (3.2–4.46).
-Also still raw: payout status and ledger kind in billing.
+Payout status and ledger kind in billing now have Korean labels (OS-21 follow-up, 2026-11-16).
 
 ## Open decisions for the Owner
 

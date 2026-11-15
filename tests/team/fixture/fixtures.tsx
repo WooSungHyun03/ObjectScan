@@ -56,6 +56,16 @@ const billing = {
 // OS-21: paid, refunded and an unrecognised status, plus a credits order.
 const billingStates = {
   ...billing,
+  // Payout status and ledger kind values from the DB checks, plus one unknown each.
+  payouts: [
+    { id: "p1", kind: "payout", amount: 3000, status: "requested", created_at: t },
+    { id: "p2", kind: "payout", amount: 2000, status: "manual_hold_v2", created_at: t },
+  ],
+  ledger: [
+    { id: "g1", kind: "marketplace_purchase", amount: -12000, created_at: t },
+    { id: "g2", kind: "fee", amount: -1200, created_at: t },
+    { id: "g3", kind: "promo_adjust_v2", amount: 100, created_at: t },
+  ],
   orders: [
     { id: "aaaaaaaa-0000-4000-8000-000000000001", kind: "marketplace", amount: 12000, status: "paid", created_at: t },
     { id: "bbbbbbbb-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "refunded", created_at: t },

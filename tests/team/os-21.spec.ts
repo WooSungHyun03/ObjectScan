@@ -5,7 +5,7 @@ import { checkPage, shooter } from "./check";
 const shot = shooter("OS-21");
 // shortcut: real app bugs — `.project-info p` is 4.12:1 and `.workspace-notice` 4.49:1 in globals.css; drop once fixed.
 const known = { contrastExclude: [".project-info > p", ".workspace-notice"] };
-const raw = ["paid", "refunded", "chargeback_review_v2", "pending"];
+const raw = ["paid", "refunded", "chargeback_review_v2", "pending", "requested", "manual_hold_v2", "marketplace_purchase", "promo_adjust_v2"];
 
 test("OS-21 orders show Korean status, TEST marker, amount and the asset link", async ({ page }, info) => {
   await page.goto("/?fixture=billing-orders");
@@ -21,6 +21,14 @@ test("OS-21 orders show Korean status, TEST marker, amount and the asset link", 
   await expect(link).toHaveCount(1);
   await expect(link).toHaveAttribute("href", "/assets");
   await expect(orders).toContainText("환불된 주문입니다. 이 주문의 파일은 받을 수 없습니다.");
+  // Payout status and ledger kind are Korean too; unknown values never show raw.
+  const body = page.locator("body");
+  await expect(body).toContainText("₩3,000 · 검토 대기");
+  await expect(body).toContainText("₩2,000 · 확인 중");
+  await expect(page.getByRole("cell", { name: "에셋 구매" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "판매 수수료" })).toBeVisible();
+  const all = await body.innerText();
+  for (const r of raw) expect(all).not.toContain(r);
   await link.focus();
   await expect(link).toBeFocused();
   await checkPage(page, known);

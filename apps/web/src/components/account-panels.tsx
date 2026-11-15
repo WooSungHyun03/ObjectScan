@@ -9,8 +9,10 @@ import { PageTitle } from "./page-title";
 import { CreditWallet } from "@/features/billing/credit-wallet";
 import { orderTermsView } from "@/features/billing/order-terms";
 import {
+  ledgerKindLabel,
   orderStatusKnown,
   orderStatusLabel,
+  payoutStatusLabel,
 } from "@/features/billing/order-status";
 type Entry = {
   id: string;
@@ -197,7 +199,7 @@ export function BillingPanel() {
             data.payouts.map((p) => (
               <p key={p.id}>
                 {date(p.created_at)} · ₩{Number(p.amount).toLocaleString()} ·{" "}
-                {p.status}
+                {payoutStatusLabel(p.status)}
               </p>
             ))
           ) : (
@@ -295,7 +297,7 @@ export function BillingPanel() {
                 {data.ledger.map((l) => (
                   <tr key={l.id}>
                     <td>{date(l.created_at)}</td>
-                    <td>{l.kind}</td>
+                    <td>{ledgerKindLabel(l.kind)}</td>
                     <td>₩{Number(l.amount).toLocaleString()}</td>
                   </tr>
                 ))}
