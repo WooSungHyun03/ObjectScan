@@ -1,4 +1,14 @@
 import { customerError } from "./customer-copy";
+export class ApiResponseError extends Error {
+  constructor(
+    readonly status: number,
+    readonly code?: string,
+    detail?: string,
+  ) {
+    super(customerError(code, detail));
+  }
+}
+
 export async function api<T>(
   path: string,
   options: RequestInit = {},
@@ -23,11 +33,12 @@ export async function api<T>(
   try {
     value = await r.json();
   } catch {
+    if (!r.ok) throw new ApiResponseError(r.status);
     throw new Error(
       "서비스 응답을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
     );
   }
-  if (!r.ok) throw new Error(customerError(value.code, value.error));
+  if (!r.ok) throw new ApiResponseError(r.status, value?.code, value?.error);
   return value as T;
 }
 export function post<T>(path: string, value: unknown = {}) {

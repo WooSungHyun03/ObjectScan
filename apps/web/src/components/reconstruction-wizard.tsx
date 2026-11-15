@@ -9,6 +9,8 @@ import {
 } from "@/features/create/generation-availability";
 import { GenerationAvailabilityNotice } from "@/features/create/generation-availability-notice";
 import { useGenerationCheck } from "@/features/create/use-generation-check";
+import { useGenerationSubmission } from "@/features/create/use-generation-submission";
+import { isTerminalJob } from "@/features/create/job-polling";
 import { customerError } from "@/lib/customer-copy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -46,6 +48,7 @@ import { PageTitle } from "./page-title";
 import { Viewer } from "./viewer";
 import { JobTracker } from "./job-tracker";
 type Detail = Project & {
+  revision?: number;
   images: ProjectImage[];
   jobs: Job[];
   artifacts: { id: string; name: string }[];
@@ -65,6 +68,7 @@ export function ReconstructionWizard({
       "camera_orbit",
     ),
     [step, setStep] = useState(0),
+    [trackedJobId, setTrackedJobId] = useState<string>(),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -118,7 +122,21 @@ export function ReconstructionWizard({
       setSelection(p.target_selection);
       setReference(p.target_image_id ?? "");
     }
+    return p;
   }, [pid]);
+  const refreshProject = useCallback(async () => {
+    await load();
+  }, [load]);
+  const submission = useGenerationSubmission({
+    projectId: pid,
+    input: `${pid}:${project?.revision ?? project?.updated_at}`,
+    jobs: project?.jobs ?? [],
+    load,
+    track: (id) => {
+      setTrackedJobId(id);
+      setStep(processIndex);
+    },
+  });
   useEffect(() => {
     void load().catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
@@ -257,9 +275,8 @@ export function ReconstructionWizard({
   };
   const hasMasks = included.some((i) => i.mask_url),
     masksReady = included.length > 0 && included.every((i) => i.mask_reviewed),
-    live = project?.jobs.some(
-      (j) => !["completed", "failed", "cancelled"].includes(j.state),
-    );
+    live = project?.jobs.some((job) => !isTerminalJob(job.state));
+  const displayedJobId = trackedJobId ?? project?.jobs[0]?.id;
   async function requestAnalysis(kind: "masks" | "poses") {
     await action(async () => {
       await post(`projects/${pid}/${kind}`, {
@@ -881,15 +898,10 @@ export function ReconstructionWizard({
                 </div>
               )}
               <GenerationCheckout
-                key={pid}
-                projectId={pid}
                 quote={quote.data}
                 quoteFailed={quote.failed}
                 refreshQuote={quote.retry}
-                onStarted={() => {
-                  setStep(processIndex);
-                  void load();
-                }}
+                submission={submission}
               />
             </>
           )}
@@ -897,7 +909,11 @@ export function ReconstructionWizard({
             project?.jobs[0] &&
             project.jobs[0].kind !== "generation" &&
             project.jobs[0].state !== "completed" && (
-              <JobTracker jobId={project.jobs[0].id} onComplete={load} />
+              <JobTracker
+                key={project.jobs[0].id}
+                jobId={project.jobs[0].id}
+                onComplete={refreshProject}
+              />
             )}
           {step === processIndex && (
             <>
@@ -907,8 +923,12 @@ export function ReconstructionWizard({
                   <p>각 단계의 실제 상태와 로그를 확인하세요.</p>
                 </div>
               </div>
-              {project?.jobs[0] ? (
-                <JobTracker jobId={project.jobs[0].id} onComplete={load} />
+              {displayedJobId ? (
+                <JobTracker
+                  key={displayedJobId}
+                  jobId={displayedJobId}
+                  onComplete={refreshProject}
+                />
               ) : (
                 <div className="inline-empty">
                   <Box size={31} strokeWidth={1.1} />

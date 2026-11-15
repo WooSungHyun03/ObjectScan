@@ -112,7 +112,11 @@ export function ProjectDetail({ id }: { id: string }) {
                 )}
               </div>
               {p.jobs[0] && (
-                <JobTracker jobId={p.jobs[0].id} onComplete={load} />
+                <JobTracker
+                  key={p.jobs[0].id}
+                  jobId={p.jobs[0].id}
+                  onComplete={load}
+                />
               )}
             </section>
             <aside className="project-detail-aside">
