@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { InspectorPanel } from "./inspector-panel";
 import { MeshComparisonPanel } from "./mesh-comparison-panel";
+import { PrivateModelImportPanel } from "./private-model-import-panel";
+import type { PrivateModelImportAdapter } from "./private-model-import";
 import { useMeshEditor } from "./use-mesh-editor";
 import { Button } from "@/components/ui/button";
 const EditorCanvas = dynamic(
@@ -35,9 +37,11 @@ const EditorCanvas = dynamic(
 export function MeshEditor({
   projectId,
   demo = false,
+  privateImport,
 }: {
   projectId?: string;
   demo?: boolean;
+  privateImport?: PrivateModelImportAdapter;
 }) {
   const {
     data,
@@ -61,7 +65,7 @@ export function MeshEditor({
     fit,
     ratio,
     draft,
-    localFile,
+    localFileName,
     previewTriangles,
     url,
     setTool,
@@ -76,6 +80,9 @@ export function MeshEditor({
     apply,
     history,
     save,
+    setSaving,
+    markSaved,
+    createModel,
     download,
     loadSource,
     openVersion,
@@ -103,8 +110,8 @@ export function MeshEditor({
           <h1>모델 편집</h1>
           <span>
             {demo
-              ? localFile
-                ? "내 기기의 모델 · 서버에 업로드하지 않습니다"
+              ? localFileName
+                ? "내 기기에서 연 모델"
                 : "공개 예시 · 생성 결과가 아닙니다"
               : (data?.name ?? "모델 준비")}
             {dirty ? " · 저장하지 않은 변경" : ""}
@@ -273,6 +280,18 @@ export function MeshEditor({
           <p className="editor-hint">
             끌어서 회전 · 스크롤로 확대 · 오른쪽 버튼으로 화면 이동
           </p>
+          {localFileName && originalView && (
+            <PrivateModelImportPanel
+              key={originalView.url}
+              name={localFileName}
+              sourceKey={url}
+              createModel={createModel}
+              adapter={privateImport}
+              unavailable={busy || saving || showingOriginal}
+              onBusyChange={setSaving}
+              onSaved={markSaved}
+            />
+          )}
         </section>
         <InspectorPanel>
           <aside className="editor-inspector">

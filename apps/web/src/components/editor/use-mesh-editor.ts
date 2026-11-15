@@ -1,10 +1,11 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type {
-  MeshEditOperation,
-  MeshReport,
-  MeshPart,
-} from "@objectscan/mesh-editor";
+import {
+  MAX_EDIT_BYTES,
+  type MeshEditOperation,
+  type MeshReport,
+  type MeshPart,
+} from "@objectscan/mesh-editor/contracts";
 import { api, post } from "@/lib/client-api";
 import { customerError } from "@/lib/customer-copy";
 import type { MeshComparisonView } from "./mesh-comparison";
@@ -28,7 +29,7 @@ export function useMeshEditor({
   demo?: boolean;
 }) {
   const [data, setData] = useState<Data | null>(null),
-    [localFile, setLocalFile] = useState(false),
+    [localFileName, setLocalFileName] = useState<string>(),
     [report, setReport] = useState<MeshReport | null>(null),
     [originalView, setOriginalView] = useState<MeshComparisonView>(),
     [previewTriangles, setPreviewTriangles] = useState<number | null>(null),
@@ -101,7 +102,7 @@ export function useMeshEditor({
         const r = await fetch(source);
         if (!r.ok) throw Error("모델을 불러오지 못했습니다. 다시 열어 주세요.");
         const blob = await r.blob();
-        if (blob.size > 64 * 1024 * 1024)
+        if (blob.size > MAX_EDIT_BYTES)
           throw Error(
             "64MB 이하 모델만 브라우저에서 편집할 수 있습니다. 원본 내려받기는 프로젝트에서 이용해 주세요.",
           );
@@ -323,20 +324,23 @@ export function useMeshEditor({
     }
   }
   function download() {
-    if (!bytes.current) return;
+    const model = createModel();
+    if (!model) return;
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(
-      new Blob([bytes.current as Uint8Array<ArrayBuffer>], {
-        type: "model/gltf-binary",
-      }),
-    );
+    link.href = URL.createObjectURL(model);
     link.download =
-      demo && !localFile
+      demo && !localFileName
         ? "ObjectScan-공개예시-편집본.glb"
         : "ObjectScan-편집본.glb";
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     setMessage("텍스처 보존을 확인한 편집본을 내려받습니다.");
+  }
+  function createModel() {
+    if (bytes.current)
+      return new Blob([bytes.current as Uint8Array<ArrayBuffer>], {
+        type: "model/gltf-binary",
+      });
   }
   async function openVersion(id: string) {
     if (
@@ -360,17 +364,17 @@ export function useMeshEditor({
     }
   }
   async function importFile(file?: File) {
-    if (
-      !file ||
-      busy ||
-      saving ||
-      (dirty && !confirm("수정 내용을 버리고 다른 파일을 열까요?"))
-    )
+    if (!file || busy || saving) return false;
+    if (file.size > MAX_EDIT_BYTES) {
+      setError("모델 파일은 64MB 이하의 GLB를 사용해 주세요.");
+      return false;
+    }
+    if (dirty && !confirm("수정 내용을 버리고 다른 파일을 열까요?"))
       return false;
     const temporary = URL.createObjectURL(file);
     try {
       const loaded = await loadSource(temporary);
-      if (loaded) setLocalFile(true);
+      if (loaded) setLocalFileName(file.name);
       return loaded;
     } finally {
       URL.revokeObjectURL(temporary);
@@ -402,7 +406,7 @@ export function useMeshEditor({
     fit,
     ratio,
     draft,
-    localFile,
+    localFileName,
     previewTriangles,
     url,
     setTool,
@@ -417,6 +421,9 @@ export function useMeshEditor({
     apply,
     history,
     save,
+    setSaving,
+    markSaved: () => setDirty(false),
+    createModel,
     download,
     loadSource,
     openVersion,
