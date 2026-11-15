@@ -11,6 +11,8 @@ import { AssetLibrary } from "@/components/asset-library";
 import { ModelViewer } from "@/components/model-viewer";
 import { Marketplace } from "@/components/marketplace";
 import type { Listing } from "@/features/marketplace/asset-card";
+import { DraftPhotos } from "@/features/create/draft-photos";
+import { putDraft } from "@/features/create/upload-draft";
 import { setAuthFixture } from "../adapters/supabase-client";
 import type { FixtureRoute, FixtureRoutes } from "./api";
 
@@ -87,6 +89,24 @@ const payment = (title: string, confirm: FixtureRoute): Fixture => ({
   routes: { "POST payments/confirm": confirm },
   render: () => <PaymentResult />,
 });
+// OS-07: memory-only draft; the upload callback only records what it would send.
+const draft = (title: string, names: string[], diagnostics?: Parameters<typeof DraftPhotos>[0]["diagnostics"]): Fixture => ({
+  title,
+  routes: {},
+  setup: () => putDraft(names.map((n) => new File([n], n, { type: "image/jpeg" }))),
+  render: () => (
+    <main id="main" style={{ padding: 16 }}>
+      <h1>MOCK 사진 준비</h1>
+      <DraftPhotos
+        busy={false}
+        diagnostics={diagnostics}
+        onUpload={async (files) => {
+          (window as unknown as { __uploaded: string[] }).__uploaded = files.map((f) => f.name);
+        }}
+      />
+    </main>
+  ),
+});
 const job = (over: Partial<Job>): Job => ({
   id: "fixture-job",
   project_id: "fixture-project",
@@ -162,6 +182,16 @@ export const fixtures: Record<string, Fixture> = {
       </main>
     ),
   },
+  // OS-07: sharp, blurry, exact duplicate and a photo that could not be checked.
+  "draft-diagnostics": draft("사진 준비: 선명도·중복 안내", ["front.jpg", "side.jpg", "blurry.jpg", "front-copy.jpg", "broken.jpg"], {
+    "front.jpg": { sharpness: 20.5 },
+    "side.jpg": { sharpness: 18.2 },
+    "blurry.jpg": { sharpness: 1.7 },
+    "front-copy.jpg": { sharpness: 20.5, duplicate_of: "front.jpg" },
+    "broken.jpg": { unavailable: true },
+  }),
+  // OS-07: no diagnostics yet → static shooting guide, keyboard reorder and exclude.
+  "draft-reorder": draft("사진 준비: 순서 정리", ["a.jpg", "b.jpg", "c.jpg"]),
   // OS-02: signup without session → waiting state with resend cooldown.
   "signup-unconfirmed": {
     title: "가입: 이메일 확인 대기",
