@@ -52,6 +52,9 @@ const messages: Record<string, string> = {
   MODEL_UNAVAILABLE:
     "현재 이 제작 방식은 준비 중입니다. 나중에 다시 확인해 주세요.",
   MASK_REVIEW_REQUIRED: "선택된 영역을 확인하고 승인해 주세요.",
+  // Server answers a stale-revision approval with MASK_NOT_FOUND.
+  MASK_NOT_FOUND:
+    "선택이나 사진이 바뀌어 이전 승인은 적용되지 않습니다. 최신 마스크를 다시 확인하고 승인해 주세요.",
   POSE_UNAVAILABLE:
     "사진의 촬영 위치를 확인할 수 없습니다. 서로 겹치는 사진을 추가해 주세요.",
   POSE_REQUIRED: "사진 정합을 먼저 완료해 주세요.",

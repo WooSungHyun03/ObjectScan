@@ -1,6 +1,7 @@
 "use client";
 import { GenerationCheckout } from "@/features/create/generation-checkout";
 import { DraftPhotos } from "@/features/create/draft-photos";
+import { maskRecovery } from "@/features/create/mask-recovery";
 import { customerError } from "@/lib/customer-copy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -77,10 +78,14 @@ export function ReconstructionWizard({
     [reference, setReference] = useState(""),
     [drag, setDrag] = useState<{ x: number; y: number } | null>(null),
     [showMask, setShowMask] = useState(true),
-    [health, setHealth] = useState<Health | null>(null);
+    [health, setHealth] = useState<Health | null>(null),
+    [maskFailed, setMaskFailed] = useState(false),
+    [zoom, setZoom] = useState("");
   const fileInput = useRef<HTMLInputElement>(null),
     imageArea = useRef<HTMLDivElement>(null),
-    abort = useRef<AbortController | null>(null);
+    abort = useRef<AbortController | null>(null),
+    // data-focus keys to try, in order, once a busy action re-renders (disabled buttons drop focus).
+    focusAfter = useRef<string[]>([]);
   const steps =
     mode === "object"
       ? ["사진 업로드", "물체 선택 · 마스크", "설정 확인", "처리 · 결과"]
@@ -108,6 +113,18 @@ export function ReconstructionWizard({
       .catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
   useEffect(() => () => abort.current?.abort(), []);
+  useEffect(() => {
+    if (busy || !focusAfter.current.length) return;
+    const el = focusAfter.current
+      .map((k) =>
+        document.querySelector<HTMLElement>(
+          `[data-focus="${k}"]:not(:disabled)`,
+        ),
+      )
+      .find(Boolean);
+    focusAfter.current = [];
+    el?.focus();
+  }, [busy, project]);
   async function action(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -117,6 +134,8 @@ export function ReconstructionWizard({
       await load();
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
+      // Re-read server state so a stale approval (changed revision) is never left shown as done.
+      await load().catch(() => {});
     } finally {
       setBusy(false);
     }
@@ -205,7 +224,8 @@ export function ReconstructionWizard({
       if (fileInput.current) fileInput.current.value = "";
     }
   }
-  async function updateImage(im: ProjectImage, v: unknown) {
+  async function updateImage(im: ProjectImage, v: unknown, focus: string[]) {
+    focusAfter.current = focus;
     await action(async () => {
       await api(`projects/${pid}/images/${im.id}`, {
         method: "PATCH",
@@ -245,13 +265,28 @@ export function ReconstructionWizard({
     live = project?.jobs.some(
       (j) => !["completed", "failed", "cancelled"].includes(j.state),
     );
+  const recovery = maskRecovery(included, project?.jobs);
   async function requestAnalysis(kind: "masks" | "poses") {
     await action(async () => {
-      await post(`projects/${pid}/${kind}`, {
-        idempotency_key: crypto.randomUUID(),
-      });
+      try {
+        await post(`projects/${pid}/${kind}`, {
+          idempotency_key: crypto.randomUUID(),
+        });
+      } catch (e) {
+        if (kind === "masks") setMaskFailed(true);
+        throw e;
+      }
+      if (kind === "masks") setMaskFailed(false);
       setMessage("분석 작업을 대기열에 등록했습니다.");
     });
+  }
+  // Back to the selection tools with photos and the saved selection kept; nothing is re-uploaded.
+  function reselect(imageId?: string) {
+    if (imageId) {
+      setReference(imageId);
+      setSelection(null);
+    }
+    document.querySelector<HTMLElement>('[data-focus="reselect"]')?.focus();
   }
   return (
     <>
@@ -471,8 +506,11 @@ export function ReconstructionWizard({
                             aria-pressed={!im.excluded}
                             aria-label={`${im.filename} ${im.excluded ? "포함" : "제외"}`}
                             disabled={busy || live}
+                            data-focus={`include:${im.id}`}
                             onClick={() =>
-                              void updateImage(im, { excluded: !im.excluded })
+                              void updateImage(im, { excluded: !im.excluded }, [
+                                `include:${im.id}`,
+                              ])
                             }
                           >
                             {!im.excluded && <Check size={13} />}
@@ -487,8 +525,12 @@ export function ReconstructionWizard({
                               variant="ghost"
                               disabled={!i || busy || live}
                               aria-label={`${im.filename} 앞으로 이동`}
+                              data-focus={`up:${im.id}`}
                               onClick={() =>
-                                void updateImage(im, { position: i - 1 })
+                                void updateImage(im, { position: i - 1 }, [
+                                  `up:${im.id}`,
+                                  `down:${im.id}`,
+                                ])
                               }
                             >
                               <ArrowUp size={12} />
@@ -498,8 +540,12 @@ export function ReconstructionWizard({
                               variant="ghost"
                               disabled={i === images.length - 1 || busy || live}
                               aria-label={`${im.filename} 뒤로 이동`}
+                              data-focus={`down:${im.id}`}
                               onClick={() =>
-                                void updateImage(im, { position: i + 1 })
+                                void updateImage(im, { position: i + 1 }, [
+                                  `down:${im.id}`,
+                                  `up:${im.id}`,
+                                ])
                               }
                             >
                               <ArrowDown size={12} />
@@ -539,6 +585,7 @@ export function ReconstructionWizard({
                       size="sm"
                       variant={tool === "box" ? "default" : "outline"}
                       aria-pressed={tool === "box"}
+                      data-focus="reselect"
                       onClick={() => setTool("box")}
                     >
                       <ScanLine size={15} />
@@ -690,7 +737,9 @@ export function ReconstructionWizard({
                   </div>
                   <section className="mask-review">
                     <div className="section-heading">
-                      <h3>사진별 마스크 검토</h3>
+                      <h3 tabIndex={-1} data-focus="mask-heading">
+                        사진별 마스크 검토
+                      </h3>
                       <label className="checkbox">
                         <input
                           type="checkbox"
@@ -700,10 +749,51 @@ export function ReconstructionWizard({
                         마스크 겹쳐보기
                       </label>
                     </div>
+                    {(maskFailed || recovery.failed) && !live && (
+                      <div className="notice warning">
+                        <AlertCircle size={16} />
+                        <span>
+                          선택 영역을 분석하지 못했습니다. 올린 사진과 저장한
+                          선택은 그대로 있습니다. 기준 사진이나 영역을 다시 고른
+                          뒤 분석하세요.{" "}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => reselect()}
+                          >
+                            선택 다시 하기
+                          </Button>
+                        </span>
+                      </div>
+                    )}
+                    {recovery.missing.length > 0 && !live && (
+                      <div className="notice warning">
+                        <AlertCircle size={16} />
+                        <span>
+                          마스크를 만들지 못한 사진 {recovery.missing.length}
+                          장: 그 사진을 기준으로 다시 선택하거나 제외하세요.
+                          <span className="mt-1 flex flex-wrap gap-2">
+                            {recovery.missing.map((im) => (
+                              <Button
+                                key={im.id}
+                                size="sm"
+                                variant="outline"
+                                onClick={() => reselect(im.id)}
+                              >
+                                {im.filename} 기준으로 다시 선택
+                              </Button>
+                            ))}
+                          </span>
+                        </span>
+                      </div>
+                    )}
                     {hasMasks ? (
                       <div className="image-grid mask-grid">
                         {included.map((im) => (
-                          <div className="mask-card" key={im.id}>
+                          <div
+                            className={`mask-card ${zoom === im.id ? "col-span-full" : ""}`}
+                            key={im.id}
+                          >
                             <div className="mask-image">
                               <img src={im.url} alt={im.filename} />
                               {showMask && im.mask_url && (
@@ -715,12 +805,30 @@ export function ReconstructionWizard({
                                 />
                               )}
                             </div>
-                            <p>{im.filename}</p>
+                            <p>
+                              {im.filename}
+                              {!im.mask_url && " · 마스크 없음"}
+                            </p>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              aria-pressed={zoom === im.id}
+                              aria-label={`${im.filename} 크게 보기`}
+                              onClick={() =>
+                                setZoom(zoom === im.id ? "" : im.id)
+                              }
+                            >
+                              {zoom === im.id ? "작게 보기" : "크게 보기"}
+                            </Button>
                             <Button
                               variant={im.mask_reviewed ? "outline" : "default"}
                               size="sm"
+                              aria-pressed={im.mask_reviewed}
+                              aria-label={`${im.filename} 마스크 승인`}
+                              data-focus={`approve:${im.id}`}
                               disabled={!im.mask_url || busy || live}
-                              onClick={() =>
+                              onClick={() => {
+                                focusAfter.current = [`approve:${im.id}`];
                                 void action(async () => {
                                   await api(`projects/${pid}/masks/${im.id}`, {
                                     method: "PATCH",
@@ -728,8 +836,11 @@ export function ReconstructionWizard({
                                       reviewed: !im.mask_reviewed,
                                     }),
                                   });
-                                })
-                              }
+                                  setMessage(
+                                    `${im.filename} 마스크 ${im.mask_reviewed ? "승인을 취소했습니다" : "승인했습니다"}.`,
+                                  );
+                                });
+                              }}
                             >
                               <Check size={13} />
                               {im.mask_reviewed ? "검토 완료" : "마스크 승인"}
@@ -737,9 +848,12 @@ export function ReconstructionWizard({
                             <Button
                               variant="ghost"
                               size="sm"
+                              aria-label={`${im.filename} 사진 제외`}
                               disabled={busy || live}
                               onClick={() =>
-                                void updateImage(im, { excluded: true })
+                                void updateImage(im, { excluded: true }, [
+                                  "mask-heading",
+                                ])
                               }
                             >
                               사진 제외

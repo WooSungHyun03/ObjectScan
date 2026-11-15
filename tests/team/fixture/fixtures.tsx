@@ -1,7 +1,7 @@
 // Fixture registry. Each ticket adds its own entries; OS-22 dedupes them.
 // All data here is MOCK and proves UI/contract behaviour only.
 import type { ReactNode } from "react";
-import type { Job } from "@objectscan/shared";
+import type { Job, ProjectImage } from "@objectscan/shared";
 import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
 import { CheckoutButton } from "@/components/checkout-button";
@@ -12,6 +12,7 @@ import { ModelViewer } from "@/components/model-viewer";
 import { Marketplace } from "@/components/marketplace";
 import type { Listing } from "@/features/marketplace/asset-card";
 import { DraftPhotos } from "@/features/create/draft-photos";
+import { ReconstructionWizard } from "@/components/reconstruction-wizard";
 import { putDraft } from "@/features/create/upload-draft";
 import { setAuthFixture } from "../adapters/supabase-client";
 import type { FixtureRoute, FixtureRoutes } from "./api";
@@ -121,8 +122,76 @@ const job = (over: Partial<Job>): Job => ({
   ],
   ...over,
 });
+// OS-08: wizard on an existing object project; the API mirrors projects/:id, masks and images PATCH.
+const pid = "p-fixture";
+const photo = (id: string, position: number, over: Partial<ProjectImage> = {}): ProjectImage => ({
+  id, project_id: pid, filename: `${id}.webp`, original_path: "", position, excluded: false,
+  width: 800, height: 800, size_bytes: 1, status: "verified", url: "/demo/shoe-photo.webp", ...over,
+});
+const mask = { mask_url: "/brand/mascot/front.webp" };
+const wizard = (title: string, images: () => ProjectImage[], routes: FixtureRoutes = {}, jobs: Job[] = []): Fixture => ({
+  title,
+  routes: {
+    "GET health": () => ({ json: { worker_online: false, real_gpu_validated: false, payments_mode: "test", models: [] } }),
+    [`GET projects/${pid}`]: () => ({
+      json: {
+        id: pid, name: "MOCK 운동화", mode: "object", capture_mode: "camera_orbit", status: "uploaded",
+        input_image_count: 3, created_at: t, updated_at: t, target_image_id: "a",
+        target_selection: { kind: "box", x: 0.2, y: 0.2, width: 0.5, height: 0.5 },
+        images: images(), jobs, artifacts: [],
+      },
+    }),
+    ...routes,
+  },
+  render: () => <ReconstructionWizard initialMode="object" initialProject={pid} />,
+});
+// Server state for the stale-approval fixture: the first approval lands after the revision moved.
+let revisionMoved = false;
+let approved: string[] = [];
+let excluded: string[] = [];
 
 export const fixtures: Record<string, Fixture> = {
+  // OS-08: the mask request fails (worker 503); photos and the saved selection must stay.
+  "mask-analysis-503": wizard("마스크: 분석 요청 실패", () => [photo("a", 0), photo("b", 1), photo("c", 2)], {
+    [`POST projects/${pid}/masks`]: () => ({ status: 503, json: { code: "WORKER_NOT_CONFIGURED", error: "GPU 작업자 연결을 준비하고 있습니다." } }),
+  }),
+  // OS-08: mask job finished but one photo got no mask; approve by keyboard, exclude the failed photo.
+  "mask-partial": wizard(
+    "마스크: 일부 사진 실패",
+    () => [photo("a", 0, { ...mask, mask_reviewed: approved.includes("a") }), photo("b", 1, { ...mask, excluded: excluded.includes("b") }), photo("c", 2)],
+    {
+      [`PATCH projects/${pid}/masks/a`]: ({ body }) => {
+        approved = (body as { reviewed: boolean }).reviewed ? ["a"] : [];
+        return { delay: 200, json: { ok: true } };
+      },
+      [`PATCH projects/${pid}/images/b`]: ({ body }) => {
+        excluded = (body as { excluded?: boolean }).excluded ? ["b"] : [];
+        return { delay: 200, json: { ok: true } };
+      },
+    },
+    [job({ id: "mask-job", kind: "masks", state: "completed", progress: 100 })],
+  ),
+  // OS-08: approving after the selection changed elsewhere; the server answers MASK_NOT_FOUND
+  // for the stale revision and the next read shows no approvals.
+  "mask-stale-approval": wizard(
+    "마스크: 변경된 선택의 이전 승인",
+    () => [photo("a", 0, { ...mask, mask_reviewed: !revisionMoved }), photo("b", 1, mask)],
+    {
+      [`PATCH projects/${pid}/masks/b`]: () => {
+        revisionMoved = true;
+        return { status: 404, json: { code: "MASK_NOT_FOUND", error: "MASK_NOT_FOUND" } };
+      },
+    },
+  ),
+  // OS-08: another user's project id answers 404 without any project detail.
+  "project-other-404": {
+    title: "마스크: 다른 사용자의 프로젝트",
+    routes: {
+      "GET health": () => ({ json: { worker_online: false, real_gpu_validated: false, payments_mode: "test", models: [] } }),
+      "GET projects/p-other-owner": () => ({ status: 404, json: { code: "PROJECT_NOT_FOUND", error: "프로젝트를 찾을 수 없습니다." } }),
+    },
+    render: () => <ReconstructionWizard initialMode="object" initialProject="p-other-owner" />,
+  },
   // OS-12: job state — failed, then the same-input retry succeeds into the queue.
   "job-failed-retry": {
     title: "작업 상태: 실패 후 재시도",
