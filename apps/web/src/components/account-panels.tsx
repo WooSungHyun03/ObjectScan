@@ -1,12 +1,17 @@
 "use client";
 import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
+import Link from "next/link";
 import { useEffect, useState, useCallback, type FormEvent } from "react";
 import { api, post, date } from "@/lib/client-api";
 import { Button } from "./ui/button";
 import { PageTitle } from "./page-title";
 import { CreditWallet } from "@/features/billing/credit-wallet";
 import { orderTermsView } from "@/features/billing/order-terms";
+import {
+  orderStatusKnown,
+  orderStatusLabel,
+} from "@/features/billing/order-status";
 type Entry = {
   id: string;
   kind: string;
@@ -212,13 +217,32 @@ export function BillingPanel() {
                   : o.kind === "generation"
                     ? "3D 생성"
                     : "에셋 구매"}{" "}
-                · ₩{Number(o.amount).toLocaleString()} · {o.status}
+                · ₩{Number(o.amount).toLocaleString()} ·{" "}
+                {orderStatusLabel(o.status)}
+                {data.payments_mode === "test" && " · 테스트 결제"}
               </p>
+              {o.kind === "marketplace" && o.status === "paid" && (
+                <p>
+                  {/* The download itself is authorized by the server on every request. */}
+                  <Link href="/assets">내 에셋에서 파일 받기</Link>
+                </p>
+              )}
+              {o.kind === "marketplace" && o.status === "refunded" && (
+                <p>환불된 주문입니다. 이 주문의 파일은 받을 수 없습니다.</p>
+              )}
               <OrderTerms order={o} />
             </div>
           ))
         ) : (
           <p>주문이 없습니다.</p>
+        )}
+        {data?.orders.some((o) => !orderStatusKnown(o.status)) && (
+          <p>
+            상태를 확인 중인 주문이 있습니다.{" "}
+            <Button size="sm" variant="outline" onClick={() => void reload()}>
+              상태 다시 확인
+            </Button>
+          </p>
         )}
         {data?.orders.some((o) => o.status === "paid") && (
           <form onSubmit={requestRefund}>

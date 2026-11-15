@@ -69,6 +69,8 @@ const messages: Record<string, string> = {
     "학교 교육·연구용 서비스에서는 결제·판매·정산을 운영하지 않습니다.",
   INVALID_VIEW_COUNT: "처리에 사용할 사진을 확인해 주세요.",
   NO_INPUTS: "사진을 먼저 올려주세요.",
+  ASSET_NOT_FOUND:
+    "이 에셋을 찾을 수 없거나 이용 권한이 없습니다. 환불된 주문의 에셋은 받을 수 없습니다.",
   NO_INCLUDED_IMAGES: "제외하지 않은 사진을 한 장 이상 남겨 주세요.",
 };
 export function customerError(code?: string, detail?: string) {

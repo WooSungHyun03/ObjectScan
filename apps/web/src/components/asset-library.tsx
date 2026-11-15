@@ -58,7 +58,12 @@ export function AssetLibrary() {
       {error && (
         <div className="notice error" role="alert">
           <AlertCircle size={16} />
-          {error}
+          <span>
+            {error}{" "}
+            <Link href="/billing" className="underline">
+              구매 내역에서 주문 상태 확인
+            </Link>
+          </span>
         </div>
       )}
       {loading ? (

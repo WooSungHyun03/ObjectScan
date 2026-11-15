@@ -6,6 +6,7 @@ import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
 import { AuthForm } from "@/components/auth-form";
 import { BillingPanel } from "@/components/account-panels";
+import { AssetLibrary } from "@/components/asset-library";
 import { ModelViewer } from "@/components/model-viewer";
 import { Marketplace } from "@/components/marketplace";
 import type { Listing } from "@/features/marketplace/asset-card";
@@ -46,6 +47,16 @@ const billing = {
     },
     { id: "22222222-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "paid", created_at: t },
     { id: "33333333-0000-4000-8000-000000000003", kind: "credits", amount: 5000, status: "paid", created_at: t },
+  ],
+};
+// OS-21: paid, refunded and an unrecognised status, plus a credits order.
+const billingStates = {
+  ...billing,
+  orders: [
+    { id: "aaaaaaaa-0000-4000-8000-000000000001", kind: "marketplace", amount: 12000, status: "paid", created_at: t },
+    { id: "bbbbbbbb-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "refunded", created_at: t },
+    { id: "cccccccc-0000-4000-8000-000000000003", kind: "marketplace", amount: 7000, status: "chargeback_review_v2", created_at: t },
+    { id: "dddddddd-0000-4000-8000-000000000004", kind: "credits", amount: 5000, status: "paid", created_at: t },
   ],
 };
 const listing = (id: string, title: string, category: string, price: number, license: string): Listing => ({
@@ -166,6 +177,42 @@ export const fixtures: Record<string, Fixture> = {
           : { json: billing },
     },
     render: () => <BillingPanel />,
+  },
+  // OS-21: Korean order states, TEST marker and the link to the asset library.
+  "billing-orders": {
+    title: "구매 내역: 한국어 상태와 내 에셋 연결",
+    routes: { ...walletRoutes, "GET billing": () => ({ json: billingStates }) },
+    render: () => <BillingPanel />,
+  },
+  // OS-21: billing lookup is unavailable once, then the retry loads.
+  "billing-unavailable": {
+    title: "구매 내역: 조회 불가 후 재시도",
+    routes: {
+      ...walletRoutes,
+      "GET billing": ({ call }) =>
+        call === 1
+          ? { status: 503, json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" } }
+          : { json: billingStates },
+    },
+    render: () => <BillingPanel />,
+  },
+  // OS-21: a purchased asset whose order was refunded → the server denies the file.
+  "assets-download-denied": {
+    title: "내 에셋: 환불 후 다운로드 거부",
+    routes: {
+      "GET assets": () => ({
+        json: [{ id: "asset-refunded", name: "원목 의자", created_at: t, quality: { triangles: 12000 }, can_publish: false }],
+      }),
+      "GET assets/asset-refunded/download": () => ({
+        status: 404,
+        json: { code: "ASSET_NOT_FOUND", error: "ASSET_NOT_FOUND" },
+      }),
+    },
+    render: () => (
+      <main id="main">
+        <AssetLibrary />
+      </main>
+    ),
   },
   // OS-19: demo GLB (public sample) with view presets and fit.
   "viewer-model": {
