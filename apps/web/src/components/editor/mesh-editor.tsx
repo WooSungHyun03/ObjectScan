@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Undo2,
   Redo2,
@@ -11,7 +11,6 @@ import {
   RotateCw,
   Scaling,
   EyeOff,
-  Trash2,
   Maximize,
   Focus,
   Grid2X2,
@@ -22,6 +21,8 @@ import {
 import { InspectorPanel } from "./inspector-panel";
 import { MeshComparisonPanel } from "./mesh-comparison-panel";
 import { PrivateModelImportPanel } from "./private-model-import-panel";
+import { MeshHistoryPanel } from "./mesh-history-panel";
+import { PartDeleteDialog } from "./part-delete-dialog";
 import type { PrivateModelImportAdapter } from "./private-model-import";
 import { useMeshEditor } from "./use-mesh-editor";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ export function MeshEditor({
     cursor,
     busy,
     saving,
+    saveFailed,
     error,
     message,
     dirty,
@@ -90,6 +92,7 @@ export function MeshEditor({
     selectPart,
   } = useMeshEditor({ projectId, demo });
   const [showingOriginal, setShowingOriginal] = useState(false);
+  const historySummary = useRef<HTMLElement>(null);
   const showing = showingOriginal ? originalView : undefined;
   const displayedReport = showing?.report ?? report;
   const shownUrl = showing?.url ?? url;
@@ -142,7 +145,11 @@ export function MeshEditor({
             onClick={() => void save()}
           >
             <Save size={16} />
-            {saving ? "저장 중" : "새 버전 저장"}
+            {saving
+              ? "저장 중"
+              : saveFailed
+                ? "저장 다시 시도"
+                : "새 버전 저장"}
           </Button>
           <Button
             disabled={!report || busy || saving || showingOriginal}
@@ -155,7 +162,15 @@ export function MeshEditor({
       </header>
       {error && (
         <div className="notice error" role="alert">
-          {error}
+          <div>
+            {error}
+            {saveFailed && (
+              <p className="editor-save-note">
+                편집 내용이 남아 있습니다. 다시 저장하거나 GLB로 내려받을 수
+                있습니다.
+              </p>
+            )}
+          </div>
         </div>
       )}
       {message && (
@@ -332,7 +347,7 @@ export function MeshEditor({
                     key={p.id}
                     aria-pressed={selected === p.id}
                     onClick={() => selectPart(p.id)}
-                    disabled={p.hidden}
+                    disabled={p.hidden || busy || saving}
                   >
                     {p.name}
                     {p.hidden ? " · 숨김" : ""}
@@ -414,17 +429,15 @@ export function MeshEditor({
                       <EyeOff size={14} />
                       숨기기
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
+                    <PartDeleteDialog
+                      name={draft.name}
                       disabled={busy || saving}
-                      onClick={() =>
-                        void apply({ type: "delete", node: draft.id })
+                      onConfirm={() =>
+                        void apply({ type: "delete", node: draft.id }).then(
+                          () => historySummary.current?.focus(),
+                        )
                       }
-                    >
-                      <Trash2 size={14} />
-                      삭제
-                    </Button>
+                    />
                   </div>
                 </>
               )}
@@ -433,6 +446,16 @@ export function MeshEditor({
                 기능은 지원하지 않습니다.
               </p>
             </details>
+            {report && !showingOriginal && (
+              <MeshHistoryPanel
+                parts={report.parts}
+                operations={ops}
+                cursor={cursor}
+                disabled={busy || saving}
+                onChange={(next) => void history(next)}
+                summaryRef={historySummary}
+              />
+            )}
             <details hidden={showingOriginal}>
               <summary>모델 가볍게 만들기</summary>
               <label>

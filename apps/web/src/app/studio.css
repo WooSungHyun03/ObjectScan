@@ -674,6 +674,73 @@ body {
 .private-model-import > p + .button {
   margin-block-start: 12px;
 }
+.mesh-history ol {
+  display: grid;
+  gap: 4px;
+  max-height: 16rem;
+  overflow: auto;
+}
+.editor-save-note {
+  margin-block-start: 6px;
+}
+.mesh-history li > button {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: start;
+}
+.mesh-history li > button[aria-current="step"] {
+  border-color: var(--color-accent);
+  background: var(--color-elevated);
+}
+.mesh-history li strong {
+  color: var(--color-accent);
+}
+.objectscan-confirm-dialog {
+  position: fixed;
+  z-index: 110;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: min(calc(100vw - 32px), 440px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.sheet-overlay.objectscan-confirm-overlay {
+  z-index: 109;
+}
+.objectscan-confirm-dialog h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+.objectscan-confirm-dialog p {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.objectscan-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
+  margin-top: 20px;
+}
+.objectscan-confirm-actions .button.button-danger {
+  border-color: var(--color-danger);
+  background: var(--color-elevated);
+  color: var(--color-danger);
+}
 .editor-canvas {
   height: calc(100vh - 230px);
   min-height: 450px;
