@@ -27,7 +27,11 @@ export async function api<T>(
       "서비스 응답을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
     );
   }
-  if (!r.ok) throw new Error(customerError(value.code, value.error));
+  // `code` lets callers tell a retryable failure from a final one.
+  if (!r.ok)
+    throw Object.assign(new Error(customerError(value.code, value.error)), {
+      code: value.code as string | undefined,
+    });
   return value as T;
 }
 export function post<T>(path: string, value: unknown = {}) {

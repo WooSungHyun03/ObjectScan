@@ -65,6 +65,16 @@ const messages: Record<string, string> = {
   PROCESSOR_ERROR:
     "결제사 연결을 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.",
   PAYMENTS_DISABLED: "현재 결제를 운영하지 않습니다.",
+  AMOUNT_MISMATCH:
+    "주문 금액을 확인하지 못해 결제를 완료로 처리하지 않았습니다. 주문 내역에서 상태를 확인해 주세요.",
+  ORDER_EXPIRED:
+    "주문 유효시간이 지났습니다. 주문 내역을 확인한 뒤 새 주문으로 다시 진행해 주세요.",
+  ORDER_STATE_INVALID:
+    "이미 처리가 끝난 주문입니다. 주문 내역에서 상태를 확인해 주세요.",
+  ORDER_NOT_FOUND:
+    "주문을 찾을 수 없습니다. 주문 내역에서 상태를 확인해 주세요.",
+  PAYMENT_NOT_VERIFIED:
+    "결제를 확인하지 못했습니다. 주문 내역에서 상태를 확인해 주세요.",
   NONCOMMERCIAL_ONLY:
     "학교 교육·연구용 서비스에서는 결제·판매·정산을 운영하지 않습니다.",
   INVALID_VIEW_COUNT: "처리에 사용할 사진을 확인해 주세요.",

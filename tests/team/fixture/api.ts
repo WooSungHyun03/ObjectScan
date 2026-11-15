@@ -1,6 +1,7 @@
 // Common fixture API adapter: answers the app's own `fetch("/api/...")` calls
 // in the browser so components run unchanged with no keys, DB, GPU or PG.
-export type FixtureReply = { status?: number; json: unknown };
+// `network`: the request never gets a response (lost reply). `delay`: ms before replying.
+export type FixtureReply = { status?: number; json: unknown; network?: true; delay?: number };
 export type FixtureRoute = (req: {
   method: string;
   body: unknown;
@@ -27,6 +28,8 @@ export function installFixtureApi(routes: FixtureRoutes) {
     const reply = route
       ? route({ method, body, call: counts[key], query: url.searchParams })
       : { status: 404, json: { code: "FIXTURE_ROUTE_MISSING", error: key } };
+    if (reply.delay) await new Promise((r) => setTimeout(r, reply.delay));
+    if (reply.network) throw new TypeError("Failed to fetch");
     return new Response(JSON.stringify(reply.json), {
       status: reply.status ?? 200,
       headers: { "Content-Type": "application/json" },

@@ -1,7 +1,7 @@
 "use client";
 import { customerError } from "@/lib/customer-copy";
 import { educationMode } from "@/lib/project-purpose";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CreditCard, LockKeyhole, AlertCircle } from "lucide-react";
 import { api, post } from "@/lib/client-api";
@@ -28,12 +28,16 @@ export function CheckoutButton({
   const [enabled, setEnabled] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  // `busy` only disables the button after a re-render; the ref blocks a second click in between.
+  const inFlight = useRef(false);
   useEffect(() => {
     void api<{ payments_mode: string }>("health")
       .then((h) => setEnabled(h.payments_mode === "test"))
       .catch(() => setEnabled(false));
   }, []);
   async function checkout() {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setError("");
     try {
@@ -50,6 +54,7 @@ export function CheckoutButton({
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }

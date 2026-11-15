@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Job } from "@objectscan/shared";
 import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
+import { CheckoutButton } from "@/components/checkout-button";
 import { AuthForm } from "@/components/auth-form";
 import { BillingPanel } from "@/components/account-panels";
 import { AssetLibrary } from "@/components/asset-library";
@@ -79,6 +80,13 @@ const walletRoutes: FixtureRoutes = {
   "GET wallet": () => ({ json: { balance: 3, trial_available: false } }),
   "GET pricing": () => ({ json: { packages: [] } }),
 };
+const paySearch = "?paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000";
+const payment = (title: string, confirm: FixtureRoute): Fixture => ({
+  title,
+  search: paySearch,
+  routes: { "POST payments/confirm": confirm },
+  render: () => <PaymentResult />,
+});
 const job = (over: Partial<Job>): Job => ({
   id: "fixture-job",
   project_id: "fixture-project",
@@ -120,6 +128,39 @@ export const fixtures: Record<string, Fixture> = {
           : { json: { status: "paid" } },
     },
     render: () => <PaymentResult />,
+  },
+  // OS-10: the approval response is lost once; the server already holds the paid order.
+  "payment-response-lost": payment("결제 복귀: 승인 응답 유실 후 재확인", ({ call }) =>
+    call === 1 ? { network: true, json: null } : { delay: 400, json: { status: "paid" } },
+  ),
+  // OS-10: amount in the return URL does not match the server order.
+  "payment-amount-mismatch": payment("결제 복귀: 금액 불일치", () => ({
+    status: 409,
+    json: { code: "AMOUNT_MISMATCH", error: "order amount 5000 != 1000" },
+  })),
+  // OS-10: returning to an order whose validity window has passed.
+  "payment-expired": payment("결제 복귀: 만료된 주문", () => ({
+    status: 409,
+    json: { code: "ORDER_EXPIRED", error: "ORDER_EXPIRED" },
+  })),
+  // OS-10: re-checking an order that was refunded in the meantime.
+  "payment-refunded": payment("결제 복귀: 환불된 주문", () => ({ json: { status: "refunded" } })),
+  // OS-10: purchase button pressed twice while the order request is in flight.
+  "checkout-double": {
+    title: "구매 버튼: 중복 클릭",
+    routes: {
+      "GET health": () => ({ json: { payments_mode: "test" } }),
+      "POST orders": () => ({
+        delay: 400,
+        json: { id: "00000000-0000-4000-8000-000000000009", amount: 1000, currency: "KRW", status: "pending", kind: "marketplace" },
+      }),
+    },
+    render: () => (
+      <main id="main" style={{ padding: 16 }}>
+        <h1>MOCK 구매</h1>
+        <CheckoutButton listingId="l-chair" />
+      </main>
+    ),
   },
   // OS-02: signup without session → waiting state with resend cooldown.
   "signup-unconfirmed": {
