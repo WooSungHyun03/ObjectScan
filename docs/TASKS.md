@@ -99,3 +99,13 @@ OWN-05 routing: be-celeb.org moved from sw-system to objectscan; www308 to apex;
 ## Per-person vibe-coding handoff — 2026-11-12
 
 DOC-HANDOFF: docs/delivery/MEMBER_A.md (7 tickets/7.5d), MEMBER_B.md (10/8d), OWNER_LOCAL.md (10/original10d). Each includes kickoff/resume prompts, full assigned ticket scope/AC/tests, dependencies, evidence and stop conditions. Owner document marks completed routing/migration/worker work to prevent duplicate execution. Documentation only; no application changes. Structural validation and Markdown formatting checked before main push.
+
+## Team A implementation
+
+| ID | Acceptance | State / evidence |
+| --- | --- | --- |
+| OS-01 | Display support, rejection reason, zero debit for blocked input, server rate for eligible input and preserve input on health retry | Local MOCK AC pass on `codex/os-01` from `fc20978`. Peer review and OS-12 browser integration pending. Next ready: OS-03. |
+
+OS-01 uses existing `GET /api/health`, project `qa` and `wallet` responses. The public health response advertises single-photo availability only. Project-specific support comes from the authenticated QA response after upload. The change can be reverted as one commit.
+
+Key-free evidence is under local `output/playwright/OS-01/`. Vitest 36 passed, typecheck and lint exited 0 (7 existing warnings). The isolated local Next fixture and Edge Playwright suite passed 9 scenarios covering rejected scene and multi-photo inputs, a one-photo quote and keyboard health retry, with 360/768/1440 captures and axe checks on the changed panels. This suite uses mocked API responses. The shared OS-12 runner, full Owner suite and live integration were not run.

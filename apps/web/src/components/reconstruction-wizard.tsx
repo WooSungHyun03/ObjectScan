@@ -1,11 +1,18 @@
 "use client";
 import { GenerationCheckout } from "@/features/create/generation-checkout";
 import { DraftPhotos } from "@/features/create/draft-photos";
+import {
+  availabilityMessage,
+  blockedGenerationMessage,
+  generationHealthSchema,
+  generationQuoteSchema,
+} from "@/features/create/generation-availability";
+import { GenerationAvailabilityNotice } from "@/features/create/generation-availability-notice";
+import { useGenerationCheck } from "@/features/create/use-generation-check";
 import { customerError } from "@/lib/customer-copy";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Box,
   Globe2,
@@ -43,12 +50,6 @@ type Detail = Project & {
   jobs: Job[];
   artifacts: { id: string; name: string }[];
 };
-type Health = {
-  worker_online: boolean;
-  real_gpu_validated: boolean;
-  payments_mode: string;
-  models: string[];
-};
 export function ReconstructionWizard({
   initialMode = "object",
   initialProject,
@@ -56,7 +57,6 @@ export function ReconstructionWizard({
   initialMode?: ReconstructionMode;
   initialProject?: string;
 }) {
-  const router = useRouter();
   const [mode] = useState(initialMode),
     [project, setProject] = useState<Detail | null>(null),
     [pid, setPid] = useState(initialProject ?? ""),
@@ -76,8 +76,7 @@ export function ReconstructionWizard({
     [selection, setSelection] = useState<ObjectSelection | null>(null),
     [reference, setReference] = useState(""),
     [drag, setDrag] = useState<{ x: number; y: number } | null>(null),
-    [showMask, setShowMask] = useState(true),
-    [health, setHealth] = useState<Health | null>(null);
+    [showMask, setShowMask] = useState(true);
   const fileInput = useRef<HTMLInputElement>(null),
     imageArea = useRef<HTMLDivElement>(null),
     abort = useRef<AbortController | null>(null);
@@ -90,6 +89,25 @@ export function ReconstructionWizard({
     ref = images.find((i) => i.id === reference) ?? included[0],
     configureIndex = mode === "object" ? 2 : 1,
     processIndex = steps.length - 1;
+  const health = useGenerationCheck("health", generationHealthSchema);
+  const count = project?.input_image_count ?? 0;
+  const quote = useGenerationCheck(
+    pid && count > 0 && !busy && step !== processIndex
+      ? `projects/${pid}/qa`
+      : undefined,
+    generationQuoteSchema,
+    `${project?.updated_at}:${count}:${included.length}:${step}`,
+  );
+  const availability =
+    quote.data && !quote.data.gate.allowed
+      ? blockedGenerationMessage(quote.data)
+      : quote.failed
+        ? "이 프로젝트의 제작 조건을 확인하지 못했습니다."
+        : health.failed
+          ? "현재 제작 지원 범위를 확인하지 못했습니다."
+          : quote.data?.gate.allowed
+            ? "이 프로젝트의 제작 조건을 확인했습니다. 설정 확인 단계에서 차감량을 확인해 주세요."
+            : availabilityMessage(health.data, mode, count);
   const load = useCallback(async () => {
     if (!pid) return;
     const p = await api<Detail>(`projects/${pid}`);
@@ -103,9 +121,6 @@ export function ReconstructionWizard({
   }, [pid]);
   useEffect(() => {
     void load().catch((e) => setError(customerError(undefined, e.message)));
-    void api<Health>("health")
-      .then(setHealth)
-      .catch((e) => setError(customerError(undefined, e.message)));
   }, [load]);
   useEffect(() => () => abort.current?.abort(), []);
   async function action(fn: () => Promise<void>) {
@@ -320,14 +335,26 @@ export function ReconstructionWizard({
                       ? "복원할 사물의 사진을 올려주세요."
                       : "공간을 담은 사진을 올려주세요."}
                   </h2>
-                  <p>
-                    {mode === "object"
-                      ? "1–200장의 JPEG, PNG, WebP 사진을 사용할 수 있습니다."
-                      : "겹치는 여러 시점이 필요합니다. 20장 이상을 권장합니다."}
-                  </p>
+                  <p>JPEG, PNG, WebP 사진을 최대 200장까지 올릴 수 있습니다.</p>
                 </div>
                 <span className="subtle-badge">{images.length} / 200</span>
               </div>
+              <GenerationAvailabilityNotice
+                message={availability}
+                pending={health.pending || quote.pending}
+                onRetry={
+                  health.hasRetried ||
+                  health.failed ||
+                  health.data?.worker_online === false ||
+                  quote.failed ||
+                  quote.data?.gate.errors.includes("MODEL_UNAVAILABLE")
+                    ? () => {
+                        health.retry();
+                        quote.retry();
+                      }
+                    : undefined
+                }
+              />
               <label className="field">
                 프로젝트 이름
                 <input
@@ -854,7 +881,11 @@ export function ReconstructionWizard({
                 </div>
               )}
               <GenerationCheckout
+                key={pid}
                 projectId={pid}
+                quote={quote.data}
+                quoteFailed={quote.failed}
+                refreshQuote={quote.retry}
                 onStarted={() => {
                   setStep(processIndex);
                   void load();
@@ -957,14 +988,6 @@ export function ReconstructionWizard({
                 비공개
               </strong>
             </div>
-          </div>
-          <div className="preview-status">
-            <span className="status-dot" />
-            <span>
-              {health?.real_gpu_validated
-                ? "모델 검증 확인됨"
-                : "GPU 모델 실측 검증 대기"}
-            </span>
           </div>
         </aside>
       </div>
