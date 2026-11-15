@@ -623,6 +623,27 @@ body {
   position: relative;
   min-width: 0;
 }
+.mesh-comparison {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-block-end: 12px;
+}
+.mesh-comparison-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mesh-comparison .button[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.mesh-comparison > p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
 .editor-canvas {
   height: calc(100vh - 230px);
   min-height: 450px;

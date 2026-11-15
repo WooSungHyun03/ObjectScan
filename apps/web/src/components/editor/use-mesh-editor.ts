@@ -7,6 +7,7 @@ import type {
 } from "@objectscan/mesh-editor";
 import { api, post } from "@/lib/client-api";
 import { customerError } from "@/lib/customer-copy";
+import type { MeshComparisonView } from "./mesh-comparison";
 type Version = {
   id: string;
   version_number: number;
@@ -29,6 +30,7 @@ export function useMeshEditor({
   const [data, setData] = useState<Data | null>(null),
     [localFile, setLocalFile] = useState(false),
     [report, setReport] = useState<MeshReport | null>(null),
+    [originalView, setOriginalView] = useState<MeshComparisonView>(),
     [previewTriangles, setPreviewTriangles] = useState<number | null>(null),
     [url, setUrl] = useState(""),
     [selected, setSelected] = useState<number | null>(null),
@@ -52,13 +54,25 @@ export function useMeshEditor({
   const worker = useRef<Worker | null>(null),
     bytes = useRef<Uint8Array | null>(null),
     pending = useRef(
-      new Map<number, { resolve: () => void; reject: (e: Error) => void }>(),
+      new Map<
+        number,
+        {
+          resolve: () => void;
+          reject: (e: Error) => void;
+          originalSize?: number;
+        }
+      >(),
     ),
     sequence = useRef(0),
     objectUrl = useRef(""),
+    originalUrl = useRef(""),
     saveKey = useRef<string | null>(null);
   const process = useCallback(
-    (commands: MeshEditOperation[], source?: ArrayBuffer) =>
+    (
+      commands: MeshEditOperation[],
+      source?: ArrayBuffer,
+      originalSize?: number,
+    ) =>
       new Promise<void>((resolve, reject) => {
         if (pending.current.size > 0) {
           reject(Error("이전 편집이 끝난 뒤 다시 시도해 주세요."));
@@ -69,7 +83,7 @@ export function useMeshEditor({
           return;
         }
         const id = ++sequence.current;
-        pending.current.set(id, { resolve, reject });
+        pending.current.set(id, { resolve, reject, originalSize });
         setBusy(true);
         setError("");
         worker.current.postMessage(
@@ -91,10 +105,16 @@ export function useMeshEditor({
           throw Error(
             "64MB 이하 모델만 브라우저에서 편집할 수 있습니다. 원본 내려받기는 프로젝트에서 이용해 주세요.",
           );
-        await process([], await blob.arrayBuffer());
+        await process(
+          [],
+          await blob.arrayBuffer(),
+          parentId === null ? blob.size : undefined,
+        );
         setOps([]);
         setCursor(0);
         setParent(parentId);
+        setSelected(null);
+        setDraft(null);
         setDirty(false);
         setFit((f) => f + 1);
         saveKey.current = null;
@@ -138,7 +158,17 @@ export function useMeshEditor({
           },
         ),
       );
-      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      if (objectUrl.current && objectUrl.current !== originalUrl.current)
+        URL.revokeObjectURL(objectUrl.current);
+      if (p.originalSize !== undefined) {
+        if (originalUrl.current) URL.revokeObjectURL(originalUrl.current);
+        originalUrl.current = next;
+        setOriginalView({
+          url: next,
+          report: { ...response.report, size: p.originalSize },
+          previewTriangles: response.previewReport?.triangles ?? null,
+        });
+      }
       objectUrl.current = next;
       setUrl(next);
       p.resolve();
@@ -152,7 +182,10 @@ export function useMeshEditor({
     };
     let alive = true;
     const promiseMap = pending.current;
-    if (demo) void Promise.resolve().then(() => loadSource("/demo/shoe.glb"));
+    if (demo)
+      void Promise.resolve().then(() => {
+        if (alive) return loadSource("/demo/shoe.glb");
+      });
     else
       void api<Data>(`projects/${projectId}/editor`)
         .then((d) => {
@@ -175,6 +208,10 @@ export function useMeshEditor({
         p.reject(Error("편집 화면을 닫았습니다."));
       promiseMap.clear();
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      if (originalUrl.current && originalUrl.current !== objectUrl.current)
+        URL.revokeObjectURL(originalUrl.current);
+      objectUrl.current = "";
+      originalUrl.current = "";
     };
   }, [demo, projectId, loadSource]);
   useEffect(() => {
@@ -304,16 +341,22 @@ export function useMeshEditor({
   async function openVersion(id: string) {
     if (
       !data ||
+      busy ||
+      saving ||
       (dirty && !confirm("저장하지 않은 내용을 버리고 버전을 열까요?"))
     )
-      return;
+      return false;
+    setBusy(true);
+    setError("");
     try {
       const result = await api<{ url: string }>(
         `assets/${data.artifact_id}/versions/${id}`,
       );
-      await loadSource(result.url, id);
+      return await loadSource(result.url, id);
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
+      setBusy(false);
+      return false;
     }
   }
   async function importFile(file?: File) {
@@ -323,10 +366,12 @@ export function useMeshEditor({
       saving ||
       (dirty && !confirm("수정 내용을 버리고 다른 파일을 열까요?"))
     )
-      return;
+      return false;
     const temporary = URL.createObjectURL(file);
     try {
-      if (await loadSource(temporary)) setLocalFile(true);
+      const loaded = await loadSource(temporary);
+      if (loaded) setLocalFile(true);
+      return loaded;
     } finally {
       URL.revokeObjectURL(temporary);
     }
@@ -338,6 +383,8 @@ export function useMeshEditor({
   return {
     data,
     report,
+    originalView,
+    version: data?.versions.find((item) => item.id === parent),
     selected,
     ops,
     cursor,
