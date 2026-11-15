@@ -1568,6 +1568,19 @@ small {
   background: #1a2831;
   color: #6b8c9e;
 }
+.listing-poster {
+  object-fit: contain;
+}
+.listing-poster-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.listing-card .project-info > p {
+  color: var(--color-muted);
+}
 .project-cover > small {
   position: absolute;
   bottom: 13px;
