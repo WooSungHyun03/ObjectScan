@@ -6,6 +6,7 @@ import { api, post, date } from "@/lib/client-api";
 import { Button } from "./ui/button";
 import { PageTitle } from "./page-title";
 import { CreditWallet } from "@/features/billing/credit-wallet";
+import { DeletionRequestDialog } from "@/features/deletion/deletion-request-dialog";
 type Entry = {
   id: string;
   kind: string;
@@ -223,7 +224,8 @@ export function SettingsPanel() {
   const [me, setMe] = useState<{ name: string; email: string } | null>(null),
     [name, setName] = useState(""),
     [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [deletionRequested, setDeletionRequested] = useState(false);
   useEffect(() => {
     void api<NonNullable<typeof me>>("me")
       .then((v) => {
@@ -283,17 +285,29 @@ export function SettingsPanel() {
           업로드 원본과 결과물은 비공개로 보관합니다. 삭제 요청은 주문 및 구매자
           권한 확인 후 관리자가 처리합니다.
         </p>
-        <Button
-          variant="danger"
-          onClick={() => {
-            if (confirm("계정 및 업로드 데이터 삭제 검토를 요청할까요?"))
-              void post("data-deletion")
-                .then(() => setMessage("삭제 검토 요청을 접수했습니다."))
-                .catch((e) => setMessage(customerError(undefined, e.message)));
+        <DeletionRequestDialog
+          trigger={
+            <Button variant="danger" disabled={deletionRequested}>
+              {deletionRequested ? "검토 요청 접수됨" : "삭제 검토 요청"}
+            </Button>
+          }
+          title="계정 데이터 삭제 검토"
+          description="계정과 업로드 데이터의 삭제 검토를 요청합니다. 운영자가 주문과 구매 권리를 확인한 뒤 처리합니다."
+          confirmLabel="검토 요청 보내기"
+          request={async () => {
+            const result = await api<{ status: string }>("data-deletion", {
+              method: "POST",
+              body: "{}",
+              signal: AbortSignal.timeout(20_000),
+            });
+            if (result?.status !== "requested")
+              throw Error("Unconfirmed deletion review");
           }}
-        >
-          삭제 검토 요청
-        </Button>
+          onSuccess={() => {
+            setDeletionRequested(true);
+            setMessage("삭제 검토 요청을 접수했습니다.");
+          }}
+        />
       </section>
     </>
   );

@@ -44,3 +44,15 @@ Proposed errors `401 AUTH_REQUIRED`, `403 IMPORT_FORBIDDEN`, `409 IMPORT_MISMATC
   "can_publish": true
 }
 ```
+
+## OS-11 / OWN-07 — Delete and retention policy
+
+Status `OWNER_PENDING` for retention and storage cleanup. The client keeps the existing `DELETE /api/assets/:id` and `POST /api/data-deletion` contracts.
+
+- Asset deletion succeeds with `{ "ok": true }`. `409 ASSET_HAS_PURCHASES` protects pending, confirming or paid purchases. `409 LISTING_ENVIRONMENT_MISMATCH` remains a separate case. `404 ASSET_NOT_FOUND` covers missing/unauthorized targets. A `503` or unconfirmed response keeps the item in the local list and offers explicit retry.
+- Account review succeeds with `{ "status": "requested" }`. This acknowledgement means operator review. The Team UI prevents simultaneous requests while the dialog is pending. Durable review deduplication and policy are Owner work.
+- Actual purchase holds, deletion manifest, private storage cleanup and review processing belong to OWN-07. If new server states are introduced, document their nullable fields before extending the UI.
+
+```json
+{ "code": "ASSET_HAS_PURCHASES" }
+```

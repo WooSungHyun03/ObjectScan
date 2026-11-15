@@ -729,6 +729,12 @@ body {
   font-size: 14px;
   line-height: 1.65;
 }
+.objectscan-confirm-dialog .deletion-feedback {
+  margin-top: 12px;
+}
+.objectscan-confirm-dialog .deletion-feedback[role="alert"] {
+  color: var(--color-danger);
+}
 .objectscan-confirm-actions {
   display: flex;
   flex-wrap: wrap;
