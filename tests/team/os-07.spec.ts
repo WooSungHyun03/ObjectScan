@@ -1,15 +1,9 @@
 // MOCK: draft list only. Diagnostics values are a fixture; the server field is OWN-04 (OWNER_PENDING)
 // and the wizard hookup for uploaded photos waits for OS-01.
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-07/${name}-${project}.png`, fullPage: true });
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
+const shot = shooter("OS-07");
 const names = (page: Page) =>
   page.locator(".draft-photos li > span").evaluateAll((els) => els.map((el) => el.firstChild!.textContent! + el.childNodes[1].textContent! + el.childNodes[2].textContent!));
 const uploaded = (page: Page) => page.evaluate(() => (window as never as { __uploaded?: string[] }).__uploaded);

@@ -1,19 +1,11 @@
 // MOCK: scripted auth adapter. Passing here is TEAM_PASS; real SMTP/link validity is OWN-01.
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-02/${name}-${project}.png`, fullPage: true });
+const shot = shooter("OS-02");
 const authCalls = (page: Page) =>
   page.evaluate(() => (window as unknown as { __authCalls: { method: string; args: unknown }[] }).__authCalls);
 
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-    .analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
 
 test("OS-02 unconfirmed signup waits, blocks the workspace and rate-limits resend", async ({ page }, info) => {
   await page.clock.install();

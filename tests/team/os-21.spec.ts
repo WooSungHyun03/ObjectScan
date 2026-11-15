@@ -1,20 +1,10 @@
 // MOCK: billing/assets fixtures over the existing billing + assets APIs (no new endpoint).
-import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { test, expect } from "@playwright/test";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-21/${name}-${project}.png`, fullPage: true });
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  // shortcut: real app bug — `.project-info p` in globals.css is 4.12:1 on cards; drop the exclude once that color is fixed.
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-    .exclude(".project-info > p")
-    // shortcut: real app bug — `.workspace-notice` text is 4.49:1 (needs 4.5); drop the exclude once that color is fixed.
-    .exclude(".workspace-notice")
-    .analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
+const shot = shooter("OS-21");
+// shortcut: real app bugs — `.project-info p` is 4.12:1 and `.workspace-notice` 4.49:1 in globals.css; drop once fixed.
+const known = { contrastExclude: [".project-info > p", ".workspace-notice"] };
 const raw = ["paid", "refunded", "chargeback_review_v2", "pending"];
 
 test("OS-21 orders show Korean status, TEST marker, amount and the asset link", async ({ page }, info) => {
@@ -33,7 +23,7 @@ test("OS-21 orders show Korean status, TEST marker, amount and the asset link", 
   await expect(orders).toContainText("환불된 주문입니다. 이 주문의 파일은 받을 수 없습니다.");
   await link.focus();
   await expect(link).toBeFocused();
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "billing-orders", info.project.name);
 
   // Unknown status offers a recovery action that re-reads the server state.
@@ -52,7 +42,7 @@ test("OS-21 refunded asset download is denied without claiming access", async ({
   await expect(alert).not.toContainText("ASSET_NOT_FOUND");
   await expect(alert.getByRole("link", { name: "구매 내역에서 주문 상태 확인" })).toHaveAttribute("href", "/billing");
   expect(page.url()).toContain("fixture=assets-download-denied"); // no file navigation happened
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "assets-download-denied", info.project.name);
 });
 
@@ -61,7 +51,7 @@ test("OS-21 billing 503 shows a safe error and recovers on retry", async ({ page
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("10.0.0.2");
   await expect(page.locator("body")).not.toContainText("UNAVAILABLE");
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "billing-unavailable", info.project.name);
   await page.getByRole("button", { name: "다시 불러오기" }).click();
   await expect(page.getByText("결제 완료").first()).toBeVisible();

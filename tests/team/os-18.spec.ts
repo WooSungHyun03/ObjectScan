@@ -1,19 +1,11 @@
 // MOCK: listings fixture. license/price filter the loaded page only (no API change).
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-18/${name}-${project}.png`, fullPage: true });
+const shot = shooter("OS-18");
+// shortcut: real app bug — `.project-info p` in globals.css is 4.12:1 on cards; drop once that color is fixed.
+const known = { contrastExclude: [".project-info > p"] };
 const titles = (page: Page) => page.locator(".listing-card h3").allTextContents();
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  // shortcut: real app bug — `.project-info p` in globals.css is 4.12:1 on cards; drop the exclude once that color is fixed.
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
-    .exclude(".project-info > p")
-    .analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
 
 test("OS-18 license and price filters narrow the loaded list", async ({ page }, info) => {
   await page.goto("/fixture/market-list");
@@ -28,7 +20,7 @@ test("OS-18 license and price filters narrow the loaded list", async ({ page }, 
   await page.getByLabel("이용 조건", { exact: true }).selectOption("all");
   expect(await titles(page)).toEqual(["무료 화분"]);
   await expect(page.getByRole("status")).toContainText("불러온 에셋 4개 중 1개");
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "market-filtered", info.project.name);
 });
 
@@ -57,7 +49,7 @@ test("OS-18 list failure is distinct from loading/empty; retry keeps the inputs"
   await expect(page.locator("body")).not.toContainText("10.0.0.2");
   await expect(page.getByText("새로운 에셋을 기다리고 있어요.")).toHaveCount(0);
   await expect(page.locator(".project-skeleton")).toHaveCount(0);
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "market-error", info.project.name);
 
   await page.getByRole("button", { name: "다시 불러오기" }).click();

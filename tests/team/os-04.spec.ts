@@ -1,14 +1,8 @@
 // MOCK: billing fixture. license_snapshot in the API response is OWN-06 (OWNER_PENDING).
-import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { test, expect } from "@playwright/test";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-04/${name}-${project}.png`, fullPage: true });
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
+const shot = shooter("OS-04");
 
 test("OS-04 order shows purchase-time terms; legacy order is not backfilled", async ({ page }, info) => {
   await page.goto("/?fixture=billing-terms");

@@ -1,21 +1,13 @@
 // MOCK: the real ReconstructionWizard over fixture projects/:id, masks and images routes (existing API only).
 // Note: the server answers a stale-revision approval with 404 MASK_NOT_FOUND, not 409; the fixture mirrors that.
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-08/${name}-${project}.png`, fullPage: true });
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const tags = ["wcag2a", "wcag2aa", "wcag21aa"];
-  // shortcut: real app bug — the wizard's muted text (step nav, footer counter, preview summary, upload hints,
-  // .upload-guidance, .inline-empty small) is 3.2–4.46:1 in globals.css; contrast is checked only on the
-  // regions this ticket changed. Drop the split once those colors are fixed.
-  const all = await new AxeBuilder({ page }).withTags(tags).disableRules(["color-contrast"]).analyze();
-  const changed = await new AxeBuilder({ page }).withTags(tags).withRules(["color-contrast"])
-    .include(".notice").include(".mask-card").include(".selection-tools").analyze();
-  expect([...all.violations, ...changed.violations].map((v) => v.id)).toEqual([]);
-}
+const shot = shooter("OS-08");
+// shortcut: real app bug — the wizard's muted text (step nav, footer counter, preview summary, upload hints,
+// .upload-guidance, .inline-empty small) is 3.2–4.46:1 in globals.css; contrast is checked only on the
+// regions OS-08 changed. Drop once those colors are fixed.
+const known = { contrastOnly: [".notice", ".mask-card", ".selection-tools"] };
 const calls = (page: Page) =>
   page.evaluate(() => (window as never as { __fixtureCalls: { key: string }[] }).__fixtureCalls.map((c) => c.key));
 async function openMaskStep(page: Page, fixture: string) {
@@ -35,7 +27,7 @@ test("OS-08 mask request 503 returns to reselection without re-uploading", async
   await expect(page.locator(".target-overlay")).toBeVisible(); // saved selection kept
   await expect(page.locator(".reference-strip button")).toHaveCount(3); // photos kept
   expect((await calls(page)).filter((k) => k.includes("upload"))).toEqual([]);
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "mask-503", info.project.name);
 });
 
@@ -45,7 +37,7 @@ test("OS-08 failed photo link, keyboard approval and exclusion keep focus and an
   await page.getByRole("button", { name: "c.webp 기준으로 다시 선택" }).press("Enter");
   await expect(page.getByText("기준 사진: c.webp")).toBeVisible();
   await expect(page.getByRole("button", { name: "박스" })).toBeFocused();
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "mask-partial", info.project.name);
 
   const approve = page.getByRole("button", { name: "a.webp 마스크 승인" });
@@ -61,7 +53,7 @@ test("OS-08 failed photo link, keyboard approval and exclusion keep focus and an
 
   await page.getByRole("button", { name: "a.webp 크게 보기" }).press("Enter");
   await expect(page.getByRole("button", { name: "a.webp 크게 보기" })).toHaveAttribute("aria-pressed", "true");
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "mask-approved", info.project.name);
 });
 
@@ -75,7 +67,7 @@ test("OS-08 stale approval is not shown as done and asks for re-review", async (
   await expect(alert).not.toContainText("MASK_NOT_FOUND");
   await expect(a).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("button", { name: /다음 단계/ })).toBeDisabled();
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "mask-stale", info.project.name);
 });
 
@@ -86,6 +78,6 @@ test("OS-08 another user's project shows not-found without details", async ({ pa
   expect(text).not.toContain("p-other-owner");
   expect(text).not.toContain("PROJECT_NOT_FOUND");
   await expect(page.locator(".image-grid")).toHaveCount(0);
-  await checkPage(page);
+  await checkPage(page, known);
   await shot(page, "project-404", info.project.name);
 });

@@ -1,14 +1,8 @@
 // MOCK: provider/confirm fixtures only. Real TEST payment, webhook and ledger checks are OWN-03 (OWNER_PENDING).
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-10/${name}-${project}.png`, fullPage: true });
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
+const shot = shooter("OS-10");
 const q = "&paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000";
 const calls = (page: Page, key: string) =>
   page.evaluate((k) => (window as never as { __fixtureCalls: { key: string; body: unknown }[] }).__fixtureCalls.filter((c) => c.key === k), key);

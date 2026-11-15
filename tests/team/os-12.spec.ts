@@ -1,29 +1,16 @@
 // MOCK: fixture shell only. Passing here is TEAM_PASS, never real-service proof.
-import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { test, expect } from "@playwright/test";
+import { checkPage, shooter } from "./check";
 
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-12/${name}-${project}.png`, fullPage: true });
+const shot = shooter("OS-12");
 
-async function checkPage(page: Page, knownContrastBug?: string) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const tags = ["wcag2a", "wcag2aa", "wcag21aa"];
-  const all = new AxeBuilder({ page }).withTags(tags);
-  if (knownContrastBug) all.disableRules(["color-contrast"]);
-  expect((await all.analyze()).violations.map((v) => v.id)).toEqual([]);
-  if (knownContrastBug) {
-    // Contrast is still checked everywhere except the one known-bad selector.
-    const contrast = new AxeBuilder({ page }).withRules(["color-contrast"]).exclude(knownContrastBug);
-    expect((await contrast.analyze()).violations.map((v) => v.id)).toEqual([]);
-  }
-}
 
 test("OS-12 job fixture: failed state, keyboard retry reaches queue", async ({ page }, info) => {
   await page.goto("/?fixture=job-failed-retry");
   await expect(page.getByRole("heading", { name: "실패" })).toBeVisible();
   await expect(page.getByText("처리에 사용할 사진을 확인해 주세요.")).toBeVisible();
   // shortcut: real app bug — .job-tracker text in globals.css is 3.07–4.48:1 on #1b2529; drop this arg once the owning ticket fixes those colors.
-  await checkPage(page, ".job-tracker");
+  await checkPage(page, { contrastExclude: [".job-tracker"] });
   await shot(page, "job-failed", info.project.name);
 
   const retry = page.getByRole("button", { name: "같은 입력으로 재시도" });

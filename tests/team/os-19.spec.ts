@@ -1,6 +1,6 @@
 // MOCK: public demo GLB in the fixture shell. Camera hook = canvas data-camera "x,y,z|distance".
 import { test, expect, type Page } from "@playwright/test";
-import AxeBuilder from "@axe-core/playwright";
+import { checkPage, shooter } from "./check";
 
 const YAW = 0.2;
 const expected = {
@@ -9,19 +9,13 @@ const expected = {
   "뒤": [-Math.sin(YAW), 0, -Math.cos(YAW)],
   "왼쪽": [-Math.cos(YAW), 0, Math.sin(YAW)],
 } as const;
-const shot = (page: Page, name: string, project: string) =>
-  page.screenshot({ path: `output/playwright/OS-19/${name}-${project}.png`, fullPage: true });
+const shot = shooter("OS-19");
 async function cam(page: Page) {
   const raw = (await page.locator("canvas").getAttribute("data-camera")) ?? "0,0,0|0";
   const [dir, dist] = raw.split("|");
   return { dir: dir.split(",").map(Number), dist: Number(dist) };
 }
 const near = (a: number[], b: readonly number[], tol = 0.03) => a.every((v, i) => Math.abs(v - b[i]) <= tol);
-async function checkPage(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa"]).analyze();
-  expect(violations.map((v) => v.id)).toEqual([]);
-}
 
 test("OS-19 view presets move the camera to the matching file axis", async ({ page }, info) => {
   await page.goto("/?fixture=viewer-model");
