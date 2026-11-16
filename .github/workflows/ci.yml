@@ -24,9 +24,11 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
-      - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - run: npm run build
       - run: npm run test:e2e
+        env:
+          PLAYWRIGHT_PRODUCTION: "1"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -34,6 +36,23 @@ jobs:
           path: test-results/
       - run: npx supabase stop
         if: always()
+  team-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npx --yes npm@11 ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --config playwright.team.config.ts
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: team-browser-test-report
+          path: test-results/
   worker:
     runs-on: ubuntu-latest
     steps:

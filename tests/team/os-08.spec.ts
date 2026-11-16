@@ -4,10 +4,6 @@ import { test, expect, type Page } from "@playwright/test";
 import { checkPage, shooter } from "./check";
 
 const shot = shooter("OS-08");
-// shortcut: real app bug — the wizard's muted text (step nav, footer counter, preview summary, upload hints,
-// .upload-guidance, .inline-empty small) is 3.2–4.46:1 in globals.css; contrast is checked only on the
-// regions OS-08 changed. Drop once those colors are fixed.
-const known = { contrastOnly: [".notice", ".mask-card", ".selection-tools"] };
 const calls = (page: Page) =>
   page.evaluate(() =>
     (
@@ -40,7 +36,7 @@ test("OS-08 mask request 503 returns to reselection without re-uploading", async
   await expect(page.locator(".target-overlay")).toBeVisible(); // saved selection kept
   await expect(page.locator(".reference-strip button")).toHaveCount(3); // photos kept
   expect((await calls(page)).filter((k) => k.includes("upload"))).toEqual([]);
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "mask-503", info.project.name);
 });
 
@@ -54,7 +50,7 @@ test("OS-08 failed photo link, keyboard approval and exclusion keep focus and an
     .press("Enter");
   await expect(page.getByText("기준 사진: c.webp")).toBeVisible();
   await expect(page.getByRole("button", { name: "박스" })).toBeFocused();
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "mask-partial", info.project.name);
 
   const approve = page.getByRole("button", { name: "a.webp 마스크 승인" });
@@ -78,7 +74,7 @@ test("OS-08 failed photo link, keyboard approval and exclusion keep focus and an
   await expect(
     page.getByRole("button", { name: "a.webp 크게 보기" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "mask-approved", info.project.name);
 });
 
@@ -94,7 +90,7 @@ test("OS-08 stale approval is not shown as done and asks for re-review", async (
   await expect(alert).not.toContainText("MASK_NOT_FOUND");
   await expect(a).toHaveAttribute("aria-pressed", "false");
   await expect(page.getByRole("button", { name: /다음 단계/ })).toBeDisabled();
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "mask-stale", info.project.name);
 });
 
@@ -109,6 +105,6 @@ test("OS-08 another user's project shows not-found without details", async ({
   expect(text).not.toContain("p-other-owner");
   expect(text).not.toContain("PROJECT_NOT_FOUND");
   await expect(page.locator(".image-grid")).toHaveCount(0);
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "project-404", info.project.name);
 });

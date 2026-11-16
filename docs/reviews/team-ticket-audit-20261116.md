@@ -1,0 +1,61 @@
+# 팀 티켓 재감사 및 배포 복구 — 2026-11-16
+
+## 결론
+
+팀원이 기능을 상당 부분 구현했지만 **17개 티켓 모두 완벽하게 완료됐다는 근거는 없다**. 일부는 구현 범위가 남았고, 일부는 Team UI/fixture만 통과해 Owner 실연동이 남았다. 실패한 CI를 우회하거나 mock을 실제 서비스 검증으로 취급하지 않는다.
+
+검토 시작: 로컬 fc20978 → 원격 main1416caf를 fast-forward. 시작 시 사용자 미커밋 변경 없음. 브랜치 이름/문서의 완료 표현 대신 실제 source diff·AC·실행 결과를 비교했다. GitHub 이슈는 조회 시17개 모두 OPEN이었다. 연구/모델 교체 없이 제품 안정화 범위만 수정했다.
+
+## 발견한 배포 문제
+
+1. GitHub Actions43798675627: upload 버튼의 새 이름(장수 포함)을 기존 E2E가 못 찾음. editor status와 version 버튼이 추가되어 기존 locator가 여러 요소와 일치함. selector를 정확한 작업 대상으로 수정하고 실제 저장·원본불변·재열기 검증은 유지했다.
+2. CI는 production build를 하고도 E2E에서 dev 서버를 다시 cold compile했다. 이미 만든 production build를 실행해 검증하도록 바꿨다. 로컬 dev startup120s timeout과 배포 환경의 차이도 구분한다.
+3. Team fixture suite가 기존 CI에 포함되지 않음. 키 없는 team-ui job을 추가하고 platform/team outputDir를 분리해 병렬 trace/산출물 삭제 충돌을 방지했다.
+4. Vercel project objectscan(prj_CweIne2ltCHxViOCftiCQkX6nj72)의 link=null, gitRepository=null, createDeployments=disabled. 최근4일 신규 배포가 없었다. main push와 실제 배포는 다른 상태였다.
+5. CLI Git connect가 접근 오류로 거부됨. Vercel dashboard 로그인을 요청했다. 권한을 임의 확대하거나 토큰을 추출해 우회하지 않는다. 기존 인증 CLI로 정확 SHA의 staged production을 검증할 수 있는 경로는 별도 진행한다.
+6. Production NEXT_PUBLIC_APP_URL이 옛 objectscan-six.vercel.app이었다. be-celeb.org로 config를 갱신했다(새 배포부터 적용). GPU/결제/LIVE/payout 활성화는 변경하지 않는다.
+
+## 이번에 수정한 사용자 결함
+
+- 주문 생성 응답 유실 후 재시도에 같은 idempotency key 사용.
+- 프로젝트/업로드 시작 실패 시 memory-only File 선택 유지. 성공 확인 후에만 draft 제거.
+- 가입 확인·재발송의 next 보존, 외부 next는 기존 safeNext로 차단.
+- 이미지 선택 허용/카피20MB를 실제 서버16MB 제한과 일치.
+- 대비를 제외하던 axe 옵션 제거. 해당 화면의 muted text를 디자인 token에 연결하고 전체 화면 검사.
+- 실제 editor 비교 JSON·원본 전환·손상 GLB 보존·503 저장 재시도 검증 추가.
+
+## 티켓별 판정
+
+CONDITIONAL은 제한된 코드/fixture/지정 회귀 근거이며 무결점 선언이 아니다. OWNER_PENDING은 팀 구현과 외부 서버 통합을 구분한다. PARTIAL은 팀 범위나 검증 자체가 남았다.
+
+| 티켓  | 담당 | 판정                 | 근거·남은 범위                                                                                                                                                                                                                                                          |
+| ----- | ---- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OS-01 | A    | CONDITIONAL          | generation-availability/use-generation-check/checkout에 실제 health/QA/wallet 계약 사용. 지원불가 차감 없음 및 중복 요청 방지 fixture 추가. 공개 Production의 생성 허용 범위는 별도 gate.                                                                               |
+| OS-02 | B    | CONDITIONAL          | 가입 대기·재발송·만료 링크·safeNext 구현. 가입/재발송이 next를 dashboard로 버리던 점을 수정하고 회귀 추가. 외부 SMTP/최종 도메인 allow-list는 OWN-01.                                                                                                                   |
+| OS-03 | A    | CONDITIONAL          | abort/backoff/visibility/online/terminal·불명 요청 재조회 구현. 실제 hook을 사용하는 중복 POST/재조회 fixture 추가. 실제 worker 취소/경합은 별도 운영 검증.                                                                                                             |
+| OS-04 | B    | OWNER_PENDING        | snapshot 없는 과거 주문을 추측하지 않는 UI 구현. 서버 billing 응답에 snapshot whitelist 필드 연결 미완료(OWN-06). UI mock 성공을 서비스 완료로 볼 수 없음.                                                                                                              |
+| OS-06 | A    | CONDITIONAL          | MeshReport 비교·원본/작업본 전환·JSON 내보내기 구현. 실제 GLB 간소화 후 원본22700 triangles/작업본 감소/JSON 및 손상 파일 뒤 기존 모델 유지 회귀 보강.                                                                                                                  |
+| OS-07 | B    | PARTIAL              | 순서·제외·선택 경고/helper는 구현. 실제 upload-complete 응답을 wizard 사진 경고로 잇는 경로 미완료. 진단값은 fixture에서만 공급. 업로드 시작 실패 시 File 선택 소실 수정. 선택20MB/서버16MB 불일치 수정.                                                                |
+| OS-08 | B    | CONDITIONAL          | 실패→재선택·stale revision→재검토·포커스 구현. 기존404 MASK_NOT_FOUND 계약 재사용. 색 대비 제외로 가려진 화면 결함을 token 적용 후 전체 axe로 재검증.                                                                                                                   |
+| OS-09 | A    | PARTIAL              | poster 경로 whitelist·카드 fallback만 구현. 모델 capture→사용자 확인→게시 미리보기 경로는 미구현. OS-19가 이미 통합됐으므로 예전 OS-19 BLOCKED 설명은 더 이상 충분한 차단 사유가 아님. OWN-08 storage API도 대기.                                                       |
+| OS-10 | B    | CONDITIONAL          | 서버 paid/refunded 판정·금액/만료·응답 유실 재확인 UI 구현. 주문 생성 응답 유실 후 재시도 키가 바뀌는 결함 수정. actual Toss/환불/ledger 검증은 OWN-03.                                                                                                                 |
+| OS-11 | A    | OWNER_PENDING        | 삭제 확인·in-flight guard·409 권리 보존 안내·실패 재시도 구현. 실제 컴포넌트에서 취소 focus 및503→409 유지 fixture 추가. 실제 보관 hold/storage cleanup은 OWN-07.                                                                                                       |
+| OS-12 | B    | CONDITIONAL          | env -i Vite shell과 next/Supabase adapter 구현. 미등록 route404. CI에 이 suite가 없던 점을 별도 key-free job으로 보강. 테스트 산출물 디렉터리 분리로 병렬 suite 충돌 방지.                                                                                              |
+| OS-17 | A    | PARTIAL              | PrivateModelImportPanel·typed adapter/state/idempotency 설계 구현. Production에는 adapter를 주입하는 호출자가 없으므로 private 저장은 준비 중. helper unit과 기존 GLB editor만으로 mock 개인 저장 전체 AC 통과를 확언할 수 없음. OWN-09 연결/입력검증/rights 확인 남음. |
+| OS-18 | B    | CONDITIONAL          | 현재 불러온 목록의 license/price 필터·URL 상태·오류 복구 구현. 서버 전체 목록 필터/새 검색 DB 기능은 아님. Next 실제 배포와 fixture를 구분. 전체 axe의 카드 대비 결함 수정.                                                                                             |
+| OS-19 | B    | CONDITIONAL          | Drei Bounds camera preset/fit 구현. 파일 좌표축과 실제 정면을 구분. 실제 public demo GLB로 camera 방향·zoom 복구 검사. 새 AI 기능 아님.                                                                                                                                 |
+| OS-20 | A    | PARTIAL_VERIFICATION | 이력 cursor·삭제 확인·dirty/save 실패 복구 구현. 새503 저장 재시도에서 동일 key/원본 불변/정상 version 재열기 회귀 보강. 다중 부품 숨김·삭제·undo 전체 UI 시나리오의 공용 fixture 증거는 아직 불충분.                                                                   |
+| OS-21 | B    | CONDITIONAL          | 상태·원장·payout 한국어화, unknown 안전 표시, 환불/다운로드404/재조회 구현. 실제 구매 권한 집행은 기존 server/RLS가 담당하며 Team fixture는 권한 실행 증명이 아님.                                                                                                      |
+| OS-22 | B    | PARTIAL              | 기존8과업은 Team B 위주였고 editor와 A 티켓이 누락됐다고 HANDOFF에 명시. A 생성/재조회/삭제 회귀를 공용 suite에 추가하고 접근성 제외 제거. editor/private import 전부를 키 없는 공통 fixture에 옮긴 것은 아니므로 원래 AC 전체 완료 아님.                               |
+
+## 실행 결과
+
+최종 실행 결과와 CI/배포 SHA는 검증 완료 후 아래에 기록한다. 진행 중인 검증을 PASS로 표시하지 않는다.
+
+## 남은 후속 작업
+
+- Team: OS-07 실제 업로드 경고 연결, OS-09 모델 capture 확인 UI, OS-17 mock 저장 전체 시나리오·실제 adapter, OS-20 다중 부품 시나리오, OS-22 editor/private import 공용 fixture 보완.
+- Owner: billing snapshot whitelist/API, diagnostics 서버 응답, poster 저장/검증, private GLB ingress, retention/storage cleanup, 외부 SMTP, 실제 TEST PG/GPU 전체 흐름.
+- 배포: GitHub App의 ObjectScan 접근 권한과 Vercel Git 연결·자동배포 설정 확인. 로그인/2FA 외 가능한 로컬/CLI 작업은 직접 처리한다.
+
+raw 로그·env·프로젝트 원문은 gitignored artifacts/team-audit-20261116(700)에 보관한다. 실제 사용자 데이터는 사용하지 않았고 로컬 disposable DB fixture만 사용했다. 업로드 원본/키/쿠키/서명 URL/trace를 공개 이슈나 Git에 넣지 않는다.

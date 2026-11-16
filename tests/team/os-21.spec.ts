@@ -3,8 +3,6 @@ import { test, expect } from "@playwright/test";
 import { checkPage, shooter } from "./check";
 
 const shot = shooter("OS-21");
-// shortcut: real app bugs — `.project-info p` is 4.12:1 and `.workspace-notice` 4.49:1 in globals.css; drop once fixed.
-const known = { contrastExclude: [".project-info > p", ".workspace-notice"] };
 const raw = [
   "paid",
   "refunded",
@@ -46,7 +44,7 @@ test("OS-21 orders show Korean status, TEST marker, amount and the asset link", 
   for (const r of raw) expect(all).not.toContain(r);
   await link.focus();
   await expect(link).toBeFocused();
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "billing-orders", info.project.name);
 
   // Unknown status offers a recovery action that re-reads the server state.
@@ -81,7 +79,7 @@ test("OS-21 refunded asset download is denied without claiming access", async ({
     alert.getByRole("link", { name: "구매 내역에서 주문 상태 확인" }),
   ).toHaveAttribute("href", "/billing");
   expect(page.url()).toContain("fixture=assets-download-denied"); // no file navigation happened
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "assets-download-denied", info.project.name);
 });
 
@@ -92,7 +90,7 @@ test("OS-21 billing 503 shows a safe error and recovers on retry", async ({
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("10.0.0.2");
   await expect(page.locator("body")).not.toContainText("UNAVAILABLE");
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "billing-unavailable", info.project.name);
   await page.getByRole("button", { name: "다시 불러오기" }).click();
   await expect(page.getByText("결제 완료").first()).toBeVisible();

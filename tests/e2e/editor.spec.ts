@@ -53,6 +53,20 @@ test("editor transforms, undo/redo, simplify and real GLB download roundtrip", a
       ),
     )
     .toBeLessThan(22700);
+  const comparisonFile = page.waitForEvent("download");
+  await page.getByRole("button", { name: "비교 보고서 JSON 내려받기" }).click();
+  const comparison = JSON.parse(
+    await readFile((await (await comparisonFile).path())!, "utf8"),
+  );
+  expect(comparison.original.triangles).toBe(22700);
+  expect(comparison.current.triangles).toBeLessThan(22700);
+  expect(comparison.inspection).toBe("client");
+  await page.getByRole("button", { name: "원본 보기", exact: true }).click();
+  await expect(page.getByTestId("editor-triangles")).toHaveText("22,700");
+  await expect(
+    page.getByRole("button", { name: "내려받기", exact: true }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "작업본 보기", exact: true }).click();
   const downloaded = page.waitForEvent("download");
   await page.getByRole("button", { name: "내려받기", exact: true }).click();
   const d = await downloaded;
@@ -66,6 +80,15 @@ test("editor transforms, undo/redo, simplify and real GLB download roundtrip", a
     page.getByRole("button", { name: "실행 취소", exact: true }),
   ).toBeDisabled();
   await expect(page.getByText("포함됨", { exact: true })).toBeVisible();
+  await rendered(page);
+  const validTriangles = await page.getByTestId("editor-triangles").innerText();
+  await page.locator("input[type=file]").setInputFiles({
+    name: "broken.glb",
+    mimeType: "model/gltf-binary",
+    buffer: Buffer.from("invalid glb"),
+  });
+  await expect(page.locator(".mesh-editor").getByRole("alert")).toBeVisible();
+  await expect(page.getByTestId("editor-triangles")).toHaveText(validTriangles);
   await rendered(page);
   await page.screenshot({
     path: "artifacts/mascot-redesign/editor-desktop.png",
@@ -180,10 +203,25 @@ test("private source stays immutable; actual saved versions reopen and deny anot
     await page.getByRole("button", { name: "부품 1", exact: true }).click();
     await page.getByLabel("크기 X", { exact: true }).fill("1.2");
     await page.getByRole("button", { name: "수치 적용", exact: true }).click();
+    const saveAttempts: unknown[] = [];
+    await page.route(`**/api/assets/${asset}/versions`, async (route) => {
+      saveAttempts.push(route.request().postDataJSON());
+      if (saveAttempts.length === 1)
+        await route.fulfill({ status: 503, json: { code: "UNAVAILABLE" } });
+      else await route.continue();
+    });
     await page
       .getByRole("button", { name: "새 버전 저장", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText(
+    await expect(page.locator(".mesh-editor").getByRole("alert")).toContainText(
+      "편집 내용이 남아 있습니다",
+    );
+    await page
+      .getByRole("button", { name: "저장 다시 시도", exact: true })
+      .click();
+    await expect.poll(() => saveAttempts.length).toBe(2);
+    expect(saveAttempts[0]).toEqual(saveAttempts[1]);
+    await expect(page.getByRole("status", { name: "편집 결과" })).toContainText(
       "새 버전을 저장했습니다",
     );
     const versions = await admin
@@ -203,7 +241,7 @@ test("private source stays immutable; actual saved versions reopen and deny anot
         .digest("hex"),
     ).toBe(createHash("sha256").update(source).digest("hex"));
     await page.getByText("저장한 버전", { exact: true }).click();
-    await page.getByRole("button", { name: /버전 1/ }).click();
+    await page.getByRole("button", { name: /^버전 1 ·/ }).click();
     await expect(page.getByTestId("editor-triangles")).toBeVisible();
     await page.getByRole("button", { name: "부품 1", exact: true }).click();
     await expect(page.getByLabel("크기 X", { exact: true })).toHaveValue("1.2");

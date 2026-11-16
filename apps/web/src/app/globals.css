@@ -1495,7 +1495,7 @@ small {
   gap: 10px;
   margin: 22px 0;
   font-size: 11px;
-  color: #78859c;
+  color: var(--color-muted);
   padding: 14px 17px;
   border: 1px solid #313946;
   background: #191e25;
@@ -1609,7 +1609,7 @@ small {
 }
 .project-info p {
   font-size: 10px;
-  color: #6f7e97;
+  color: var(--color-muted);
   margin-top: 7px;
 }
 .project-info > svg {
@@ -1762,7 +1762,7 @@ small {
   border-bottom: 2px solid transparent;
   background: transparent;
   font-size: 11px;
-  color: #707b8f;
+  color: var(--color-muted);
   padding: 9px 5px;
 }
 .creation-steps > button > span {
@@ -1858,7 +1858,7 @@ small {
 }
 .capture-choice small {
   display: block;
-  color: #62718c;
+  color: var(--color-muted);
   font-size: 9px;
   margin-top: 4px;
 }
@@ -1902,7 +1902,7 @@ small {
 }
 .upload-zone > small {
   font-size: 9px;
-  color: #61718c;
+  color: var(--color-muted);
   margin-top: 21px;
 }
 .upload-progress {
@@ -1939,7 +1939,7 @@ small {
   align-items: flex-start;
   gap: 8px;
   margin-top: 24px;
-  color: #6d7d98;
+  color: var(--color-muted);
   font-size: 10px;
   line-height: 1.9;
 }
@@ -2016,7 +2016,7 @@ small {
 }
 .preview-caption p > span {
   font-size: 9px;
-  color: #61708b;
+  color: var(--color-muted);
 }
 .preview-summary > div {
   display: flex;
@@ -2026,7 +2026,7 @@ small {
   font-size: 10px;
   padding: 11px 0;
   border-top: 1px solid #313947;
-  color: #6e7e9a;
+  color: var(--color-muted);
 }
 .preview-summary strong {
   display: flex;
@@ -2347,7 +2347,7 @@ small {
 }
 .inline-empty small {
   font-size: 10px;
-  color: #5f6e88;
+  color: var(--color-muted);
   line-height: 1.9;
 }
 .configuration-grid {
@@ -2520,7 +2520,7 @@ small {
 }
 .job-tracker-heading small {
   font-size: 10px;
-  color: #7d8aa1;
+  color: var(--color-muted);
 }
 .job-tracker-heading h3 {
   font-size: 18px;
@@ -2542,14 +2542,14 @@ small {
 .job-info {
   font-size: 11px;
   line-height: 1.9;
-  color: #77859c;
+  color: var(--color-muted);
 }
 .job-tracker > details {
   border-top: 1px solid #384151;
   padding-top: 17px;
   margin-top: 18px;
   font-size: 11px;
-  color: #7c8aa3;
+  color: var(--color-muted);
 }
 .job-tracker summary {
   cursor: pointer;
@@ -2571,13 +2571,13 @@ small {
 }
 .event-list time {
   font-size: 9px;
-  color: #606f89;
+  color: var(--color-muted);
   white-space: nowrap;
 }
 .event-list small {
   margin-left: auto;
   font-size: 9px;
-  color: #61708b;
+  color: var(--color-muted);
 }
 .job-tracker-actions {
   display: flex;

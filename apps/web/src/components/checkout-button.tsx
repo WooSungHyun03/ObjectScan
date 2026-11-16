@@ -30,6 +30,7 @@ export function CheckoutButton({
     [error, setError] = useState("");
   // `busy` only disables the button after a re-render; the ref blocks a second click in between.
   const inFlight = useRef(false);
+  const attempt = useRef<{ listingId?: string; key: string }>(undefined);
   useEffect(() => {
     void api<{ payments_mode: string }>("health")
       .then((h) => setEnabled(h.payments_mode === "test"))
@@ -41,12 +42,14 @@ export function CheckoutButton({
     setBusy(true);
     setError("");
     try {
+      if (!attempt.current || attempt.current.listingId !== listingId)
+        attempt.current = { listingId, key: crypto.randomUUID() };
       const order = orderId
         ? await api<Order>(`orders/${orderId}`)
         : await post<Order>("orders", {
             kind: "marketplace",
             listing_id: listingId,
-            idempotency_key: crypto.randomUUID(),
+            idempotency_key: attempt.current.key,
           });
       if (order.status !== "pending")
         throw Error("결제 대기 중인 주문만 사용할 수 있습니다.");

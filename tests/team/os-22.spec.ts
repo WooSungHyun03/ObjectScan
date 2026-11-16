@@ -12,7 +12,6 @@ type Task = {
   ticket: string;
   url: string;
   ready: (page: Page) => Promise<void>;
-  known?: Parameters<typeof checkPage>[1];
 };
 const tasks: Task[] = [
   {
@@ -42,7 +41,6 @@ const tasks: Task[] = [
     name: "3-mask-recovery",
     ticket: "OS-08",
     url: "/?fixture=mask-analysis-503",
-    known: { contrastOnly: [".notice", ".mask-card", ".selection-tools"] },
     ready: async (page) => {
       await page
         .getByRole("navigation", { name: "제작 단계" })
@@ -58,7 +56,6 @@ const tasks: Task[] = [
     name: "4-job-failure",
     ticket: "OS-12",
     url: "/?fixture=job-failed-retry",
-    known: { contrastExclude: [".job-tracker"] },
     ready: async (page) => {
       await expect(page.getByRole("heading", { name: "실패" })).toBeVisible();
     },
@@ -80,7 +77,6 @@ const tasks: Task[] = [
     name: "6-market",
     ticket: "OS-18",
     url: "/fixture/market-list",
-    known: { contrastExclude: [".project-info > p"] },
     ready: async (page) => {
       await expect(page.locator(".listing-card")).toHaveCount(4);
     },
@@ -99,7 +95,6 @@ const tasks: Task[] = [
     name: "8-orders-rights",
     ticket: "OS-21",
     url: "/?fixture=billing-orders",
-    known: { contrastExclude: [".project-info > p", ".workspace-notice"] },
     ready: async (page) => {
       await expect(
         page.getByText("결제 완료 · 테스트 결제").first(),
@@ -130,7 +125,7 @@ for (const task of tasks) {
         );
       }),
     ).toBe(true);
-    await checkPage(page, task.known);
+    await checkPage(page);
     await shot(page, task.name, info.project.name);
     // No request ever left the local fixture shell (no Supabase, PG, GPU or CDN).
     expect(
@@ -138,3 +133,78 @@ for (const task of tasks) {
     ).toEqual([]);
   });
 }
+
+test("OS-22 create entry rejects files above the real 16MB server limit", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=create-entry-limit");
+  await page.getByLabel("제작할 사진 선택").setInputFiles({
+    name: "too-large.jpg",
+    mimeType: "image/jpeg",
+    buffer: Buffer.alloc(17 * 1024 * 1024),
+  });
+  await expect(page.getByRole("alert")).toContainText("16MB");
+  await expect(
+    page.getByRole("link", { name: "선택한 사진으로 계속하기" }),
+  ).toHaveCount(0);
+});
+
+test("OS-22 OS-01 unsupported generation never starts or shows a charge", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=generation-blocked");
+  await expect(
+    page.getByRole("button", { name: "크레딧으로 3D 만들기" }),
+  ).toBeDisabled();
+  await expect(page.getByText("차감 없음", { exact: true })).toBeVisible();
+  await checkPage(page);
+});
+test("OS-22 OS-03 lost generation response reconciles without duplicate POST", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=generation-ambiguous");
+  const start = page.getByRole("button", { name: "크레딧으로 3D 만들기" });
+  await expect(start).toBeEnabled();
+  await start.evaluate((el: HTMLButtonElement) => {
+    el.click();
+    el.click();
+  });
+  await page.getByRole("button", { name: "등록된 작업 확인" }).click();
+  await expect(page.getByTestId("tracked-job")).toHaveText("new-job");
+  const count = await page.evaluate(
+    () =>
+      (
+        window as unknown as { __fixtureCalls: { key: string }[] }
+      ).__fixtureCalls.filter(
+        (c) => c.key === "POST projects/fixture-project/generate",
+      ).length,
+  );
+  expect(count).toBe(1);
+});
+test("OS-22 OS-03 failed job read recovers on explicit refresh", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=job-network-recovery");
+  await page.getByRole("button", { name: "상태 새로고침" }).click();
+  await expect(page.getByRole("heading", { name: "대기 중" })).toBeVisible();
+  await checkPage(page);
+});
+test("OS-22 OS-11 failed deletion preserves the asset and a rights hold stops retry", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=asset-delete-hold");
+  const trigger = page.getByRole("button", { name: "MOCK owned 삭제" });
+  await trigger.click();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await page.getByRole("button", { name: "삭제 확인", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("확인하지 못했습니다");
+  await page.getByRole("button", { name: "다시 시도", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("구매자의 이용 권리");
+  await expect(
+    page.getByRole("button", { name: "다시 시도", exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "MOCK owned" })).toBeVisible();
+});

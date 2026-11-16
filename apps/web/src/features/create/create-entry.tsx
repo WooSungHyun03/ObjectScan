@@ -31,9 +31,9 @@ export function CreateEntry() {
     const v = Array.from(list);
     if (
       v.length > 200 ||
-      v.some((f) => !allowed.has(f.type) || f.size > 20 * 1024 * 1024)
+      v.some((f) => !allowed.has(f.type) || f.size > 16 * 1024 * 1024)
     ) {
-      E("JPG·PNG·WebP 사진을 한 장당 20MB 이하, 최대 200장까지 선택해 주세요.");
+      E("JPG·PNG·WebP 사진을 한 장당 16MB 이하, 최대 200장까지 선택해 주세요.");
       return;
     }
     F(v);
@@ -112,7 +112,7 @@ export function CreateEntry() {
             <p>
               {files.length
                 ? "로그인 후 사진을 확인하고 업로드하세요. 새로고침하면 선택이 초기화됩니다."
-                : "JPG, PNG, WebP · 한 장당 20MB 이하"}
+                : "JPG, PNG, WebP · 한 장당 16MB 이하"}
             </p>
             <input
               ref={input}

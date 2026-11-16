@@ -111,3 +111,34 @@ test("OS-02 login shows the callback's confirmation failure in Korean", async ({
   await checkPage(page);
   await shot(page, "login-confirmation-failed", info.project.name);
 });
+
+test("OS-02 signup confirmation and resend preserve a safe return page", async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto(
+    "/?fixture=signup-unconfirmed&next=%2Fprojects%2Ffixture-project",
+  );
+  await page.getByRole("textbox", { name: "이름" }).fill("Fixture");
+  await page
+    .getByRole("textbox", { name: "이메일" })
+    .fill("return@objectscan.test");
+  await page.getByLabel("비밀번호", { exact: true }).fill("Fixture-pass-1");
+  await page.getByRole("button", { name: "계정 만들기" }).click();
+  await expect(page.getByRole("status")).toBeVisible();
+  await page.clock.fastForward(61000);
+  await page.getByRole("button", { name: "확인 메일 다시 받기" }).click();
+  const all = await authCalls(page);
+  const options = all
+    .map(
+      (x) =>
+        (x.args as { options?: { emailRedirectTo?: string } }).options
+          ?.emailRedirectTo,
+    )
+    .filter(Boolean);
+  expect(options).toHaveLength(2);
+  for (const value of options)
+    expect(new URL(value!).searchParams.get("next")).toBe(
+      "/projects/fixture-project",
+    );
+});

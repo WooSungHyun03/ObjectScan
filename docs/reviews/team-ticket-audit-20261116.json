@@ -1,0 +1,285 @@
+{
+  "date": "2026-11-16",
+  "base_sha": "1416caf79315b61479bb2ac93aa24b0446f3fa7a",
+  "team": [
+    {
+      "id": "OS-01",
+      "title": "현재 지원 범위·실패 이유·차감 안내를 생성 전에 표시",
+      "priority": "P0",
+      "member": "A",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "apps/web/src/features/create/generation-checkout.tsx",
+        "apps/web/src/lib/customer-copy.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "generation-availability/use-generation-check/checkout에 실제 health/QA/wallet 계약 사용. 지원불가 차감 없음 및 중복 요청 방지 fixture 추가. 공개 Production의 생성 허용 범위는 별도 gate."
+    },
+    {
+      "id": "OS-02",
+      "title": "가입·복구 링크 오류와 메일 대기의 복구 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 1,
+      "dependencies": [],
+      "owner": ["OWN-01"],
+      "files": [
+        "apps/web/src/components/auth-form.tsx",
+        "apps/web/src/app/auth",
+        "tests/e2e/auth-email.spec.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "가입 대기·재발송·만료 링크·safeNext 구현. 가입/재발송이 next를 dashboard로 버리던 점을 수정하고 회귀 추가. 외부 SMTP/최종 도메인 allow-list는 OWN-01."
+    },
+    {
+      "id": "OS-03",
+      "title": "통신 단절 뒤 작업 polling 재개와 중복 클릭 방지",
+      "priority": "P0",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": ["OS-01"],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/job-tracker.tsx",
+        "apps/web/src/features/create/generation-checkout.tsx",
+        "apps/web/src/lib/client-api.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "abort/backoff/visibility/online/terminal·불명 요청 재조회 구현. 실제 hook을 사용하는 중복 POST/재조회 fixture 추가. 실제 worker 취소/경합은 별도 운영 검증."
+    },
+    {
+      "id": "OS-04",
+      "title": "구매 당시 이용 조건과 legacy 누락값 조회 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": ["OWN-06"],
+      "files": [
+        "apps/web/src/components/account-panels.tsx",
+        "apps/web/src/components/listing-detail.tsx",
+        "apps/web/src/features/marketplace/presentation.ts"
+      ],
+      "audit_status": "OWNER_PENDING",
+      "finding": "snapshot 없는 과거 주문을 추측하지 않는 UI 구현. 서버 billing 응답에 snapshot whitelist 필드 연결 미완료(OWN-06). UI mock 성공을 서비스 완료로 볼 수 없음."
+    },
+    {
+      "id": "OS-06",
+      "title": "기존 편집 정보로 원본·버전 비교와 JSON 내보내기",
+      "priority": "P1",
+      "member": "A",
+      "days": 1,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/editor/use-mesh-editor.ts",
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "packages/mesh-editor/src/contracts.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "MeshReport 비교·원본/작업본 전환·JSON 내보내기 구현. 실제 GLB 간소화 후 원본22700 triangles/작업본 감소/JSON 및 손상 파일 뒤 기존 모델 유지 회귀 보강."
+    },
+    {
+      "id": "OS-07",
+      "title": "기존 sharp 선명도 경고·중복 안내·사진 순서 정리",
+      "priority": "P1",
+      "member": "B",
+      "days": 1.5,
+      "dependencies": ["OS-01"],
+      "owner": ["OWN-04"],
+      "files": [
+        "apps/web/src/features/create",
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "tests/files.test.ts"
+      ],
+      "audit_status": "PARTIAL",
+      "finding": "순서·제외·선택 경고/helper는 구현. 실제 upload-complete 응답을 wizard 사진 경고로 잇는 경로 미완료. 진단값은 fixture에서만 공급. 업로드 시작 실패 시 File 선택 소실 수정. 선택20MB/서버16MB 불일치 수정."
+    },
+    {
+      "id": "OS-08",
+      "title": "마스크 실패·재선택·이전 단계 복귀의 안내와 접근성",
+      "priority": "P1",
+      "member": "B",
+      "days": 1,
+      "dependencies": ["OS-01"],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/reconstruction-wizard.tsx",
+        "apps/web/src/lib/customer-copy.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "실패→재선택·stale revision→재검토·포커스 구현. 기존404 MASK_NOT_FOUND 계약 재사용. 색 대비 제외로 가려진 화면 결함을 token 적용 후 전체 axe로 재검증."
+    },
+    {
+      "id": "OS-09",
+      "title": "실제 모델에서 만든 썸네일 확인·마켓 카드 표시",
+      "priority": "P1",
+      "member": "A",
+      "days": 1,
+      "dependencies": ["OS-19"],
+      "owner": ["OWN-08"],
+      "files": [
+        "apps/web/src/features/marketplace/asset-card.tsx",
+        "apps/web/src/components/publish-form.tsx",
+        "apps/web/src/components/model-viewer.tsx"
+      ],
+      "audit_status": "PARTIAL",
+      "finding": "poster 경로 whitelist·카드 fallback만 구현. 모델 capture→사용자 확인→게시 미리보기 경로는 미구현. OS-19가 이미 통합됐으므로 예전 OS-19 BLOCKED 설명은 더 이상 충분한 차단 사유가 아님. OWN-08 storage API도 대기."
+    },
+    {
+      "id": "OS-10",
+      "title": "TEST 결제 응답 유실·중복 복귀의 상태 복구 UI",
+      "priority": "P0",
+      "member": "B",
+      "days": 1,
+      "dependencies": ["OS-01"],
+      "owner": ["OWN-03"],
+      "files": [
+        "apps/web/src/components/payment-result.tsx",
+        "apps/web/src/components/checkout-button.tsx",
+        "apps/web/src/features/billing/checkout-panel.tsx",
+        "tests/e2e/payment-result.spec.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "서버 paid/refunded 판정·금액/만료·응답 유실 재확인 UI 구현. 주문 생성 응답 유실 후 재시도 키가 바뀌는 결함 수정. actual Toss/환불/ledger 검증은 OWN-03."
+    },
+    {
+      "id": "OS-11",
+      "title": "삭제 확인·중복 클릭 차단·권리 보존 오류 안내",
+      "priority": "P1",
+      "member": "A",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": ["OWN-07"],
+      "files": [
+        "apps/web/src/components/asset-library.tsx",
+        "apps/web/src/components/account-panels.tsx"
+      ],
+      "audit_status": "OWNER_PENDING",
+      "finding": "삭제 확인·in-flight guard·409 권리 보존 안내·실패 재시도 구현. 실제 컴포넌트에서 취소 focus 및503→409 유지 fixture 추가. 실제 보관 hold/storage cleanup은 OWN-07."
+    },
+    {
+      "id": "OS-12",
+      "title": "키·DB 없는 공통 UI fixture 시작점",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": ["tests/e2e", "tests", "scripts", "docs/product-audit-v2"],
+      "audit_status": "CONDITIONAL",
+      "finding": "env -i Vite shell과 next/Supabase adapter 구현. 미등록 route404. CI에 이 suite가 없던 점을 별도 key-free job으로 보강. 테스트 산출물 디렉터리 분리로 병렬 suite 충돌 방지."
+    },
+    {
+      "id": "OS-17",
+      "title": "외부 GLB 로컬 편집에서 개인 저장·게시로 이어가기",
+      "priority": "P1",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": ["OS-06"],
+      "owner": ["OWN-09"],
+      "files": [
+        "apps/web/src/components/editor/use-mesh-editor.ts",
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "packages/mesh-editor/src"
+      ],
+      "audit_status": "PARTIAL",
+      "finding": "PrivateModelImportPanel·typed adapter/state/idempotency 설계 구현. Production에는 adapter를 주입하는 호출자가 없으므로 private 저장은 준비 중. helper unit과 기존 GLB editor만으로 mock 개인 저장 전체 AC 통과를 확언할 수 없음. OWN-09 연결/입력검증/rights 확인 남음."
+    },
+    {
+      "id": "OS-18",
+      "title": "마켓 라이선스·가격 필터와 URL 검색 상태",
+      "priority": "P1",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/marketplace.tsx",
+        "apps/web/src/features/marketplace/asset-card.tsx"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "현재 불러온 목록의 license/price 필터·URL 상태·오류 복구 구현. 서버 전체 목록 필터/새 검색 DB 기능은 아님. Next 실제 배포와 fixture를 구분. 전체 axe의 카드 대비 결함 수정."
+    },
+    {
+      "id": "OS-19",
+      "title": "결과 뷰어 앞·뒤·좌·우 시점과 재맞춤",
+      "priority": "P1",
+      "member": "B",
+      "days": 1,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/model-viewer.tsx",
+        "apps/web/src/components/viewer.tsx"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "Drei Bounds camera preset/fit 구현. 파일 좌표축과 실제 정면을 구분. 실제 public demo GLB로 camera 방향·zoom 복구 검사. 새 AI 기능 아님."
+    },
+    {
+      "id": "OS-20",
+      "title": "편집 동작 이력·삭제 확인·저장 오류 복구",
+      "priority": "P1",
+      "member": "A",
+      "days": 1.5,
+      "dependencies": ["OS-06"],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/editor/mesh-editor.tsx",
+        "apps/web/src/components/editor/inspector-panel.tsx",
+        "apps/web/src/components/editor/use-mesh-editor.ts"
+      ],
+      "audit_status": "PARTIAL_VERIFICATION",
+      "finding": "이력 cursor·삭제 확인·dirty/save 실패 복구 구현. 새503 저장 재시도에서 동일 key/원본 불변/정상 version 재열기 회귀 보강. 다중 부품 숨김·삭제·undo 전체 UI 시나리오의 공용 fixture 증거는 아직 불충분."
+    },
+    {
+      "id": "OS-21",
+      "title": "구매 내역의 한국어 상태와 에셋 재다운로드 연결",
+      "priority": "P1",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [],
+      "owner": [],
+      "files": [
+        "apps/web/src/components/account-panels.tsx",
+        "apps/web/src/components/asset-library.tsx",
+        "apps/web/src/features/marketplace/presentation.ts"
+      ],
+      "audit_status": "CONDITIONAL",
+      "finding": "상태·원장·payout 한국어화, unknown 안전 표시, 환불/다운로드404/재조회 구현. 실제 구매 권한 집행은 기존 server/RLS가 담당하며 Team fixture는 권한 실행 증명이 아님."
+    },
+    {
+      "id": "OS-22",
+      "title": "팀원 fixture 통합 회귀와 Owner 인계 리포트",
+      "priority": "P0",
+      "member": "B",
+      "days": 0.5,
+      "dependencies": [
+        "OS-01",
+        "OS-02",
+        "OS-03",
+        "OS-04",
+        "OS-06",
+        "OS-07",
+        "OS-08",
+        "OS-09",
+        "OS-10",
+        "OS-11",
+        "OS-12",
+        "OS-17",
+        "OS-18",
+        "OS-19",
+        "OS-20",
+        "OS-21"
+      ],
+      "owner": [],
+      "files": ["tests/e2e", "tests", "scripts", "docs/product-audit-v2"],
+      "audit_status": "PARTIAL",
+      "finding": "기존8과업은 Team B 위주였고 editor와 A 티켓이 누락됐다고 HANDOFF에 명시. A 생성/재조회/삭제 회귀를 공용 suite에 추가하고 접근성 제외 제거. editor/private import 전부를 키 없는 공통 fixture에 옮긴 것은 아니므로 원래 AC 전체 완료 아님."
+    }
+  ],
+  "meaning": "CONDITIONAL is bounded code/fixture evidence, never perfect or production-ready; final checks recorded in markdown."
+}

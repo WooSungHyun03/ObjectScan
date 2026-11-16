@@ -1,6 +1,10 @@
 // Fixture registry. Each ticket adds its own entries; OS-22 dedupes them.
 // All data here is MOCK and proves UI/contract behaviour only.
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { GenerationCheckout } from "@/features/create/generation-checkout";
+import { useGenerationSubmission } from "@/features/create/use-generation-submission";
+import { api } from "@/lib/client-api";
+import { CreateEntry } from "@/features/create/create-entry";
 import type { Job, ProjectImage } from "@objectscan/shared";
 import { JobTracker } from "@/components/job-tracker";
 import { PaymentResult } from "@/components/payment-result";
@@ -280,7 +284,159 @@ let revisionMoved = false;
 let approved: string[] = [];
 let excluded: string[] = [];
 
+function GenerationFixture({ blocked = false }: { blocked?: boolean }) {
+  const [tracked, setTracked] = useState("");
+  const submission = useGenerationSubmission({
+    projectId: "fixture-project",
+    input: "revision-1",
+    jobs: [],
+    load: () => api<{ jobs: Job[] }>("projects/fixture-project"),
+    track: setTracked,
+  });
+  return (
+    <main id="main">
+      <h1>MOCK generation</h1>
+      <GenerationCheckout
+        quote={{
+          project: { mode: "object", input_image_count: blocked ? 21 : 1 },
+          gate: {
+            allowed: !blocked,
+            errors: blocked ? ["INPUT_PROFILE_NOT_VALIDATED"] : [],
+          },
+        }}
+        refreshQuote={() => {}}
+        submission={submission}
+      />
+      {tracked && <p data-testid="tracked-job">{tracked}</p>}
+    </main>
+  );
+}
+const generationWallet: FixtureRoutes = {
+  "GET wallet": () => ({
+    json: {
+      balance: 5,
+      rates: [{ mode: "object", min_images: 1, credits: 1 }],
+    },
+  }),
+};
+function DraftFailureFixture() {
+  const [attempt, setAttempt] = useState(0);
+  return (
+    <main id="main">
+      <h1>MOCK upload failure</h1>
+      <DraftPhotos
+        busy={false}
+        onUpload={async () => {
+          setAttempt((v) => v + 1);
+          return attempt > 0;
+        }}
+      />
+    </main>
+  );
+}
 export const fixtures: Record<string, Fixture> = {
+  "generation-blocked": {
+    title: "Unsupported generation",
+    routes: generationWallet,
+    render: () => <GenerationFixture blocked />,
+  },
+  "generation-ambiguous": {
+    title: "Ambiguous generation",
+    routes: {
+      ...generationWallet,
+      "POST projects/fixture-project/generate": () => ({
+        network: true,
+        json: null,
+      }),
+      "GET projects/fixture-project": () => ({
+        json: { jobs: [job({ id: "new-job", state: "queued" })] },
+      }),
+    },
+    render: () => <GenerationFixture />,
+  },
+  "job-network-recovery": {
+    title: "Polling failure recovery",
+    routes: {
+      "GET jobs/fixture-job": ({ call }) =>
+        call === 1
+          ? { status: 503, json: { code: "UNAVAILABLE" } }
+          : { json: job({ state: "queued" }) },
+    },
+    render: () => <JobTracker jobId="fixture-job" />,
+  },
+  "asset-delete-hold": {
+    title: "Deletion rights hold",
+    routes: {
+      "GET assets": () => ({
+        json: [
+          {
+            id: "owned-asset",
+            name: "MOCK owned",
+            created_at: t,
+            can_publish: true,
+            project_id: pid,
+            quality: { triangles: 12 },
+          },
+        ],
+      }),
+      "DELETE assets/owned-asset": ({ call }) =>
+        call === 1
+          ? { status: 503, json: { code: "UNAVAILABLE" } }
+          : { status: 409, json: { code: "ASSET_HAS_PURCHASES" } },
+    },
+    render: () => (
+      <main id="main">
+        <AssetLibrary />
+      </main>
+    ),
+  },
+
+  "create-entry-limit": {
+    title: "Upload limit",
+    routes: {
+      "GET health": () => ({
+        json: {
+          configured: true,
+          worker_online: true,
+          real_gpu_validated: true,
+          capabilities: { single_photo: true },
+        },
+      }),
+    },
+    render: () => <CreateEntry />,
+  },
+  "draft-upload-failure": {
+    title: "Draft upload failure",
+    routes: {},
+    setup: () =>
+      putDraft([new File(["fixture"], "keep.jpg", { type: "image/jpeg" })]),
+    render: () => <DraftFailureFixture />,
+  },
+  "checkout-response-lost": {
+    title: "Order response lost",
+    routes: {
+      "GET health": () => ({ json: { payments_mode: "test" } }),
+      "POST orders": ({ call }) =>
+        call === 1
+          ? { network: true, json: null }
+          : {
+              json: {
+                id: "00000000-0000-4000-8000-000000000009",
+                amount: 1000,
+                currency: "KRW",
+                status: "pending",
+                kind: "marketplace",
+              },
+            },
+    },
+    render: () => (
+      <main id="main">
+        <h1>MOCK purchase retry</h1>
+        <CheckoutButton listingId="l-chair" />
+      </main>
+    ),
+  },
+
   // OS-08: the mask request fails (worker 503); photos and the saved selection must stay.
   "mask-analysis-503": wizard(
     "마스크: 분석 요청 실패",

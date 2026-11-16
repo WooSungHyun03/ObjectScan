@@ -15,3 +15,7 @@
 /CODEX_MASTER_PROMPT.md
 
 **/.next-v5
+
+/output
+/.idea
+**/.next-*

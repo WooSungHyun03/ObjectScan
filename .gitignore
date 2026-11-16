@@ -29,3 +29,6 @@ weights/
 
 # Isolated local production build for v5 QA
 apps/web/.next-*/
+
+# Local audit screenshots; summaries live in docs/reviews.
+/output/playwright/audit-*/

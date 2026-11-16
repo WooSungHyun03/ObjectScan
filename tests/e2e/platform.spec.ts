@@ -178,7 +178,7 @@ test("verified login, private project, real signed upload, object/scene separati
       page.getByText("앞에서 선택한 사진 1장이 준비되어 있습니다."),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "선택한 사진 업로드", exact: true })
+      .getByRole("button", { name: "선택한 사진 1장 업로드", exact: true })
       .click();
     await expect(page.getByText(/업로드 1장/)).toBeVisible();
     await expect(page.getByText("fixture.jpg", { exact: true })).toBeVisible();

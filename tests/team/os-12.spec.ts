@@ -12,8 +12,7 @@ test("OS-12 job fixture: failed state, keyboard retry reaches queue", async ({
   await expect(
     page.getByText("처리에 사용할 사진을 확인해 주세요."),
   ).toBeVisible();
-  // shortcut: real app bug — .job-tracker text in globals.css is 3.07–4.48:1 on #1b2529; drop this arg once the owning ticket fixes those colors.
-  await checkPage(page, { contrastExclude: [".job-tracker"] });
+  await checkPage(page);
   await shot(page, "job-failed", info.project.name);
 
   const retry = page.getByRole("button", { name: "같은 입력으로 재시도" });

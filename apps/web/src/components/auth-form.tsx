@@ -70,7 +70,8 @@ export function AuthForm({
     [linkExpired, setLinkExpired] = useState(false);
   const router = useRouter(),
     search = useSearchParams(),
-    linkError = linkErrors[search.get("error") ?? ""] ?? "";
+    linkError = linkErrors[search.get("error") ?? ""] ?? "",
+    next = safeNext(search.get("next"));
   useEffect(() => {
     // Keep the email typed before an expired recovery link sent the user back.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount (no SSR mismatch)
@@ -95,7 +96,7 @@ export function AuthForm({
         type: "signup",
         email,
         options: {
-          emailRedirectTo: `${location.origin}/auth/callback?next=/dashboard`,
+          emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         },
       });
       if (error) throw error;
@@ -123,20 +124,19 @@ export function AuthForm({
     setMessage("");
     setLinkExpired(false);
     try {
-      const client = browserClient(),
-        next = safeNext(search.get("next"));
+      const client = browserClient();
       if (kind === "signup") {
         const { data, error } = await client.auth.signUp({
           email,
           password,
           options: {
             data: { display_name: name },
-            emailRedirectTo: `${location.origin}/auth/callback?next=/dashboard`,
+            emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
           },
         });
         if (error) throw error;
         if (data.session) {
-          router.push("/dashboard");
+          router.push(next);
           router.refresh();
         } else {
           setWaiting(true);
@@ -165,7 +165,7 @@ export function AuthForm({
         if (error) throw error;
         storage.clear();
         setMessage("새 비밀번호를 저장했습니다.");
-        router.push("/dashboard");
+        router.push(next);
         router.refresh();
       }
     } catch (e) {

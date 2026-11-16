@@ -100,3 +100,15 @@ test("OS-07 keyboard reorder and exclude match what is uploaded", async ({
   expect(await uploaded(page)).toEqual(["b.jpg", "a.jpg"]);
   await expect(page.locator(".draft-photos")).toHaveCount(0);
 });
+
+test("OS-07 upload could not start: private files stay selected for retry", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=draft-upload-failure");
+  const upload = page.getByRole("button", { name: "선택한 사진 1장 업로드" });
+  await upload.click();
+  await expect(page.getByRole("status")).toContainText("선택한 사진을 유지");
+  await expect(page.locator(".draft-photos")).toContainText("keep.jpg");
+  await upload.click();
+  await expect(page.locator(".draft-photos")).toHaveCount(0);
+});

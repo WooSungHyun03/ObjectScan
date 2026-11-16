@@ -190,10 +190,10 @@ export function ReconstructionWizard({
     return p.id;
   }
   async function upload(files: File[]) {
-    if (!files.length) return;
+    if (!files.length) return false;
     if (images.length + files.length > 200) {
       setError("프로젝트당 최대 200장까지 업로드할 수 있습니다.");
-      return;
+      return false;
     }
     setBusy(true);
     setError("");
@@ -249,8 +249,10 @@ export function ReconstructionWizard({
       setUploadErrors(errors);
       if (!errors.length)
         setMessage(`${files.length}장의 사진을 비공개로 저장했습니다.`);
+      return true;
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
+      return false;
     } finally {
       setBusy(false);
       abort.current = null;

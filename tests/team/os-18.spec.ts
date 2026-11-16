@@ -3,8 +3,6 @@ import { test, expect, type Page } from "@playwright/test";
 import { checkPage, shooter } from "./check";
 
 const shot = shooter("OS-18");
-// shortcut: real app bug — `.project-info p` in globals.css is 4.12:1 on cards; drop once that color is fixed.
-const known = { contrastExclude: [".project-info > p"] };
 const titles = (page: Page) =>
   page.locator(".listing-card h3").allTextContents();
 
@@ -27,7 +25,7 @@ test("OS-18 license and price filters narrow the loaded list", async ({
   await expect(page.getByRole("status")).toContainText(
     "불러온 에셋 4개 중 1개",
   );
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "market-filtered", info.project.name);
 });
 
@@ -71,7 +69,7 @@ test("OS-18 list failure is distinct from loading/empty; retry keeps the inputs"
   await expect(page.locator("body")).not.toContainText("10.0.0.2");
   await expect(page.getByText("새로운 에셋을 기다리고 있어요.")).toHaveCount(0);
   await expect(page.locator(".project-skeleton")).toHaveCount(0);
-  await checkPage(page, known);
+  await checkPage(page);
   await shot(page, "market-error", info.project.name);
 
   await page.getByRole("button", { name: "다시 불러오기" }).click();

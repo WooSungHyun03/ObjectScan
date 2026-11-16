@@ -106,3 +106,18 @@ test("OS-10 purchase button ignores a second click while the order request is in
     .toContain("/checkout/00000000-0000-4000-8000-000000000009");
   expect(await calls(page, "POST orders")).toHaveLength(1);
 });
+
+test("OS-10 order response lost: retry uses the same idempotency key", async ({
+  page,
+}) => {
+  await page.goto("/?fixture=checkout-response-lost");
+  const buy = page.getByRole("button", { name: "테스트 결제" });
+  await expect(buy).toBeEnabled();
+  await buy.click();
+  await expect(page.getByRole("alert")).toBeVisible();
+  await buy.click();
+  await expect.poll(() => page.url()).toContain("/checkout/");
+  const bodies = await calls(page, "POST orders");
+  expect(bodies).toHaveLength(2);
+  expect(bodies[0]).toEqual(bodies[1]);
+});

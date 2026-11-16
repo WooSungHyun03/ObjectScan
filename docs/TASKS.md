@@ -148,15 +148,15 @@ The billing page showed payout status and ledger kind as raw DB values (left ope
 
 ## Team A implementation
 
-| ID | Acceptance | State / evidence |
-| --- | --- | --- |
-| OS-01 | Display support, rejection reason, zero debit for blocked input, server rate for eligible input and preserve input on health retry | Local MOCK AC pass on `codex/os-01` from `fc20978`. Peer review and OS-12 browser integration pending. Next ready: OS-03. |
-| OS-03 | Resume the same job after a transient read failure, guard generation submission, reconcile ambiguous submission and cancel outcomes | Local MOCK AC pass on `codex/os-03` over `4d3ccce`. Peer review and OS-12 browser integration pending. Next ready: OS-06. |
-| OS-06 | Compare original and working versions in one canvas, preserve source after invalid GLB, download client metrics without private URLs | Local AC pass on `codex/os-06` over `57bd126`. Peer review and OS-12 browser integration pending. Next: OS-09 independent card scope. |
-| OS-09 | Safe poster on market cards, confirm a viewer capture before publication, preserve existing publication | Card and publish regression pass in MOCK on `codex/os-09`. Viewer capture confirmation `BLOCKED` by OS-19. Poster storage/approval `OWNER_PENDING` (OWN-08). Next ready: OS-17. |
-| OS-17 | Validate local GLB, offer private save and project publication, preserve edits on upload failure | Local and MOCK AC pass on `codex/os-17`. Private server registration `OWNER_PENDING` (OWN-09). Next ready: OS-20. |
-| OS-20 | Reuse edit cursor for history, confirm part deletion, preserve dirty state through save failures | Local GLB and MOCK save AC pass on `codex/os-20`. Peer review and OS-12 integration pending. Next ready: OS-11. |
-| OS-11 | Confirm named asset deletion, restore focus on cancel, explain rights holds and allow controlled retry | Local MOCK AC pass on `codex/os-11`. Purchase and retention behavior `OWNER_PENDING` (OWN-07). Next ready: review and Team A regression. |
+| ID    | Acceptance                                                                                                                           | State / evidence                                                                                                                                                                |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OS-01 | Display support, rejection reason, zero debit for blocked input, server rate for eligible input and preserve input on health retry   | Local MOCK AC pass on `codex/os-01` from `fc20978`. Peer review and OS-12 browser integration pending. Next ready: OS-03.                                                       |
+| OS-03 | Resume the same job after a transient read failure, guard generation submission, reconcile ambiguous submission and cancel outcomes  | Local MOCK AC pass on `codex/os-03` over `4d3ccce`. Peer review and OS-12 browser integration pending. Next ready: OS-06.                                                       |
+| OS-06 | Compare original and working versions in one canvas, preserve source after invalid GLB, download client metrics without private URLs | Local AC pass on `codex/os-06` over `57bd126`. Peer review and OS-12 browser integration pending. Next: OS-09 independent card scope.                                           |
+| OS-09 | Safe poster on market cards, confirm a viewer capture before publication, preserve existing publication                              | Card and publish regression pass in MOCK on `codex/os-09`. Viewer capture confirmation `BLOCKED` by OS-19. Poster storage/approval `OWNER_PENDING` (OWN-08). Next ready: OS-17. |
+| OS-17 | Validate local GLB, offer private save and project publication, preserve edits on upload failure                                     | Local and MOCK AC pass on `codex/os-17`. Private server registration `OWNER_PENDING` (OWN-09). Next ready: OS-20.                                                               |
+| OS-20 | Reuse edit cursor for history, confirm part deletion, preserve dirty state through save failures                                     | Local GLB and MOCK save AC pass on `codex/os-20`. Peer review and OS-12 integration pending. Next ready: OS-11.                                                                 |
+| OS-11 | Confirm named asset deletion, restore focus on cancel, explain rights holds and allow controlled retry                               | Local MOCK AC pass on `codex/os-11`. Purchase and retention behavior `OWNER_PENDING` (OWN-07). Next ready: review and Team A regression.                                        |
 
 OS-01 uses existing `GET /api/health`, project `qa` and `wallet` responses. The public health response advertises single-photo availability only. Project-specific support comes from the authenticated QA response after upload. The change can be reverted as one commit.
 
@@ -177,3 +177,7 @@ OS-11 evidence is under local `output/playwright/OS-11/`. Edge passed 4 key-free
 ## Team A and Team B integration — 2026-11-16
 
 Integration preserves the Team B billing and mask-recovery flows alongside Team A deletion, generation eligibility and polling. Shared client API errors carry both HTTP status and the existing application code. Team B OS-12 and OS-19 are available in the integrated tree. OS-09 still needs the viewer capture confirmation and the OWN-08 storage contract. Team A browser fixture migration into the shared runner and Owner service gates remain open.
+
+## Team ticket re-audit and deployment repair — 2026-11-16
+
+REVIEW-20261116: reviewed origin/main1416caf against all17 Team tickets. CI failed on stale upload/editor selectors; Vercel Git repository was disconnected and deployment creation disabled. Fixed retries preserving order idempotency, draft files after upload-start failure, auth returnTo and16MB consistency. Removed contrast exclusions, fixed muted text, added key-free team CI and production-build E2E plus isolated results. Ticket-specific partial/Owner gates and current validation: docs/reviews/team-ticket-audit-20261116.md. Do not infer all17 complete or fresh external GPU/PG/SMTP success.

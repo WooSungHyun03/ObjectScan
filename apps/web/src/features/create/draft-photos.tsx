@@ -25,12 +25,14 @@ export function DraftPhotos({
   diagnostics,
 }: {
   busy: boolean;
-  onUpload: (files: File[]) => Promise<void>;
+  onUpload: (files: File[]) => Promise<void | boolean>;
   // Keyed by file name. Absent until the server returns diagnostics (OWN-04).
   diagnostics?: Record<string, PhotoDiagnostics>;
 }) {
   const files = useSyncExternalStore(subscribeDraft, peekDraft, serverDraft);
   const [status, setStatus] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const inFlight = useRef(false);
   const list = useRef<HTMLOListElement>(null),
     focusNext = useRef("");
   // Reordering re-renders the rows, so keyboard focus is put back on the photo that moved.
@@ -93,7 +95,7 @@ export function DraftPhotos({
                 size="sm"
                 variant="ghost"
                 data-act="up"
-                disabled={busy || i === 0}
+                disabled={busy || submitting || i === 0}
                 aria-label={`${f.name} 위로 이동`}
                 onClick={() => move(i, -1)}
               >
@@ -103,7 +105,7 @@ export function DraftPhotos({
                 size="sm"
                 variant="ghost"
                 data-act="down"
-                disabled={busy || i === files.length - 1}
+                disabled={busy || submitting || i === files.length - 1}
                 aria-label={`${f.name} 아래로 이동`}
                 onClick={() => move(i, 1)}
               >
@@ -113,7 +115,7 @@ export function DraftPhotos({
                 size="sm"
                 variant="ghost"
                 data-act="exclude"
-                disabled={busy}
+                disabled={busy || submitting}
                 aria-label={`${f.name} 제외`}
                 onClick={() => exclude(i)}
               >
@@ -126,16 +128,36 @@ export function DraftPhotos({
           {status}
         </p>
         <Button
-          disabled={busy}
-          onClick={() => {
-            const v = files.slice();
-            putDraft([]);
-            void onUpload(v);
+          disabled={busy || submitting}
+          onClick={async () => {
+            if (inFlight.current) return;
+            inFlight.current = true;
+            setSubmitting(true);
+            try {
+              const completed = await onUpload(files.slice());
+              // Keep the private File objects when project creation/upload could not start.
+              if (completed !== false && peekDraft() === files) putDraft([]);
+              else if (completed === false)
+                setStatus(
+                  "업로드를 시작하지 못했습니다. 선택한 사진을 유지했습니다.",
+                );
+            } catch {
+              setStatus(
+                "업로드 결과를 확인하지 못했습니다. 선택한 사진을 유지했습니다.",
+              );
+            } finally {
+              inFlight.current = false;
+              setSubmitting(false);
+            }
           }}
         >
           선택한 사진 {files.length}장 업로드
         </Button>
-        <Button variant="ghost" disabled={busy} onClick={() => putDraft([])}>
+        <Button
+          variant="ghost"
+          disabled={busy || submitting}
+          onClick={() => putDraft([])}
+        >
           선택 취소
         </Button>
       </div>

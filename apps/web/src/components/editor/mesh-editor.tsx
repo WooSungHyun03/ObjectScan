@@ -174,7 +174,7 @@ export function MeshEditor({
         </div>
       )}
       {message && (
-        <p className="editor-message" role="status">
+        <p className="editor-message" role="status" aria-label="편집 결과">
           {message}
         </p>
       )}
