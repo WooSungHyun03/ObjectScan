@@ -281,5 +281,21 @@
       "finding": "기존8과업은 Team B 위주였고 editor와 A 티켓이 누락됐다고 HANDOFF에 명시. A 생성/재조회/삭제 회귀를 공용 suite에 추가하고 접근성 제외 제거. editor/private import 전부를 키 없는 공통 fixture에 옮긴 것은 아니므로 원래 AC 전체 완료 아님."
     }
   ],
-  "meaning": "CONDITIONAL is bounded code/fixture evidence, never perfect or production-ready; final checks recorded in markdown."
+  "meaning": "CONDITIONAL is bounded code/fixture evidence, never perfect or production-ready; final checks recorded in markdown.",
+  "verification": {
+    "application_sha": "75c2368b798e8511d5e8de18e93d91b6f84a5f8e",
+    "ci_run": 43803417014,
+    "ci_result": "success",
+    "team_browser_tests": 135,
+    "unit_db_tests_passed": 82,
+    "unit_optional_skipped": 1,
+    "worker_tests_passed": 32,
+    "e2e_passed": 8,
+    "e2e_optional_skipped": 1,
+    "deployment_id": "dpl_DEkNQMnywJbBesE39VKsSvpom4wy",
+    "deployment_state": "READY",
+    "production_url": "https://be-celeb.org",
+    "fresh_gpu_inference_verified": false,
+    "fresh_payment_verified": false
+  }
 }

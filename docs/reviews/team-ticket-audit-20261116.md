@@ -58,7 +58,17 @@ CONDITIONAL은 제한된 코드/fixture/지정 회귀 근거이며 무결점 선
 - Team UI 최초135건 중132통과/대비 결함3실패. CSS 수정 후 실패3건 재통과. **수정 후 전체135건 재실행도 모두 통과(4.5분)**.
 - 360/768/1440px 브라우저·전체 axe 검사, 주문 응답 유실/업로드 실패/가입 next/503 저장 재시도 포함. 접근성 검사 제외 selector를 제거했다.
 
-수정 코드 main333d04766642a69df033ccef04a6083493d30144를 push했다. 원격 CI43801795147은 platform/worker 통과, team-ui132통과/3실패. 2건은 긴 키보드 시나리오 마지막 screenshot에서 전체30초 초과, 1건은 버튼 색 transition 중간 프레임 대비 검사였다. 검사를 제외하지 않고 finite CSS transition 완료 대기, 캡처 animation 정지, 해당 긴 시나리오만60초로 수정했다. CI를360/768/1440별 matrix로 나누고 line reporter로 즉시 진행 상황을 보이게 했다. 후속 CI 결과는 아래 기록한다. staged Production dpl_GNwnmNzf7APTCtiXgyydMbEc7Gnh는 READY이며 health200/configured=true·home200/새 canonical·비인증 projects401 확인. 전체 CI 완료 후 승격한다. 사용자가 승인한 범위대로 GitHub App에 ObjectScan만 추가했다(기존 Be-Celeb/scenescan/AISaaS 유지). Vercel Git connect 성공, repo=ObjectScan/org=WooSungHyun03/productionBranch=main 확인.
+수정 코드는 main333d047 후 harness 보강75c2368b798e8511d5e8de18e93d91b6f84a5f8e로 push했다.
+
+- 첫 원격 CI43801795147: platform/worker 통과, team-ui132통과/3실패. 2건은 긴 복구 시나리오 마지막 screenshot의 전체30초 제한, 1건은 버튼 색 transition 중간 프레임 대비 검사였다. finite CSS transition 완료 대기와 screenshot animation 정지, 긴 시나리오만60초로 보강했다. 검사 제외나 assertion 완화는 하지 않았다.
+- **최종 [GitHub CI43803417014](https://github.com/WooSungHyun03/ObjectScan/actions/runs/43803417014) 전체 성공**: platform, worker, team-ui360/768/1440 모두 PASS. 세 화면 크기 합135건 모두 통과.
+- 사용자 승인 범위대로 GitHub App에 ObjectScan만 추가했다. 기존 Be-Celeb/scenescan/AISaaS는 유지했다. Vercel Git connect 성공, repo=ObjectScan/org=WooSungHyun03/productionBranch=main 확인.
+- 초기 CLI staged Production dpl_GNwnmNzf7APTCtiXgyydMbEc7Gnh는 별도 검증용이었다. 연결 복구 후75c2368 push가 **실제 Git 자동 Production 배포 dpl_DEkNQMnywJbBesE39VKsSvpom4wy**를 만들었다. READY/빌드61초/icn1, GitHub Vercel status SUCCESS. 별도 Force Promote나 실패 검사 우회는 사용하지 않았다.
+- [운영 URL](https://be-celeb.org/), [자동 배포 URL](https://objectscan-388xux6bv-sunghyuns-projects-da008879.vercel.app/). be-celeb.org/www/objectscan-six의 alias가 이 배포를 가리킴을 확인했다. www는308→https://be-celeb.org/, canonical도be-celeb.org다.
+- 실제 운영 health200/configured=true·worker_online=true, 비인증 projects401. 공개 GLB22,700 triangles 로드→중앙 배치→dirty/undo 활성화→undo 후 원상복구 브라우저 확인. 조회 시 새 배포 런타임 error 로그0건(15분 조회창, 배포 이후 짧은 관찰이며 장기 무장애 보장은 아님).
+- real_gpu_validated=false, single_photo=false, payments_mode=disabled, payouts_enabled=false를 유지했다. 이번 작업은 새 CUDA 추론/실제 TEST PG/SMTP 검증이 아니다. 운영 DB reset/migration·DNS·메일 변경 없음.
+
+롤백 후보는 기존 Production dpl_2bBbFWTr9bfTu8dSBaCMATuhUFid다. 앱 장애 시 정확한 이전 배포를 `vercel rollback dpl_2bBbFWTr9bfTu8dSBaCMATuhUFid --scope sunghyuns-projects-da008879`로 복원한 뒤 도메인·health·비공개 API를 재검증한다. rollback 후 자동 도메인 할당이 중단될 수 있으므로 복구된 정상 배포를 promote해 복원한다. DB 롤백은 불필요하다. 최종 증거 추가 커밋은 문서/공개 스크린샷만 포함하며 앱 소스는75c2368과 동일하다.
 
 ## 근거가 되는 주요 코드
 
@@ -68,10 +78,20 @@ CONDITIONAL은 제한된 코드/fixture/지정 회귀 근거이며 무결점 선
 - 테스트 근거: `tests/e2e/editor.spec.ts`, `tests/team/os-22.spec.ts`, `tests/team/os-02.spec.ts`, `tests/team/os-07.spec.ts`, `tests/team/os-10.spec.ts`.
 - Vercel 설정 의미는 [공식 OpenAPI](https://openapi.vercel.sh)의 updateProject.gitProviderOptions를 확인했다. createDeployments는 GitHub deployment 레코드 옵션이다.
 
+## 브라우저 증거
+
+공개 화면만 아래에 보관한다. 인증·관리 화면·trace·원본 업로드는 공개하지 않는다.
+
+![운영 랜딩](assets/team-audit-20261116/production-desktop.png)
+![운영 GLB 편집 및 실행 취소 후](assets/team-audit-20261116/production-editor.png)
+![360px 모바일 검수](assets/team-audit-20261116/mobile.png)
+
+편집기의 비교 줄은 현재 삼각형 delta를 “삼각형 0개”로 표시해 실제 모델 수와 혼동할 수 있다. `mesh-comparison-panel.tsx`의 문구를 “원본 대비 삼각형 수 변화”로 명확히 하는 P2 카피 보완을 권장한다. 실제 정보 패널의22,700개와 원본/작업본 JSON은 별도로 검증했다.
+
 ## 남은 후속 작업
 
 - Team: OS-07 실제 업로드 경고 연결, OS-09 모델 capture 확인 UI, OS-17 mock 저장 전체 시나리오·실제 adapter, OS-20 다중 부품 시나리오, OS-22 editor/private import 공용 fixture 보완.
 - Owner: billing snapshot whitelist/API, diagnostics 서버 응답, poster 저장/검증, private GLB ingress, retention/storage cleanup, 외부 SMTP, 실제 TEST PG/GPU 전체 흐름.
-- 배포: GitHub App 접근 범위와 main Git 연결 복구 완료. 실제 push에 의한 자동 배포 성공과 최종 CI를 검증한다.
+- 배포: GitHub App 접근 범위와 main Git 연결 복구 완료. 실제 push에 의한 자동 배포 및 최종 CI 전체 성공 확인. 장기 운영 관찰/향후 release gate 정책은 별도 운영 범위다.
 
 raw 로그·env·프로젝트 원문은 gitignored artifacts/team-audit-20261116(700)에 보관한다. 실제 사용자 데이터는 사용하지 않았고 로컬 disposable DB fixture만 사용했다. 업로드 원본/키/쿠키/서명 URL/trace를 공개 이슈나 Git에 넣지 않는다.
