@@ -8,6 +8,7 @@ const viewports = {
 export default defineConfig({
   testDir: "tests/team",
   outputDir: "test-results/team",
+  reporter: "line",
   fullyParallel: false,
   workers: 1,
   timeout: 30000,

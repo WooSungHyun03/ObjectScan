@@ -43,6 +43,7 @@ test("OS-08 mask request 503 returns to reselection without re-uploading", async
 test("OS-08 failed photo link, keyboard approval and exclusion keep focus and announce state", async ({
   page,
 }, info) => {
+  test.setTimeout(60000); // Two full-page captures plus the complete keyboard recovery flow on CI.
   await openMaskStep(page, "mask-partial");
   await expect(page.getByText("마스크를 만들지 못한 사진 1장")).toBeVisible();
   await page

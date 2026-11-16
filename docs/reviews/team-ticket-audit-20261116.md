@@ -11,7 +11,7 @@
 1. GitHub Actions43798675627: upload 버튼의 새 이름(장수 포함)을 기존 E2E가 못 찾음. editor status와 version 버튼이 추가되어 기존 locator가 여러 요소와 일치함. selector를 정확한 작업 대상으로 수정하고 실제 저장·원본불변·재열기 검증은 유지했다.
 2. CI는 production build를 하고도 E2E에서 dev 서버를 다시 cold compile했다. 이미 만든 production build를 실행해 검증하도록 바꿨다. 로컬 dev startup120s timeout과 배포 환경의 차이도 구분한다.
 3. Team fixture suite가 기존 CI에 포함되지 않음. 키 없는 team-ui job을 추가하고 platform/team outputDir를 분리해 병렬 trace/산출물 삭제 충돌을 방지했다.
-4. Vercel project objectscan(prj_CweIne2ltCHxViOCftiCQkX6nj72)의 link=null, gitRepository=null, createDeployments=disabled. 최근4일 신규 배포가 없었다. main push와 실제 배포는 다른 상태였다.
+4. Vercel project objectscan(prj_CweIne2ltCHxViOCftiCQkX6nj72)의 link=null, gitRepository=null로 Git 연결이 없었다. 최근4일 신규 배포가 없었다. gitProviderOptions.createDeployments=disabled도 관찰했으나 공식 OpenAPI상 GitHub deployment 레코드 생성 옵션이므로 Vercel 빌드 차단 원인으로 단정하지 않는다. main push와 실제 배포는 다른 상태였다.
 5. CLI Git connect가 접근 오류로 거부됨. Vercel dashboard 로그인을 요청했다. 권한을 임의 확대하거나 토큰을 추출해 우회하지 않는다. 기존 인증 CLI로 정확 SHA의 staged production을 검증할 수 있는 경로는 별도 진행한다.
 6. Production NEXT_PUBLIC_APP_URL이 옛 objectscan-six.vercel.app이었다. be-celeb.org로 config를 갱신했다(새 배포부터 적용). GPU/결제/LIVE/payout 활성화는 변경하지 않는다.
 
@@ -50,12 +50,28 @@ CONDITIONAL은 제한된 코드/fixture/지정 회귀 근거이며 무결점 선
 
 ## 실행 결과
 
-최종 실행 결과와 CI/배포 SHA는 검증 완료 후 아래에 기록한다. 진행 중인 검증을 PASS로 표시하지 않는다.
+로컬 실행 결과:
+
+- TypeScript/typecheck 통과, lint 오류0·기존 경고7, Prettier 및 디자인 토큰 동기화 검사 통과.
+- 단위·DB 통합 테스트82통과/1선택 skip. Worker Python32통과(실제 CUDA 추론 검증 아님).
+- production build 통과. production 서버 E2E8통과/1선택 skip(대형 GPU 산출물 fixture 미제공).
+- Team UI 최초135건 중132통과/대비 결함3실패. CSS 수정 후 실패3건 재통과. **수정 후 전체135건 재실행도 모두 통과(4.5분)**.
+- 360/768/1440px 브라우저·전체 axe 검사, 주문 응답 유실/업로드 실패/가입 next/503 저장 재시도 포함. 접근성 검사 제외 selector를 제거했다.
+
+수정 코드 main333d04766642a69df033ccef04a6083493d30144를 push했다. 원격 CI43801795147은 platform/worker 통과, team-ui132통과/3실패. 2건은 긴 키보드 시나리오 마지막 screenshot에서 전체30초 초과, 1건은 버튼 색 transition 중간 프레임 대비 검사였다. 검사를 제외하지 않고 finite CSS transition 완료 대기, 캡처 animation 정지, 해당 긴 시나리오만60초로 수정했다. CI를360/768/1440별 matrix로 나누고 line reporter로 즉시 진행 상황을 보이게 했다. 후속 CI 결과는 아래 기록한다. staged Production dpl_GNwnmNzf7APTCtiXgyydMbEc7Gnh는 READY이며 health200/configured=true·home200/새 canonical·비인증 projects401 확인. 전체 CI 완료 후 승격한다. 사용자가 승인한 범위대로 GitHub App에 ObjectScan만 추가했다(기존 Be-Celeb/scenescan/AISaaS 유지). Vercel Git connect 성공, repo=ObjectScan/org=WooSungHyun03/productionBranch=main 확인.
+
+## 근거가 되는 주요 코드
+
+- OS-07: `apps/web/src/components/reconstruction-wizard.tsx:331`의 DraftPhotos 호출에 diagnostics를 전달하지 않음. 경고 helper 자체와 production 연결을 구분.
+- OS-17: `apps/web/src/app/projects/[id]/edit/page.tsx:21`, `apps/web/src/app/demo/edit/page.tsx:3`은 privateImport adapter 없이 MeshEditor를 렌더링. `apps/web/src/components/editor/mesh-editor.tsx:304`에는 optional adapter 주입 지점만 존재.
+- OS-09: `apps/web/src/features/marketplace/listing-poster.ts:14`는 안전한 poster URL 선택 helper. 실제 capture/confirm/store 흐름의 구현 증거가 아님.
+- 테스트 근거: `tests/e2e/editor.spec.ts`, `tests/team/os-22.spec.ts`, `tests/team/os-02.spec.ts`, `tests/team/os-07.spec.ts`, `tests/team/os-10.spec.ts`.
+- Vercel 설정 의미는 [공식 OpenAPI](https://openapi.vercel.sh)의 updateProject.gitProviderOptions를 확인했다. createDeployments는 GitHub deployment 레코드 옵션이다.
 
 ## 남은 후속 작업
 
 - Team: OS-07 실제 업로드 경고 연결, OS-09 모델 capture 확인 UI, OS-17 mock 저장 전체 시나리오·실제 adapter, OS-20 다중 부품 시나리오, OS-22 editor/private import 공용 fixture 보완.
 - Owner: billing snapshot whitelist/API, diagnostics 서버 응답, poster 저장/검증, private GLB ingress, retention/storage cleanup, 외부 SMTP, 실제 TEST PG/GPU 전체 흐름.
-- 배포: GitHub App의 ObjectScan 접근 권한과 Vercel Git 연결·자동배포 설정 확인. 로그인/2FA 외 가능한 로컬/CLI 작업은 직접 처리한다.
+- 배포: GitHub App 접근 범위와 main Git 연결 복구 완료. 실제 push에 의한 자동 배포 성공과 최종 CI를 검증한다.
 
 raw 로그·env·프로젝트 원문은 gitignored artifacts/team-audit-20261116(700)에 보관한다. 실제 사용자 데이터는 사용하지 않았고 로컬 disposable DB fixture만 사용했다. 업로드 원본/키/쿠키/서명 URL/trace를 공개 이슈나 Git에 넣지 않는다.
