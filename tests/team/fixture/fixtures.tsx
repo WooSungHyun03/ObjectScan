@@ -49,8 +49,20 @@ const billing = {
         captured_at: t,
       },
     },
-    { id: "22222222-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "paid", created_at: t },
-    { id: "33333333-0000-4000-8000-000000000003", kind: "credits", amount: 5000, status: "paid", created_at: t },
+    {
+      id: "22222222-0000-4000-8000-000000000002",
+      kind: "marketplace",
+      amount: 8000,
+      status: "paid",
+      created_at: t,
+    },
+    {
+      id: "33333333-0000-4000-8000-000000000003",
+      kind: "credits",
+      amount: 5000,
+      status: "paid",
+      created_at: t,
+    },
   ],
 };
 // OS-21: paid, refunded and an unrecognised status, plus a credits order.
@@ -58,8 +70,20 @@ const billingStates = {
   ...billing,
   // Payout status and ledger kind values from the DB checks, plus one unknown each.
   payouts: [
-    { id: "p1", kind: "payout", amount: 3000, status: "requested", created_at: t },
-    { id: "p2", kind: "payout", amount: 2000, status: "manual_hold_v2", created_at: t },
+    {
+      id: "p1",
+      kind: "payout",
+      amount: 3000,
+      status: "requested",
+      created_at: t,
+    },
+    {
+      id: "p2",
+      kind: "payout",
+      amount: 2000,
+      status: "manual_hold_v2",
+      created_at: t,
+    },
   ],
   ledger: [
     { id: "g1", kind: "marketplace_purchase", amount: -12000, created_at: t },
@@ -67,14 +91,51 @@ const billingStates = {
     { id: "g3", kind: "promo_adjust_v2", amount: 100, created_at: t },
   ],
   orders: [
-    { id: "aaaaaaaa-0000-4000-8000-000000000001", kind: "marketplace", amount: 12000, status: "paid", created_at: t },
-    { id: "bbbbbbbb-0000-4000-8000-000000000002", kind: "marketplace", amount: 8000, status: "refunded", created_at: t },
-    { id: "cccccccc-0000-4000-8000-000000000003", kind: "marketplace", amount: 7000, status: "chargeback_review_v2", created_at: t },
-    { id: "dddddddd-0000-4000-8000-000000000004", kind: "credits", amount: 5000, status: "paid", created_at: t },
+    {
+      id: "aaaaaaaa-0000-4000-8000-000000000001",
+      kind: "marketplace",
+      amount: 12000,
+      status: "paid",
+      created_at: t,
+    },
+    {
+      id: "bbbbbbbb-0000-4000-8000-000000000002",
+      kind: "marketplace",
+      amount: 8000,
+      status: "refunded",
+      created_at: t,
+    },
+    {
+      id: "cccccccc-0000-4000-8000-000000000003",
+      kind: "marketplace",
+      amount: 7000,
+      status: "chargeback_review_v2",
+      created_at: t,
+    },
+    {
+      id: "dddddddd-0000-4000-8000-000000000004",
+      kind: "credits",
+      amount: 5000,
+      status: "paid",
+      created_at: t,
+    },
   ],
 };
-const listing = (id: string, title: string, category: string, price: number, license: string): Listing => ({
-  id, title, category, price, license, description: "", currency: "KRW", test_mode: true,
+const listing = (
+  id: string,
+  title: string,
+  category: string,
+  price: number,
+  license: string,
+): Listing => ({
+  id,
+  title,
+  category,
+  price,
+  license,
+  description: "",
+  currency: "KRW",
+  test_mode: true,
 });
 const listings = [
   listing("l-free", "무료 화분", "decor", 0, "cc0-1.0"),
@@ -84,8 +145,11 @@ const listings = [
 ];
 // Mimics the existing API: search + category on the server, sort by price.
 const listingsRoute: FixtureRoute = ({ query }) => {
-  const q = query.get("search") ?? "", c = query.get("category") ?? "all";
-  const out = listings.filter((l) => l.title.includes(q) && (c === "all" || l.category === c));
+  const q = query.get("search") ?? "",
+    c = query.get("category") ?? "all";
+  const out = listings.filter(
+    (l) => l.title.includes(q) && (c === "all" || l.category === c),
+  );
   if (query.get("sort") === "price") out.sort((a, b) => a.price - b.price);
   return { json: out };
 };
@@ -93,7 +157,8 @@ const walletRoutes: FixtureRoutes = {
   "GET wallet": () => ({ json: { balance: 3, trial_available: false } }),
   "GET pricing": () => ({ json: { packages: [] } }),
 };
-const paySearch = "?paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000";
+const paySearch =
+  "?paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000";
 const payment = (title: string, confirm: FixtureRoute): Fixture => ({
   title,
   search: paySearch,
@@ -101,10 +166,15 @@ const payment = (title: string, confirm: FixtureRoute): Fixture => ({
   render: () => <PaymentResult />,
 });
 // OS-07: memory-only draft; the upload callback only records what it would send.
-const draft = (title: string, names: string[], diagnostics?: Parameters<typeof DraftPhotos>[0]["diagnostics"]): Fixture => ({
+const draft = (
+  title: string,
+  names: string[],
+  diagnostics?: Parameters<typeof DraftPhotos>[0]["diagnostics"],
+): Fixture => ({
   title,
   routes: {},
-  setup: () => putDraft(names.map((n) => new File([n], n, { type: "image/jpeg" }))),
+  setup: () =>
+    putDraft(names.map((n) => new File([n], n, { type: "image/jpeg" }))),
   render: () => (
     <main id="main" style={{ padding: 16 }}>
       <h1>MOCK 사진 준비</h1>
@@ -112,7 +182,8 @@ const draft = (title: string, names: string[], diagnostics?: Parameters<typeof D
         busy={false}
         diagnostics={diagnostics}
         onUpload={async (files) => {
-          (window as unknown as { __uploaded: string[] }).__uploaded = files.map((f) => f.name);
+          (window as unknown as { __uploaded: string[] }).__uploaded =
+            files.map((f) => f.name);
         }}
       />
     </main>
@@ -128,32 +199,81 @@ const job = (over: Partial<Job>): Job => ({
   created_at: t,
   updated_at: t,
   events: [
-    { id: "e1", stage: "queued", message: "작업이 대기열에 등록되었습니다.", progress: 0, created_at: t },
+    {
+      id: "e1",
+      stage: "queued",
+      message: "작업이 대기열에 등록되었습니다.",
+      progress: 0,
+      created_at: t,
+    },
   ],
   ...over,
 });
 // OS-08: wizard on an existing object project; the API mirrors projects/:id, masks and images PATCH.
 const pid = "p-fixture";
-const photo = (id: string, position: number, over: Partial<ProjectImage> = {}): ProjectImage => ({
-  id, project_id: pid, filename: `${id}.webp`, original_path: "", position, excluded: false,
-  width: 800, height: 800, size_bytes: 1, status: "verified", url: "/demo/shoe-photo.webp", ...over,
+const photo = (
+  id: string,
+  position: number,
+  over: Partial<ProjectImage> = {},
+): ProjectImage => ({
+  id,
+  project_id: pid,
+  filename: `${id}.webp`,
+  original_path: "",
+  position,
+  excluded: false,
+  width: 800,
+  height: 800,
+  size_bytes: 1,
+  status: "verified",
+  url: "/demo/shoe-photo.webp",
+  ...over,
 });
 const mask = { mask_url: "/brand/mascot/front.webp" };
-const wizard = (title: string, images: () => ProjectImage[], routes: FixtureRoutes = {}, jobs: Job[] = []): Fixture => ({
+const wizard = (
+  title: string,
+  images: () => ProjectImage[],
+  routes: FixtureRoutes = {},
+  jobs: Job[] = [],
+): Fixture => ({
   title,
   routes: {
-    "GET health": () => ({ json: { worker_online: false, real_gpu_validated: false, payments_mode: "test", models: [] } }),
+    "GET health": () => ({
+      json: {
+        worker_online: false,
+        real_gpu_validated: false,
+        payments_mode: "test",
+        models: [],
+      },
+    }),
     [`GET projects/${pid}`]: () => ({
       json: {
-        id: pid, name: "MOCK 운동화", mode: "object", capture_mode: "camera_orbit", status: "uploaded",
-        input_image_count: 3, created_at: t, updated_at: t, target_image_id: "a",
-        target_selection: { kind: "box", x: 0.2, y: 0.2, width: 0.5, height: 0.5 },
-        images: images(), jobs, artifacts: [],
+        id: pid,
+        name: "MOCK 운동화",
+        mode: "object",
+        capture_mode: "camera_orbit",
+        status: "uploaded",
+        input_image_count: 3,
+        created_at: t,
+        updated_at: t,
+        target_image_id: "a",
+        target_selection: {
+          kind: "box",
+          x: 0.2,
+          y: 0.2,
+          width: 0.5,
+          height: 0.5,
+        },
+        images: images(),
+        jobs,
+        artifacts: [],
       },
     }),
     ...routes,
   },
-  render: () => <ReconstructionWizard initialMode="object" initialProject={pid} />,
+  render: () => (
+    <ReconstructionWizard initialMode="object" initialProject={pid} />
+  ),
 });
 // Server state for the stale-approval fixture: the first approval lands after the revision moved.
 let revisionMoved = false;
@@ -162,13 +282,27 @@ let excluded: string[] = [];
 
 export const fixtures: Record<string, Fixture> = {
   // OS-08: the mask request fails (worker 503); photos and the saved selection must stay.
-  "mask-analysis-503": wizard("마스크: 분석 요청 실패", () => [photo("a", 0), photo("b", 1), photo("c", 2)], {
-    [`POST projects/${pid}/masks`]: () => ({ status: 503, json: { code: "WORKER_NOT_CONFIGURED", error: "GPU 작업자 연결을 준비하고 있습니다." } }),
-  }),
+  "mask-analysis-503": wizard(
+    "마스크: 분석 요청 실패",
+    () => [photo("a", 0), photo("b", 1), photo("c", 2)],
+    {
+      [`POST projects/${pid}/masks`]: () => ({
+        status: 503,
+        json: {
+          code: "WORKER_NOT_CONFIGURED",
+          error: "GPU 작업자 연결을 준비하고 있습니다.",
+        },
+      }),
+    },
+  ),
   // OS-08: mask job finished but one photo got no mask; approve by keyboard, exclude the failed photo.
   "mask-partial": wizard(
     "마스크: 일부 사진 실패",
-    () => [photo("a", 0, { ...mask, mask_reviewed: approved.includes("a") }), photo("b", 1, { ...mask, excluded: excluded.includes("b") }), photo("c", 2)],
+    () => [
+      photo("a", 0, { ...mask, mask_reviewed: approved.includes("a") }),
+      photo("b", 1, { ...mask, excluded: excluded.includes("b") }),
+      photo("c", 2),
+    ],
     {
       [`PATCH projects/${pid}/masks/a`]: ({ body }) => {
         approved = (body as { reviewed: boolean }).reviewed ? ["a"] : [];
@@ -185,11 +319,17 @@ export const fixtures: Record<string, Fixture> = {
   // for the stale revision and the next read shows no approvals.
   "mask-stale-approval": wizard(
     "마스크: 변경된 선택의 이전 승인",
-    () => [photo("a", 0, { ...mask, mask_reviewed: !revisionMoved }), photo("b", 1, mask)],
+    () => [
+      photo("a", 0, { ...mask, mask_reviewed: !revisionMoved }),
+      photo("b", 1, mask),
+    ],
     {
       [`PATCH projects/${pid}/masks/b`]: () => {
         revisionMoved = true;
-        return { status: 404, json: { code: "MASK_NOT_FOUND", error: "MASK_NOT_FOUND" } };
+        return {
+          status: 404,
+          json: { code: "MASK_NOT_FOUND", error: "MASK_NOT_FOUND" },
+        };
       },
     },
   ),
@@ -197,10 +337,28 @@ export const fixtures: Record<string, Fixture> = {
   "project-other-404": {
     title: "마스크: 다른 사용자의 프로젝트",
     routes: {
-      "GET health": () => ({ json: { worker_online: false, real_gpu_validated: false, payments_mode: "test", models: [] } }),
-      "GET projects/p-other-owner": () => ({ status: 404, json: { code: "PROJECT_NOT_FOUND", error: "프로젝트를 찾을 수 없습니다." } }),
+      "GET health": () => ({
+        json: {
+          worker_online: false,
+          real_gpu_validated: false,
+          payments_mode: "test",
+          models: [],
+        },
+      }),
+      "GET projects/p-other-owner": () => ({
+        status: 404,
+        json: {
+          code: "PROJECT_NOT_FOUND",
+          error: "프로젝트를 찾을 수 없습니다.",
+        },
+      }),
     },
-    render: () => <ReconstructionWizard initialMode="object" initialProject="p-other-owner" />,
+    render: () => (
+      <ReconstructionWizard
+        initialMode="object"
+        initialProject="p-other-owner"
+      />
+    ),
   },
   // OS-12: job state — failed, then the same-input retry succeeds into the queue.
   "job-failed-retry": {
@@ -209,7 +367,11 @@ export const fixtures: Record<string, Fixture> = {
       "GET jobs/fixture-job": ({ call }) => ({
         json:
           call === 1
-            ? job({ state: "failed", progress: 40, error_code: "INVALID_VIEW_COUNT" })
+            ? job({
+                state: "failed",
+                progress: 40,
+                error_code: "INVALID_VIEW_COUNT",
+              })
             : job({ state: "queued", progress: 0 }),
       }),
       "POST jobs/fixture-job/retry": () => ({ json: { ok: true } }),
@@ -219,18 +381,29 @@ export const fixtures: Record<string, Fixture> = {
   // OS-12: order state — provider error first, then the same order confirms.
   "payment-error-retry": {
     title: "주문 상태: 확인 실패 후 재확인",
-    search: "?paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000",
+    search:
+      "?paymentKey=fixture-only&orderId=00000000-0000-4000-8000-000000000001&amount=1000",
     routes: {
       "POST payments/confirm": ({ call }) =>
         call === 1
-          ? { status: 502, json: { code: "PROCESSOR_ERROR", error: "upstream 10.0.0.1 detail" } }
+          ? {
+              status: 502,
+              json: {
+                code: "PROCESSOR_ERROR",
+                error: "upstream 10.0.0.1 detail",
+              },
+            }
           : { json: { status: "paid" } },
     },
     render: () => <PaymentResult />,
   },
   // OS-10: the approval response is lost once; the server already holds the paid order.
-  "payment-response-lost": payment("결제 복귀: 승인 응답 유실 후 재확인", ({ call }) =>
-    call === 1 ? { network: true, json: null } : { delay: 400, json: { status: "paid" } },
+  "payment-response-lost": payment(
+    "결제 복귀: 승인 응답 유실 후 재확인",
+    ({ call }) =>
+      call === 1
+        ? { network: true, json: null }
+        : { delay: 400, json: { status: "paid" } },
   ),
   // OS-10: amount in the return URL does not match the server order.
   "payment-amount-mismatch": payment("결제 복귀: 금액 불일치", () => ({
@@ -243,7 +416,9 @@ export const fixtures: Record<string, Fixture> = {
     json: { code: "ORDER_EXPIRED", error: "ORDER_EXPIRED" },
   })),
   // OS-10: re-checking an order that was refunded in the meantime.
-  "payment-refunded": payment("결제 복귀: 환불된 주문", () => ({ json: { status: "refunded" } })),
+  "payment-refunded": payment("결제 복귀: 환불된 주문", () => ({
+    json: { status: "refunded" },
+  })),
   // OS-10: purchase button pressed twice while the order request is in flight.
   "checkout-double": {
     title: "구매 버튼: 중복 클릭",
@@ -251,7 +426,13 @@ export const fixtures: Record<string, Fixture> = {
       "GET health": () => ({ json: { payments_mode: "test" } }),
       "POST orders": () => ({
         delay: 400,
-        json: { id: "00000000-0000-4000-8000-000000000009", amount: 1000, currency: "KRW", status: "pending", kind: "marketplace" },
+        json: {
+          id: "00000000-0000-4000-8000-000000000009",
+          amount: 1000,
+          currency: "KRW",
+          status: "pending",
+          kind: "marketplace",
+        },
       }),
     },
     render: () => (
@@ -262,13 +443,17 @@ export const fixtures: Record<string, Fixture> = {
     ),
   },
   // OS-07: sharp, blurry, exact duplicate and a photo that could not be checked.
-  "draft-diagnostics": draft("사진 준비: 선명도·중복 안내", ["front.jpg", "side.jpg", "blurry.jpg", "front-copy.jpg", "broken.jpg"], {
-    "front.jpg": { sharpness: 20.5 },
-    "side.jpg": { sharpness: 18.2 },
-    "blurry.jpg": { sharpness: 1.7 },
-    "front-copy.jpg": { sharpness: 20.5, duplicate_of: "front.jpg" },
-    "broken.jpg": { unavailable: true },
-  }),
+  "draft-diagnostics": draft(
+    "사진 준비: 선명도·중복 안내",
+    ["front.jpg", "side.jpg", "blurry.jpg", "front-copy.jpg", "broken.jpg"],
+    {
+      "front.jpg": { sharpness: 20.5 },
+      "side.jpg": { sharpness: 18.2 },
+      "blurry.jpg": { sharpness: 1.7 },
+      "front-copy.jpg": { sharpness: 20.5, duplicate_of: "front.jpg" },
+      "broken.jpg": { unavailable: true },
+    },
+  ),
   // OS-07: no diagnostics yet → static shooting guide, keyboard reorder and exclude.
   "draft-reorder": draft("사진 준비: 순서 정리", ["a.jpg", "b.jpg", "c.jpg"]),
   // OS-02: signup without session → waiting state with resend cooldown.
@@ -277,7 +462,10 @@ export const fixtures: Record<string, Fixture> = {
     routes: {},
     setup: () =>
       setAuthFixture({
-        signUp: () => ({ data: { session: null, user: { id: "fixture-user" } }, error: null }),
+        signUp: () => ({
+          data: { session: null, user: { id: "fixture-user" } },
+          error: null,
+        }),
         resend: () => ({ data: {}, error: null }),
       }),
     render: () => <AuthForm kind="signup" configured />,
@@ -289,7 +477,10 @@ export const fixtures: Record<string, Fixture> = {
     setup: () =>
       setAuthFixture({
         updateUser: () => ({
-          error: { name: "AuthSessionMissingError", message: "Auth session missing!" },
+          error: {
+            name: "AuthSessionMissingError",
+            message: "Auth session missing!",
+          },
         }),
       }),
     render: () => <AuthForm kind="reset" configured />,
@@ -299,7 +490,10 @@ export const fixtures: Record<string, Fixture> = {
     title: "재설정 요청: 링크 만료 후 복귀",
     search: "?error=link_expired",
     routes: {},
-    setup: () => setAuthFixture({ resetPasswordForEmail: () => ({ data: {}, error: null }) }),
+    setup: () =>
+      setAuthFixture({
+        resetPasswordForEmail: () => ({ data: {}, error: null }),
+      }),
     render: () => <AuthForm kind="forgot" configured />,
   },
   // OS-02: login with an external next URL must stay internal.
@@ -307,7 +501,8 @@ export const fixtures: Record<string, Fixture> = {
     title: "로그인: 복귀 경로 검사",
     search: "?next=https://evil.test/steal",
     routes: {},
-    setup: () => setAuthFixture({ signInWithPassword: () => ({ data: {}, error: null }) }),
+    setup: () =>
+      setAuthFixture({ signInWithPassword: () => ({ data: {}, error: null }) }),
     render: () => <AuthForm kind="login" configured />,
   },
   // OS-04: recorded snapshot, legacy order without snapshot, non-market order.
@@ -323,7 +518,13 @@ export const fixtures: Record<string, Fixture> = {
       ...walletRoutes,
       "GET billing": ({ call }) =>
         call === 1
-          ? { status: 404, json: { code: "NOT_FOUND", error: "order 22222222 of user other@x.test" } }
+          ? {
+              status: 404,
+              json: {
+                code: "NOT_FOUND",
+                error: "order 22222222 of user other@x.test",
+              },
+            }
           : { json: billing },
     },
     render: () => <BillingPanel />,
@@ -341,7 +542,10 @@ export const fixtures: Record<string, Fixture> = {
       ...walletRoutes,
       "GET billing": ({ call }) =>
         call === 1
-          ? { status: 503, json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" } }
+          ? {
+              status: 503,
+              json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" },
+            }
           : { json: billingStates },
     },
     render: () => <BillingPanel />,
@@ -351,7 +555,15 @@ export const fixtures: Record<string, Fixture> = {
     title: "내 에셋: 환불 후 다운로드 거부",
     routes: {
       "GET assets": () => ({
-        json: [{ id: "asset-refunded", name: "원목 의자", created_at: t, quality: { triangles: 12000 }, can_publish: false }],
+        json: [
+          {
+            id: "asset-refunded",
+            name: "원목 의자",
+            created_at: t,
+            quality: { triangles: 12000 },
+            can_publish: false,
+          },
+        ],
       }),
       "GET assets/asset-refunded/download": () => ({
         status: 404,
@@ -399,7 +611,12 @@ export const fixtures: Record<string, Fixture> = {
     title: "마켓: 목록 실패 후 재시도",
     routes: {
       "GET listings": (req) =>
-        req.call === 1 ? { status: 503, json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" } } : listingsRoute(req),
+        req.call === 1
+          ? {
+              status: 503,
+              json: { code: "UNAVAILABLE", error: "db timeout at 10.0.0.2" },
+            }
+          : listingsRoute(req),
     },
     render: () => (
       <main id="main" className="public-page">

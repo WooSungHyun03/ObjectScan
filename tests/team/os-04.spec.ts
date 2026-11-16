@@ -4,7 +4,9 @@ import { checkPage, shooter } from "./check";
 
 const shot = shooter("OS-04");
 
-test("OS-04 order shows purchase-time terms; legacy order is not backfilled", async ({ page }, info) => {
+test("OS-04 order shows purchase-time terms; legacy order is not backfilled", async ({
+  page,
+}, info) => {
   await page.goto("/?fixture=billing-terms");
   const terms = page.getByText("주문 시점 이용 조건");
   await expect(terms).toHaveCount(2); // only the two marketplace orders, not credits
@@ -18,12 +20,15 @@ test("OS-04 order shows purchase-time terms; legacy order is not backfilled", as
   await terms.nth(1).click();
   const legacy = page.locator("details.order-terms").nth(1);
   await expect(legacy).toContainText("기록을 확인하고 있습니다");
-  for (const current of ["CC BY 4.0", "CC0", "일반 이용"]) await expect(legacy).not.toContainText(current);
+  for (const current of ["CC BY 4.0", "CC0", "일반 이용"])
+    await expect(legacy).not.toContainText(current);
   await checkPage(page);
   await shot(page, "billing-terms", info.project.name);
 });
 
-test("OS-04 billing lookup error shows only the error and a retry", async ({ page }, info) => {
+test("OS-04 billing lookup error shows only the error and a retry", async ({
+  page,
+}, info) => {
   await page.goto("/?fixture=billing-error");
   await expect(page.getByRole("alert")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("other@x.test");

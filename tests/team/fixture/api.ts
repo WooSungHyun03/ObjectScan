@@ -1,7 +1,12 @@
 // Common fixture API adapter: answers the app's own `fetch("/api/...")` calls
 // in the browser so components run unchanged with no keys, DB, GPU or PG.
 // `network`: the request never gets a response (lost reply). `delay`: ms before replying.
-export type FixtureReply = { status?: number; json: unknown; network?: true; delay?: number };
+export type FixtureReply = {
+  status?: number;
+  json: unknown;
+  network?: true;
+  delay?: number;
+};
 export type FixtureRoute = (req: {
   method: string;
   body: unknown;
@@ -16,7 +21,10 @@ export function installFixtureApi(routes: FixtureRoutes) {
   const counts: Record<string, number> = {};
   const real = window.fetch.bind(window);
   window.fetch = async (input, init) => {
-    const url = new URL(String(input instanceof Request ? input.url : input), location.href);
+    const url = new URL(
+      String(input instanceof Request ? input.url : input),
+      location.href,
+    );
     if (!url.pathname.startsWith("/api/")) return real(input, init);
     const method = (init?.method ?? "GET").toUpperCase();
     const key = `${method} ${url.pathname.slice(5)}`;
@@ -35,5 +43,6 @@ export function installFixtureApi(routes: FixtureRoutes) {
       headers: { "Content-Type": "application/json" },
     });
   };
-  (window as unknown as { __fixtureCalls: typeof calls }).__fixtureCalls = calls;
+  (window as unknown as { __fixtureCalls: typeof calls }).__fixtureCalls =
+    calls;
 }

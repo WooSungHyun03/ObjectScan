@@ -12,11 +12,20 @@ export default defineConfig({
   resolve: {
     // Array form: the exact supabase client match must win over the "@" prefix.
     alias: [
-      { find: /^@\/lib\/supabase\/client$/, replacement: at("./adapters/supabase-client.ts") },
-      { find: "next/navigation", replacement: at("./adapters/next-navigation.ts") },
+      {
+        find: /^@\/lib\/supabase\/client$/,
+        replacement: at("./adapters/supabase-client.ts"),
+      },
+      {
+        find: "next/navigation",
+        replacement: at("./adapters/next-navigation.ts"),
+      },
       { find: "next/link", replacement: at("./adapters/next-link.tsx") },
       { find: "next/image", replacement: at("./adapters/next-image.tsx") },
-      { find: "@objectscan/shared", replacement: at("../../packages/shared/src/index.ts") },
+      {
+        find: "@objectscan/shared",
+        replacement: at("../../packages/shared/src/index.ts"),
+      },
       { find: "@", replacement: at("../../apps/web/src") },
     ],
   },

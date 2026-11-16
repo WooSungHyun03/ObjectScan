@@ -7,7 +7,8 @@ let current: AuthFixture = {};
 export const authCalls: { method: string; args: unknown }[] = [];
 export function setAuthFixture(f: AuthFixture) {
   current = f;
-  (window as unknown as { __authCalls: typeof authCalls }).__authCalls = authCalls;
+  (window as unknown as { __authCalls: typeof authCalls }).__authCalls =
+    authCalls;
 }
 
 export function browserClient() {
@@ -22,9 +23,17 @@ export function browserClient() {
           // Unscripted calls fail loudly so a fixture never silently "passes".
           return fn
             ? fn(args)
-            : { data: null, error: { code: "FIXTURE_ROUTE_MISSING", message: `auth.${method}` } };
+            : {
+                data: null,
+                error: {
+                  code: "FIXTURE_ROUTE_MISSING",
+                  message: `auth.${method}`,
+                },
+              };
         },
     },
   );
-  return { auth } as unknown as ReturnType<typeof import("@supabase/ssr").createBrowserClient>;
+  return { auth } as unknown as ReturnType<
+    typeof import("@supabase/ssr").createBrowserClient
+  >;
 }

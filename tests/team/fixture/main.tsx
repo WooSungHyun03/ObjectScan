@@ -21,7 +21,9 @@ if (!fixture) {
       <ul>
         {Object.entries(fixtures).map(([k, f]) => (
           <li key={k}>
-            <a href={`/?fixture=${k}${(f.search ?? "").replace("?", "&")}`}>{f.title}</a>
+            <a href={`/?fixture=${k}${(f.search ?? "").replace("?", "&")}`}>
+              {f.title}
+            </a>
           </li>
         ))}
       </ul>
