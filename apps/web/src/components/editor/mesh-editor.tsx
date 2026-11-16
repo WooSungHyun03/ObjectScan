@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useRef, useState } from "react";
 import {
   Undo2,
   Redo2,
@@ -10,7 +11,6 @@ import {
   RotateCw,
   Scaling,
   EyeOff,
-  Trash2,
   Maximize,
   Focus,
   Grid2X2,
@@ -19,6 +19,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { InspectorPanel } from "./inspector-panel";
+import { MeshComparisonPanel } from "./mesh-comparison-panel";
+import { PrivateModelImportPanel } from "./private-model-import-panel";
+import { MeshHistoryPanel } from "./mesh-history-panel";
+import { PartDeleteDialog } from "./part-delete-dialog";
+import type { PrivateModelImportAdapter } from "./private-model-import";
 import { useMeshEditor } from "./use-mesh-editor";
 import { Button } from "@/components/ui/button";
 const EditorCanvas = dynamic(
@@ -33,18 +38,23 @@ const EditorCanvas = dynamic(
 export function MeshEditor({
   projectId,
   demo = false,
+  privateImport,
 }: {
   projectId?: string;
   demo?: boolean;
+  privateImport?: PrivateModelImportAdapter;
 }) {
   const {
     data,
     report,
+    originalView,
+    version,
     selected,
     ops,
     cursor,
     busy,
     saving,
+    saveFailed,
     error,
     message,
     dirty,
@@ -57,7 +67,7 @@ export function MeshEditor({
     fit,
     ratio,
     draft,
-    localFile,
+    localFileName,
     previewTriangles,
     url,
     setTool,
@@ -72,12 +82,27 @@ export function MeshEditor({
     apply,
     history,
     save,
+    setSaving,
+    markSaved,
+    createModel,
     download,
     loadSource,
     openVersion,
     importFile,
     selectPart,
   } = useMeshEditor({ projectId, demo });
+  const [showingOriginal, setShowingOriginal] = useState(false);
+  const historySummary = useRef<HTMLElement>(null);
+  const showing = showingOriginal ? originalView : undefined;
+  const displayedReport = showing?.report ?? report;
+  const shownUrl = showing?.url ?? url;
+  const shownPreviewTriangles = showing
+    ? showing.previewTriangles
+    : previewTriangles;
+  function changeComparison(value: boolean) {
+    setShowingOriginal(value);
+    setFit((previous) => previous + 1);
+  }
   return (
     <main id="main" className="mesh-editor">
       <header className="editor-header">
@@ -88,8 +113,8 @@ export function MeshEditor({
           <h1>모델 편집</h1>
           <span>
             {demo
-              ? localFile
-                ? "내 기기의 모델 · 서버에 업로드하지 않습니다"
+              ? localFileName
+                ? "내 기기에서 연 모델"
                 : "공개 예시 · 생성 결과가 아닙니다"
               : (data?.name ?? "모델 준비")}
             {dirty ? " · 저장하지 않은 변경" : ""}
@@ -100,7 +125,7 @@ export function MeshEditor({
             variant="ghost"
             size="icon"
             aria-label="실행 취소"
-            disabled={!cursor || busy || saving}
+            disabled={!cursor || busy || saving || showingOriginal}
             onClick={() => void history(cursor - 1)}
           >
             <Undo2 size={18} />
@@ -109,20 +134,27 @@ export function MeshEditor({
             variant="ghost"
             size="icon"
             aria-label="다시 실행"
-            disabled={cursor >= ops.length || busy || saving}
+            disabled={cursor >= ops.length || busy || saving || showingOriginal}
             onClick={() => void history(cursor + 1)}
           >
             <Redo2 size={18} />
           </Button>
           <Button
             variant="outline"
-            disabled={demo || !dirty || busy || saving}
+            disabled={demo || !dirty || busy || saving || showingOriginal}
             onClick={() => void save()}
           >
             <Save size={16} />
-            {saving ? "저장 중" : "새 버전 저장"}
+            {saving
+              ? "저장 중"
+              : saveFailed
+                ? "저장 다시 시도"
+                : "새 버전 저장"}
           </Button>
-          <Button disabled={!report || busy || saving} onClick={download}>
+          <Button
+            disabled={!report || busy || saving || showingOriginal}
+            onClick={download}
+          >
             <Download size={16} />
             내려받기
           </Button>
@@ -130,7 +162,15 @@ export function MeshEditor({
       </header>
       {error && (
         <div className="notice error" role="alert">
-          {error}
+          <div>
+            {error}
+            {saveFailed && (
+              <p className="editor-save-note">
+                편집 내용이 남아 있습니다. 다시 저장하거나 GLB로 내려받을 수
+                있습니다.
+              </p>
+            )}
+          </div>
         </div>
       )}
       {message && (
@@ -148,6 +188,7 @@ export function MeshEditor({
             <button
               key={t.id}
               aria-pressed={tool === t.id}
+              disabled={showingOriginal}
               onClick={() => setTool(t.id as typeof tool)}
             >
               <t.icon size={19} />
@@ -156,14 +197,14 @@ export function MeshEditor({
           ))}
           <button
             onClick={() => void apply({ type: "center" })}
-            disabled={busy || saving || !report}
+            disabled={busy || saving || !report || showingOriginal}
           >
             <Focus size={19} />
             중앙 배치
           </button>
           <button
             onClick={() => void apply({ type: "normalize" })}
-            disabled={busy || saving || !report}
+            disabled={busy || saving || !report || showingOriginal}
           >
             <Maximize size={19} />
             크기 맞춤
@@ -174,12 +215,26 @@ export function MeshEditor({
           </button>
         </aside>
         <section className="editor-stage" aria-label="3D 편집 미리보기">
-          {url ? (
+          {originalView && report && (
+            <MeshComparisonPanel
+              original={originalView.report}
+              current={report}
+              version={version}
+              showingOriginal={showingOriginal}
+              disabled={busy || saving}
+              onChange={changeComparison}
+            />
+          )}
+          {shownUrl ? (
             <EditorCanvas
-              url={url}
-              selected={selected}
-              onSelect={selectPart}
-              onTransform={(op) => void apply(op)}
+              url={shownUrl}
+              selected={showingOriginal ? null : selected}
+              onSelect={(id) => {
+                if (!showingOriginal) selectPart(id);
+              }}
+              onTransform={(op) => {
+                if (!showingOriginal) void apply(op);
+              }}
               tool={tool}
               wire={wire}
               fit={fit}
@@ -231,42 +286,60 @@ export function MeshEditor({
               />
             </label>
           </div>
-          {previewTriangles && (
+          {shownPreviewTriangles && (
             <p className="editor-hint">
-              작업용 경량 미리보기 {previewTriangles.toLocaleString()}개 삼각형
-              · 저장과 내려받기는 전체 편집 모델을 사용합니다.
+              작업용 경량 미리보기 {shownPreviewTriangles.toLocaleString()}개
+              삼각형 · 저장과 내려받기는 전체 편집 모델을 사용합니다.
             </p>
           )}
           <p className="editor-hint">
             끌어서 회전 · 스크롤로 확대 · 오른쪽 버튼으로 화면 이동
           </p>
+          {localFileName && originalView && (
+            <PrivateModelImportPanel
+              key={originalView.url}
+              name={localFileName}
+              sourceKey={url}
+              createModel={createModel}
+              adapter={privateImport}
+              unavailable={busy || saving || showingOriginal}
+              onBusyChange={setSaving}
+              onSaved={markSaved}
+            />
+          )}
         </section>
         <InspectorPanel>
           <aside className="editor-inspector">
             <details open>
               <summary>모델 정보</summary>
-              {report ? (
+              {displayedReport ? (
                 <dl>
                   <div>
                     <dt>삼각형</dt>
                     <dd data-testid="editor-triangles">
-                      {report.triangles.toLocaleString()}
+                      {displayedReport.triangles.toLocaleString()}
                     </dd>
                   </div>
                   <div>
                     <dt>파일 크기</dt>
-                    <dd>{(report.size / 1024 / 1024).toFixed(2)} MB</dd>
+                    <dd>
+                      {(displayedReport.size / 1024 / 1024).toFixed(2)} MB
+                    </dd>
                   </div>
                   <div>
                     <dt>표면 이미지</dt>
-                    <dd>{report.uv && report.textures ? "포함됨" : "없음"}</dd>
+                    <dd>
+                      {displayedReport.uv && displayedReport.textures
+                        ? "포함됨"
+                        : "없음"}
+                    </dd>
                   </div>
                 </dl>
               ) : (
                 <p>원본을 변경하지 않고 불러옵니다.</p>
               )}
             </details>
-            <details open>
+            <details open hidden={showingOriginal}>
               <summary>부품 선택</summary>
               <div className="editor-parts">
                 {report?.parts.map((p) => (
@@ -274,7 +347,7 @@ export function MeshEditor({
                     key={p.id}
                     aria-pressed={selected === p.id}
                     onClick={() => selectPart(p.id)}
-                    disabled={p.hidden}
+                    disabled={p.hidden || busy || saving}
                   >
                     {p.name}
                     {p.hidden ? " · 숨김" : ""}
@@ -356,17 +429,15 @@ export function MeshEditor({
                       <EyeOff size={14} />
                       숨기기
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
+                    <PartDeleteDialog
+                      name={draft.name}
                       disabled={busy || saving}
-                      onClick={() =>
-                        void apply({ type: "delete", node: draft.id })
+                      onConfirm={() =>
+                        void apply({ type: "delete", node: draft.id }).then(
+                          () => historySummary.current?.focus(),
+                        )
                       }
-                    >
-                      <Trash2 size={14} />
-                      삭제
-                    </Button>
+                    />
                   </div>
                 </>
               )}
@@ -375,7 +446,17 @@ export function MeshEditor({
                 기능은 지원하지 않습니다.
               </p>
             </details>
-            <details>
+            {report && !showingOriginal && (
+              <MeshHistoryPanel
+                parts={report.parts}
+                operations={ops}
+                cursor={cursor}
+                disabled={busy || saving}
+                onChange={(next) => void history(next)}
+                summaryRef={historySummary}
+              />
+            )}
+            <details hidden={showingOriginal}>
               <summary>모델 가볍게 만들기</summary>
               <label>
                 목표 삼각형 비율
@@ -413,13 +494,15 @@ export function MeshEditor({
                 <>
                   <button
                     className="version-link"
-                    disabled={busy || saving}
+                    disabled={busy || saving || !data}
                     onClick={() => {
                       if (
-                        !dirty ||
-                        confirm("수정 내용을 버리고 원본을 열까요?")
+                        data &&
+                        (!dirty || confirm("수정 내용을 버리고 원본을 열까요?"))
                       )
-                        void loadSource(data!.source_url);
+                        void loadSource(data.source_url).then((opened) => {
+                          if (opened) setShowingOriginal(false);
+                        });
                     }}
                   >
                     원본 모델 열기
@@ -429,7 +512,11 @@ export function MeshEditor({
                       className="version-link"
                       key={v.id}
                       disabled={busy || saving}
-                      onClick={() => void openVersion(v.id)}
+                      onClick={() =>
+                        void openVersion(v.id).then((opened) => {
+                          if (opened) setShowingOriginal(false);
+                        })
+                      }
                     >
                       버전 {v.version_number} ·{" "}
                       {new Date(v.created_at).toLocaleDateString("ko-KR")}
@@ -446,7 +533,13 @@ export function MeshEditor({
                   type="file"
                   disabled={busy || saving}
                   accept=".glb"
-                  onChange={(e) => void importFile(e.target.files?.[0])}
+                  onChange={(e) => {
+                    const input = e.currentTarget;
+                    void importFile(input.files?.[0]).then((opened) => {
+                      if (opened) setShowingOriginal(false);
+                    });
+                    input.value = "";
+                  }}
                 />
               </label>
             )}

@@ -12,9 +12,10 @@ self.onmessage = async (
 ) => {
   const { id, source, commands } = event.data;
   try {
-    if (source) original = new Uint8Array(source);
-    if (!original) throw Error("모델을 먼저 불러와 주세요.");
-    const result = await prepareEditorView(original, commands);
+    const candidate = source ? new Uint8Array(source) : original;
+    if (!candidate) throw Error("모델을 먼저 불러와 주세요.");
+    const result = await prepareEditorView(candidate, commands);
+    if (source) original = candidate;
     self.postMessage(
       { id, ...result },
       {

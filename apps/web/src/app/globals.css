@@ -1568,6 +1568,19 @@ small {
   background: #1a2831;
   color: #6b8c9e;
 }
+.listing-poster {
+  object-fit: contain;
+}
+.listing-poster-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.listing-card .project-info > p {
+  color: var(--color-muted);
+}
 .project-cover > small {
   position: absolute;
   bottom: 13px;
@@ -2411,6 +2424,38 @@ small {
   line-height: 1.9;
   color: #7d899f;
   margin: 11px 0 16px;
+}
+.generation-availability {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin-block: 16px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--color-control-border);
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.generation-availability > p {
+  margin: 0;
+}
+.generation-availability > .button[aria-disabled="true"] {
+  opacity: 0.6;
+}
+.creation-main .configuration-grid span,
+.creation-main .pipeline-summary small,
+.creation-main .pipeline-summary p,
+.creation-main .camera-qa p,
+.creation-main .creation-footer > span {
+  color: var(--color-muted);
+}
+.quote-box > p[role="status"] {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.quote-box > .button + .button {
+  margin-top: 8px;
 }
 .quote-box {
   border: 1px solid #434e60;

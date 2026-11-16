@@ -145,3 +145,35 @@ OS-22 (TEAM_PASS for the Team B scope; prerequisites from Member A not present):
 ## Team B — OS-21 follow-up: payout status and ledger kind labels — 2026-11-16
 
 The billing page showed payout status and ledger kind as raw DB values (left open in the OS-21 entry). `features/billing/order-status.ts` now also maps `payout_requests.status` (requested/approved/rejected/paid) and `credit_ledger.kind` (generation_purchase/marketplace_purchase/sale/fee/refund) to Korean, with unknown values shown as "확인 중" (unit test). The `billing-orders` fixture gained payouts and ledger rows including unknown values; `--grep OS-21` covers them. Full Team suite 111/111, typecheck and lint exit 0. MOCK only.
+
+## Team A implementation
+
+| ID | Acceptance | State / evidence |
+| --- | --- | --- |
+| OS-01 | Display support, rejection reason, zero debit for blocked input, server rate for eligible input and preserve input on health retry | Local MOCK AC pass on `codex/os-01` from `fc20978`. Peer review and OS-12 browser integration pending. Next ready: OS-03. |
+| OS-03 | Resume the same job after a transient read failure, guard generation submission, reconcile ambiguous submission and cancel outcomes | Local MOCK AC pass on `codex/os-03` over `4d3ccce`. Peer review and OS-12 browser integration pending. Next ready: OS-06. |
+| OS-06 | Compare original and working versions in one canvas, preserve source after invalid GLB, download client metrics without private URLs | Local AC pass on `codex/os-06` over `57bd126`. Peer review and OS-12 browser integration pending. Next: OS-09 independent card scope. |
+| OS-09 | Safe poster on market cards, confirm a viewer capture before publication, preserve existing publication | Card and publish regression pass in MOCK on `codex/os-09`. Viewer capture confirmation `BLOCKED` by OS-19. Poster storage/approval `OWNER_PENDING` (OWN-08). Next ready: OS-17. |
+| OS-17 | Validate local GLB, offer private save and project publication, preserve edits on upload failure | Local and MOCK AC pass on `codex/os-17`. Private server registration `OWNER_PENDING` (OWN-09). Next ready: OS-20. |
+| OS-20 | Reuse edit cursor for history, confirm part deletion, preserve dirty state through save failures | Local GLB and MOCK save AC pass on `codex/os-20`. Peer review and OS-12 integration pending. Next ready: OS-11. |
+| OS-11 | Confirm named asset deletion, restore focus on cancel, explain rights holds and allow controlled retry | Local MOCK AC pass on `codex/os-11`. Purchase and retention behavior `OWNER_PENDING` (OWN-07). Next ready: review and Team A regression. |
+
+OS-01 uses existing `GET /api/health`, project `qa` and `wallet` responses. The public health response advertises single-photo availability only. Project-specific support comes from the authenticated QA response after upload. The change can be reverted as one commit.
+
+Key-free evidence is under local `output/playwright/OS-01/`. Vitest 36 passed, typecheck and lint exited 0 (7 existing warnings). The isolated local Next fixture and Edge Playwright suite passed 9 scenarios covering rejected scene and multi-photo inputs, a one-photo quote and keyboard health retry, with 360/768/1440 captures and axe checks on the changed panels. This suite uses mocked API responses. The shared OS-12 runner, full Owner suite and live integration were not run.
+
+OS-03 key-free evidence is under local `output/playwright/OS-03/`. Vitest 38 passed, typecheck and lint exited 0 (7 existing warnings), and 13 Edge fixture checks passed including all 9 OS-01 regressions. 360/768/1440 captures and axe cover backoff, ambiguous submission and missing job. Existing job and project reads, idempotent generation POST, and cancel endpoint supply the server states. Pending submission keys stay in memory for the open wizard. Revert the OS-03 commit to roll back. Live integration and the shared OS-12 runner were not run.
+
+OS-06 key-free evidence is under local `output/playwright/OS-06/`. Vitest 33 passed and typecheck/lint exited 0 (7 existing warnings). Edge passed 5 checks using actual GLB decoding, simplification, one canvas and file roundtrip. Saved-version API data was mocked. 360/768/1440 captures, keyboard comparison and scoped axe passed. The worker now keeps the prior valid source until the candidate passes validation. Revert the OS-06 commit to roll back.
+
+OS-09 evidence is under local `output/playwright/OS-09/`. Vitest 29 passed, Edge 4 passed, and typecheck/lint exited 0 (7 existing warnings). A fixture poster loaded. External, unavailable and missing posters fell back at 360/768/1440. Existing publication sent the same listing review request. [OWN-08 handoff](delivery/TEAM_A_OWNER_CONTRACTS.md). Revert the OS-09 commit to roll back. Resume capture work after the OS-19 camera changes land.
+
+OS-17 evidence is under local `output/playwright/OS-17/`. Vitest 35 passed, typecheck/lint exited 0, Edge passed the 3 final scenarios and an earlier combined run of 8 including OS-06. The actual GLB stays editable and downloadable through malformed or oversized inputs and simulated upload errors. Mock private registration opens the existing project publish form. Production local-file UI shows availability pending until the documented [OWN-09 adapter](delivery/TEAM_A_OWNER_CONTRACTS.md) is bound. Revert this ticket commit to roll back.
+
+OS-20 evidence is under local `output/playwright/OS-20/`. Vitest 36 passed and typecheck/lint exited 0. The 768/1440 browser scenarios passed, and the 360 part deletion scenario passed after a contrast fix. Actual GLB exports match the history cursor, cancelled confirmation restores focus, and save/reopen failures retain dirty state and the same request key. Saved-version writes were mocked. Revert this ticket commit to roll back.
+
+OS-11 evidence is under local `output/playwright/OS-11/`. Edge passed 4 key-free scenarios, with 360/768/1440 captures and axe for cancellation, purchase holds and retry. Account review and successful asset deletion used existing API shape fixtures. Combined Vitest 44 passed, and typecheck/lint exited 0. [OWN-07 handoff](delivery/TEAM_A_OWNER_CONTRACTS.md). Revert the OS-11 commit to roll back.
+
+## Team A and Team B integration — 2026-11-16
+
+Integration preserves the Team B billing and mask-recovery flows alongside Team A deletion, generation eligibility and polling. Shared client API errors carry both HTTP status and the existing application code. Team B OS-12 and OS-19 are available in the integrated tree. OS-09 still needs the viewer capture confirmation and the OWN-08 storage contract. Team A browser fixture migration into the shared runner and Owner service gates remain open.

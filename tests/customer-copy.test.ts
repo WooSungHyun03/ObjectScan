@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { customerText, customerError } from "../apps/web/src/lib/customer-copy";
 import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 const forbidden =
   /Pixal3D|SAM2|Object[- ]Aware Loss|Gaussian Wrapping|COLMAP|TSDF|2DGS/i;
 test("technical worker messages and model failures have Korean customer copy", () => {
@@ -31,7 +31,7 @@ test("customer TSX surfaces contain no algorithm names; required notices isolate
   ].filter(
     (f) =>
       f.endsWith(".tsx") &&
-      !f.includes("/legal/opensource/") &&
+      !f.includes(`${sep}legal${sep}opensource${sep}`) &&
       !f.endsWith("admin-panel.tsx"),
   )) {
     expect(readFileSync(f, "utf8"), f).not.toMatch(forbidden);

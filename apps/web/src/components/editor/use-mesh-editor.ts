@@ -1,12 +1,15 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type {
-  MeshEditOperation,
-  MeshReport,
-  MeshPart,
-} from "@objectscan/mesh-editor";
-import { api, post } from "@/lib/client-api";
+import {
+  MAX_EDIT_BYTES,
+  type MeshEditOperation,
+  type MeshReport,
+  type MeshPart,
+} from "@objectscan/mesh-editor/contracts";
+import { ApiResponseError, api, post } from "@/lib/client-api";
 import { customerError } from "@/lib/customer-copy";
+import type { MeshComparisonView } from "./mesh-comparison";
+import { meshOperationsChanged } from "./mesh-history";
 type Version = {
   id: string;
   version_number: number;
@@ -27,8 +30,9 @@ export function useMeshEditor({
   demo?: boolean;
 }) {
   const [data, setData] = useState<Data | null>(null),
-    [localFile, setLocalFile] = useState(false),
+    [localFileName, setLocalFileName] = useState<string>(),
     [report, setReport] = useState<MeshReport | null>(null),
+    [originalView, setOriginalView] = useState<MeshComparisonView>(),
     [previewTriangles, setPreviewTriangles] = useState<number | null>(null),
     [url, setUrl] = useState(""),
     [selected, setSelected] = useState<number | null>(null),
@@ -36,6 +40,7 @@ export function useMeshEditor({
     [cursor, setCursor] = useState(0),
     [busy, setBusy] = useState(true),
     [saving, setSaving] = useState(false),
+    [saveFailed, setSaveFailed] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [parent, setParent] = useState<string | null>(null),
@@ -52,13 +57,27 @@ export function useMeshEditor({
   const worker = useRef<Worker | null>(null),
     bytes = useRef<Uint8Array | null>(null),
     pending = useRef(
-      new Map<number, { resolve: () => void; reject: (e: Error) => void }>(),
+      new Map<
+        number,
+        {
+          resolve: () => void;
+          reject: (e: Error) => void;
+          originalSize?: number;
+        }
+      >(),
     ),
     sequence = useRef(0),
     objectUrl = useRef(""),
+    originalUrl = useRef(""),
+    savedOperations = useRef<MeshEditOperation[]>([]),
+    saveInFlight = useRef(false),
     saveKey = useRef<string | null>(null);
   const process = useCallback(
-    (commands: MeshEditOperation[], source?: ArrayBuffer) =>
+    (
+      commands: MeshEditOperation[],
+      source?: ArrayBuffer,
+      originalSize?: number,
+    ) =>
       new Promise<void>((resolve, reject) => {
         if (pending.current.size > 0) {
           reject(Error("이전 편집이 끝난 뒤 다시 시도해 주세요."));
@@ -69,7 +88,7 @@ export function useMeshEditor({
           return;
         }
         const id = ++sequence.current;
-        pending.current.set(id, { resolve, reject });
+        pending.current.set(id, { resolve, reject, originalSize });
         setBusy(true);
         setError("");
         worker.current.postMessage(
@@ -87,15 +106,23 @@ export function useMeshEditor({
         const r = await fetch(source);
         if (!r.ok) throw Error("모델을 불러오지 못했습니다. 다시 열어 주세요.");
         const blob = await r.blob();
-        if (blob.size > 64 * 1024 * 1024)
+        if (blob.size > MAX_EDIT_BYTES)
           throw Error(
             "64MB 이하 모델만 브라우저에서 편집할 수 있습니다. 원본 내려받기는 프로젝트에서 이용해 주세요.",
           );
-        await process([], await blob.arrayBuffer());
+        await process(
+          [],
+          await blob.arrayBuffer(),
+          parentId === null ? blob.size : undefined,
+        );
         setOps([]);
         setCursor(0);
         setParent(parentId);
+        setSelected(null);
+        setDraft(null);
         setDirty(false);
+        setSaveFailed(false);
+        savedOperations.current = [];
         setFit((f) => f + 1);
         saveKey.current = null;
         return true;
@@ -125,11 +152,12 @@ export function useMeshEditor({
       bytes.current = new Uint8Array(response.bytes);
       setReport(response.report);
       setPreviewTriangles(response.previewReport?.triangles ?? null);
-      setDraft(
-        (previous) =>
-          response.report.parts.find((p: MeshPart) => p.id === previous?.id) ??
-          null,
-      );
+      const visiblePart = (id: number | null | undefined) =>
+        response.report.parts.find(
+          (part: MeshPart) => part.id === id && !part.hidden,
+        ) as MeshPart | undefined;
+      setSelected((previous) => visiblePart(previous)?.id ?? null);
+      setDraft((previous) => visiblePart(previous?.id) ?? null);
       const next = URL.createObjectURL(
         new Blob(
           [(response.previewBytes ?? bytes.current) as Uint8Array<ArrayBuffer>],
@@ -138,7 +166,17 @@ export function useMeshEditor({
           },
         ),
       );
-      if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      if (objectUrl.current && objectUrl.current !== originalUrl.current)
+        URL.revokeObjectURL(objectUrl.current);
+      if (p.originalSize !== undefined) {
+        if (originalUrl.current) URL.revokeObjectURL(originalUrl.current);
+        originalUrl.current = next;
+        setOriginalView({
+          url: next,
+          report: { ...response.report, size: p.originalSize },
+          previewTriangles: response.previewReport?.triangles ?? null,
+        });
+      }
       objectUrl.current = next;
       setUrl(next);
       p.resolve();
@@ -152,7 +190,10 @@ export function useMeshEditor({
     };
     let alive = true;
     const promiseMap = pending.current;
-    if (demo) void Promise.resolve().then(() => loadSource("/demo/shoe.glb"));
+    if (demo)
+      void Promise.resolve().then(() => {
+        if (alive) return loadSource("/demo/shoe.glb");
+      });
     else
       void api<Data>(`projects/${projectId}/editor`)
         .then((d) => {
@@ -175,6 +216,10 @@ export function useMeshEditor({
         p.reject(Error("편집 화면을 닫았습니다."));
       promiseMap.clear();
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      if (originalUrl.current && originalUrl.current !== objectUrl.current)
+        URL.revokeObjectURL(originalUrl.current);
+      objectUrl.current = "";
+      originalUrl.current = "";
     };
   }, [demo, projectId, loadSource]);
   useEffect(() => {
@@ -212,11 +257,8 @@ export function useMeshEditor({
       await process(list);
       setOps(list);
       setCursor(list.length);
-      setDirty(true);
-      if (op.type === "hide" || op.type === "delete") {
-        setSelected(null);
-        setDraft(null);
-      }
+      setDirty(meshOperationsChanged(list, savedOperations.current));
+      setSaveFailed(false);
       saveKey.current = null;
       setMessage("");
     } catch (e) {
@@ -224,19 +266,34 @@ export function useMeshEditor({
     }
   }
   async function history(next: number) {
+    if (busy || saving || next === cursor || next < 0 || next > ops.length)
+      return;
+    const list = ops.slice(0, next);
     try {
-      await process(ops.slice(0, next));
+      await process(list);
       setCursor(next);
-      setDirty(next !== 0);
+      setDirty(meshOperationsChanged(list, savedOperations.current));
+      setSaveFailed(false);
+      setMessage("");
       saveKey.current = null;
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
     }
   }
   async function save() {
-    if (!data || !bytes.current) return;
+    if (
+      !data ||
+      !bytes.current ||
+      !dirty ||
+      busy ||
+      saving ||
+      saveInFlight.current
+    )
+      return;
+    saveInFlight.current = true;
     setSaving(true);
     setError("");
+    setMessage("");
     try {
       const key = saveKey.current ?? crypto.randomUUID();
       saveKey.current = key;
@@ -261,7 +318,9 @@ export function useMeshEditor({
         operations: ops.slice(0, cursor),
       });
       if (reserved.status !== "ready") {
-        const r = await fetch(reserved.upload_url!, {
+        if (!reserved.upload_url)
+          throw Error("버전의 업로드 상태를 확인할 수 없습니다.");
+        const r = await fetch(reserved.upload_url, {
           method: "PUT",
           headers: { "Content-Type": "model/gltf-binary" },
           body: new Blob([bytes.current as Uint8Array<ArrayBuffer>]),
@@ -277,72 +336,97 @@ export function useMeshEditor({
       const saved = await api<{ url: string }>(
         `assets/${data.artifact_id}/versions/${reserved.id}`,
       );
-      await loadSource(saved.url, reserved.id);
+      if (!(await loadSource(saved.url, reserved.id))) {
+        setSaveFailed(true);
+        return;
+      }
       setMessage("원본을 보존하고 새 버전을 저장했습니다.");
     } catch (e) {
-      setError(customerError(undefined, (e as Error).message));
+      setError(
+        e instanceof ApiResponseError && e.status >= 500
+          ? "저장 서비스 응답을 확인할 수 없습니다."
+          : customerError(undefined, (e as Error).message),
+      );
+      setSaveFailed(true);
     } finally {
       setSaving(false);
+      saveInFlight.current = false;
     }
   }
   function download() {
-    if (!bytes.current) return;
+    const model = createModel();
+    if (!model) return;
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(
-      new Blob([bytes.current as Uint8Array<ArrayBuffer>], {
-        type: "model/gltf-binary",
-      }),
-    );
+    link.href = URL.createObjectURL(model);
     link.download =
-      demo && !localFile
+      demo && !localFileName
         ? "ObjectScan-공개예시-편집본.glb"
         : "ObjectScan-편집본.glb";
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     setMessage("텍스처 보존을 확인한 편집본을 내려받습니다.");
   }
+  function createModel() {
+    if (bytes.current)
+      return new Blob([bytes.current as Uint8Array<ArrayBuffer>], {
+        type: "model/gltf-binary",
+      });
+  }
   async function openVersion(id: string) {
     if (
       !data ||
+      busy ||
+      saving ||
       (dirty && !confirm("저장하지 않은 내용을 버리고 버전을 열까요?"))
     )
-      return;
+      return false;
+    setBusy(true);
+    setError("");
     try {
       const result = await api<{ url: string }>(
         `assets/${data.artifact_id}/versions/${id}`,
       );
-      await loadSource(result.url, id);
+      return await loadSource(result.url, id);
     } catch (e) {
       setError(customerError(undefined, (e as Error).message));
+      setBusy(false);
+      return false;
     }
   }
   async function importFile(file?: File) {
-    if (
-      !file ||
-      busy ||
-      saving ||
-      (dirty && !confirm("수정 내용을 버리고 다른 파일을 열까요?"))
-    )
-      return;
+    if (!file || busy || saving) return false;
+    if (file.size > MAX_EDIT_BYTES) {
+      setError("모델 파일은 64MB 이하의 GLB를 사용해 주세요.");
+      return false;
+    }
+    if (dirty && !confirm("수정 내용을 버리고 다른 파일을 열까요?"))
+      return false;
     const temporary = URL.createObjectURL(file);
     try {
-      if (await loadSource(temporary)) setLocalFile(true);
+      const loaded = await loadSource(temporary);
+      if (loaded) setLocalFileName(file.name);
+      return loaded;
     } finally {
       URL.revokeObjectURL(temporary);
     }
   }
   function selectPart(id: number) {
-    setSelected(id);
-    setDraft(report?.parts.find((p) => p.id === id) ?? null);
+    if (busy || saving) return;
+    const part = report?.parts.find((p) => p.id === id && !p.hidden);
+    setSelected(part?.id ?? null);
+    setDraft(part ?? null);
   }
   return {
     data,
     report,
+    originalView,
+    version: data?.versions.find((item) => item.id === parent),
     selected,
     ops,
     cursor,
     busy,
     saving,
+    saveFailed,
     error,
     message,
     dirty,
@@ -355,7 +439,7 @@ export function useMeshEditor({
     fit,
     ratio,
     draft,
-    localFile,
+    localFileName,
     previewTriangles,
     url,
     setTool,
@@ -370,6 +454,12 @@ export function useMeshEditor({
     apply,
     history,
     save,
+    setSaving,
+    markSaved: () => {
+      savedOperations.current = ops.slice(0, cursor);
+      setDirty(false);
+    },
+    createModel,
     download,
     loadSource,
     openVersion,

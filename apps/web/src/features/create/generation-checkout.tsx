@@ -1,98 +1,108 @@
 "use client";
-import { useEffect, useState } from "react";
-import { api, post } from "@/lib/client-api";
-import { customerError } from "@/lib/customer-copy";
 import { Button } from "@/components/ui/button";
-type Quote = {
-  gate: { allowed: boolean; errors: string[] };
-  project: { mode: string; input_image_count: number };
-};
-type Wallet = {
-  balance: number;
-  rates: { mode: string; min_images: number; credits: number }[];
-};
+import {
+  blockedGenerationMessage,
+  generationWalletSchema,
+  quotedCredits,
+  type GenerationQuote,
+} from "./generation-availability";
+import { useGenerationCheck } from "./use-generation-check";
+import type { useGenerationSubmission } from "./use-generation-submission";
 export function GenerationCheckout({
-  projectId,
-  onStarted,
+  quote,
+  quoteFailed,
+  refreshQuote,
+  submission,
 }: {
-  projectId: string;
-  onStarted: () => void;
+  quote?: GenerationQuote;
+  quoteFailed?: boolean;
+  refreshQuote: () => void;
+  submission: ReturnType<typeof useGenerationSubmission>;
 }) {
-  const [quote, setQuote] = useState<Quote | null>(null),
-    [wallet, setWallet] = useState<Wallet | null>(null),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  useEffect(() => {
-    let active = true;
-    void Promise.all([
-      api<Quote>(`projects/${projectId}/qa`),
-      api<Wallet>("wallet"),
-    ])
-      .then(([q, w]) => {
-        if (active) {
-          setQuote(q);
-          setWallet(w);
-        }
-      })
-      .catch((e) => {
-        if (active) setError(customerError(undefined, e.message));
-      });
-    return () => {
-      active = false;
-    };
-  }, [projectId]);
-  const tier = quote
-    ? Math.floor((quote.project.input_image_count - 1) / 20) * 20 + 1
-    : 0;
-  const rate = wallet?.rates.find(
-    (r) => r.mode === quote?.project.mode && r.min_images === tier,
-  );
-  const ready = Boolean(
-    quote?.gate.allowed && rate && wallet && wallet.balance >= rate.credits,
-  );
-  async function start() {
-    setBusy(true);
-    setError("");
-    try {
-      await post(`projects/${projectId}/generate`, {
-        idempotency_key: crypto.randomUUID(),
-      });
-      onStarted();
-    } catch (e) {
-      setError(customerError(undefined, (e as Error).message));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { status, error, check, start } = submission;
+  const wallet = useGenerationCheck("wallet", generationWalletSchema);
+  const credits = quotedCredits(quote, wallet.data);
+  const ready =
+    credits !== undefined &&
+    wallet.data !== undefined &&
+    wallet.data.balance >= credits;
+  const blocked = quote !== undefined && !quote.gate.allowed;
+  const unavailable = quoteFailed || wallet.failed;
+  const unconfirmed = status === "unknown" || status === "checking";
+  const amount = unconfirmed
+    ? "등록 결과 확인 필요"
+    : blocked
+      ? "차감 없음"
+      : credits !== undefined
+        ? `${credits} 크레딧`
+        : unavailable
+          ? "확인 불가"
+          : "미확정";
   return (
     <section className="quote-box" aria-label="제작 크레딧">
       <h3>제작 확인</h3>
       <div>
         <span>보유 크레딧</span>
         <strong>
-          {wallet
-            ? new Intl.NumberFormat("ko-KR").format(wallet.balance)
-            : "확인 중…"}
+          {wallet.data
+            ? new Intl.NumberFormat("ko-KR").format(wallet.data.balance)
+            : wallet.failed
+              ? "확인 불가"
+              : "확인 중…"}
         </strong>
       </div>
       <div>
         <span>이번 작업 차감</span>
-        <strong>{rate ? `${rate.credits} 크레딧` : "요금 준비 중"}</strong>
+        <strong>{amount}</strong>
       </div>
-      <p>
-        {!quote
-          ? "사진과 제작 조건을 확인하고 있습니다."
-          : !quote.gate.allowed
-            ? "이 사진 구성의 제작은 준비 중입니다. 사진과 대상 선택 내용은 안전하게 보관됩니다."
-            : !rate
-              ? "요금이 확정되면 제작할 수 있습니다."
-              : !ready
-                ? "크레딧이 부족합니다. 잔액을 확인해 주세요."
-                : "작업 등록 시 한 번 차감합니다. 제작 실패 또는 취소 시 자동으로 돌려드립니다."}
+      <p role="status">
+        {unconfirmed
+          ? "작업 등록 응답을 확인하지 못했습니다. 등록된 작업이 있는지 먼저 확인해 주세요."
+          : status === "retry"
+            ? "새로 확인된 작업이 없습니다. 현재 제작 조건을 확인한 뒤 다시 요청할 수 있습니다."
+            : blocked
+              ? blockedGenerationMessage(quote)
+              : unavailable
+                ? "제작 조건 또는 요금을 확인하지 못했습니다. 사진과 선택 내용은 그대로 유지됩니다."
+                : !quote || !wallet.data
+                  ? "사진과 제작 조건을 확인하고 있습니다."
+                  : credits === undefined
+                    ? "요금이 확정되면 제작할 수 있습니다."
+                    : !ready
+                      ? "크레딧이 부족합니다. 잔액을 확인해 주세요."
+                      : "작업 등록 시 한 번 차감합니다. 제작 실패 또는 취소 시 자동으로 돌려드립니다."}
       </p>
-      <Button disabled={!ready || busy} onClick={() => void start()}>
-        {busy ? "작업 등록 중…" : "크레딧으로 3D 만들기"}
-      </Button>
+      {(unavailable || quote?.gate.errors.includes("MODEL_UNAVAILABLE")) && (
+        <Button
+          variant="outline"
+          onClick={() => {
+            refreshQuote();
+            wallet.retry();
+          }}
+        >
+          제작 조건 다시 확인
+        </Button>
+      )}
+      {unconfirmed ? (
+        <Button
+          variant="outline"
+          disabled={status === "checking"}
+          onClick={() => void check()}
+        >
+          {status === "checking" ? "작업 목록 확인 중…" : "등록된 작업 확인"}
+        </Button>
+      ) : (
+        <Button
+          disabled={!ready || status === "sending"}
+          onClick={() => void start()}
+        >
+          {status === "sending"
+            ? "작업 등록 중…"
+            : status === "retry"
+              ? "제작 요청 다시 보내기"
+              : "크레딧으로 3D 만들기"}
+        </Button>
+      )}
       {error && <p role="alert">{error}</p>}
     </section>
   );

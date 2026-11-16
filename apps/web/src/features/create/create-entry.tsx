@@ -12,6 +12,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMascot } from "@/components/brand/mascot";
+import {
+  availabilityMessage,
+  generationHealthSchema,
+} from "./generation-availability";
+import { GenerationAvailabilityNotice } from "./generation-availability-notice";
+import { useGenerationCheck } from "./use-generation-check";
 const allowed = new Set(["image/jpeg", "image/png", "image/webp"]);
 export function CreateEntry() {
   const [mode, M] = useState<"object" | "scene">("object"),
@@ -19,6 +25,7 @@ export function CreateEntry() {
     [error, E] = useState("");
   const input = useRef<HTMLInputElement>(null),
     router = useRouter();
+  const health = useGenerationCheck("health", generationHealthSchema);
   function choose(list: FileList | null) {
     if (!list) return;
     const v = Array.from(list);
@@ -73,6 +80,21 @@ export function CreateEntry() {
               </button>
             ))}
           </div>
+          <GenerationAvailabilityNotice
+            pending={health.pending}
+            message={
+              health.failed
+                ? "현재 제작 지원 범위를 확인하지 못했습니다."
+                : availabilityMessage(health.data, mode, files.length)
+            }
+            onRetry={
+              health.hasRetried ||
+              health.failed ||
+              health.data?.worker_online === false
+                ? health.retry
+                : undefined
+            }
+          />
           <div
             className="entry-drop"
             onDragOver={(e) => e.preventDefault()}
@@ -140,10 +162,6 @@ export function CreateEntry() {
             <li>같은 대상을 여러 방향에서 촬영하세요.</li>
             <li>흔들리거나 초점이 맞지 않는 사진은 제외하세요.</li>
           </ul>
-          <p>
-            일반 사진의 3D 생성은 검증 중입니다. 사진 업로드와 대상 선택을 먼저
-            이용해 보세요.
-          </p>
           <Link href="/docs">
             촬영 가이드 자세히 보기{" "}
             <ArrowUpRight aria-hidden="true" size={15} />

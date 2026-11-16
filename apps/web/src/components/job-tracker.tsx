@@ -1,6 +1,6 @@
 "use client";
 import { customerText, customerError } from "@/lib/customer-copy";
-import { useCallback, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
@@ -8,8 +8,9 @@ import {
   OctagonX,
   RefreshCw,
 } from "lucide-react";
-import type { Job } from "@objectscan/shared";
-import { api, post, stateLabels } from "@/lib/client-api";
+import { ApiResponseError, post, stateLabels } from "@/lib/client-api";
+import { isTerminalJob } from "@/features/create/job-polling";
+import { useJobPolling } from "@/features/create/use-job-polling";
 import { Button } from "./ui/button";
 export function JobTracker({
   jobId,
@@ -18,54 +19,51 @@ export function JobTracker({
   jobId: string;
   onComplete?: () => Promise<void>;
 }) {
-  const [job, setJob] = useState<Job | null>(null),
-    [error, setError] = useState(""),
+  const {
+    job,
+    error: readError,
+    refreshing,
+    refresh,
+  } = useJobPolling(jobId, onComplete);
+  const [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [cancel, setCancel] = useState(false),
-    [pollVersion, setPollVersion] = useState(0);
-  const load = useCallback(async () => {
-    const j = await api<Job>(`jobs/${jobId}`);
-    setJob(j);
-    return j;
-  }, [jobId]);
-  useEffect(() => {
-    let stopped = false,
-      t: ReturnType<typeof setTimeout>;
-    async function poll() {
-      try {
-        const j = await load();
-        if (!stopped && !["completed", "failed", "cancelled"].includes(j.state))
-          t = setTimeout(poll, 4000);
-        else if (j.state === "completed") await onComplete?.();
-      } catch (e) {
-        if (!stopped) setError(customerError(undefined, (e as Error).message));
-      }
-    }
-    void poll();
-    return () => {
-      stopped = true;
-      clearTimeout(t);
-    };
-  }, [load, onComplete, pollVersion]);
-  async function act(path: string) {
+    [cancel, setCancel] = useState(false);
+  const acting = useRef(false);
+  async function act(path: "retry" | "cancel") {
+    if (acting.current) return;
+    acting.current = true;
     setBusy(true);
     setError("");
     try {
       await post(`jobs/${jobId}/${path}`);
-      await load();
-      setPollVersion((v) => v + 1);
-      setCancel(false);
     } catch (e) {
-      setError(customerError(undefined, (e as Error).message));
+      if (!(
+        path === "cancel" &&
+        e instanceof ApiResponseError &&
+        e.code === "JOB_TERMINAL"
+      ))
+        setError(
+          "요청 결과를 확인하지 못했습니다. 서버의 작업 상태를 다시 확인해 주세요.",
+        );
     } finally {
+      setCancel(false);
+      refresh();
+      acting.current = false;
       setBusy(false);
     }
   }
   if (!job)
     return (
-      <div className="inline-empty">{error || "작업 상태를 불러오는 중…"}</div>
+      <div className="inline-empty">
+        <p role="status">{readError || "작업 상태를 불러오는 중…"}</p>
+        {readError && (
+          <Button variant="outline" disabled={refreshing} onClick={refresh}>
+            상태 새로고침
+          </Button>
+        )}
+      </div>
     );
-  const terminal = ["completed", "failed", "cancelled"].includes(job.state);
+  const terminal = isTerminalJob(job.state);
   return (
     <div className="job-tracker">
       <div className="job-tracker-heading">
@@ -90,7 +88,7 @@ export function JobTracker({
         </div>
         <strong>{job.progress}%</strong>
       </div>
-      <progress max="100" value={job.progress} />
+      <progress aria-label="작업 진행률" max="100" value={job.progress} />
       {job.state === "queued" && (
         <p className="job-info">
           한 번에 하나의 GPU 작업을 처리합니다. 현재 순서에서 기다리고 있어요.
@@ -102,8 +100,13 @@ export function JobTracker({
           {customerError(job.error_code)}
         </div>
       )}
-      {error && (
-        <div className="notice error" role="alert">
+      {readError && (
+        <p className="job-info" role="status">
+          {readError}
+        </p>
+      )}
+      {error && job.state !== "completed" && job.state !== "cancelled" && (
+        <div className="notice error" role="status">
           {error}
         </div>
       )}
@@ -121,7 +124,12 @@ export function JobTracker({
       </details>
       <div className="job-tracker-actions">
         {!terminal && (
-          <Button variant="outline" size="sm" onClick={() => setCancel(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy || refreshing || Boolean(readError)}
+            onClick={() => setCancel(true)}
+          >
             <OctagonX size={15} />
             작업 취소
           </Button>
@@ -130,7 +138,7 @@ export function JobTracker({
           <Button
             variant="outline"
             size="sm"
-            disabled={busy}
+            disabled={busy || refreshing || Boolean(readError)}
             onClick={() => void act("retry")}
           >
             <RefreshCw size={15} />
@@ -140,17 +148,13 @@ export function JobTracker({
         <Button
           variant="ghost"
           size="sm"
-          disabled={busy}
-          onClick={() =>
-            void load().catch((e) =>
-              setError(customerError(undefined, e.message)),
-            )
-          }
+          disabled={busy || refreshing}
+          onClick={refresh}
         >
           상태 새로고침
         </Button>
       </div>
-      {cancel && (
+      {cancel && !terminal && !readError && (
         <div className="notice warning">
           <div>
             <p>
@@ -160,7 +164,7 @@ export function JobTracker({
             <Button
               variant="danger"
               size="sm"
-              disabled={busy}
+              disabled={busy || refreshing}
               onClick={() => void act("cancel")}
             >
               취소 확인
